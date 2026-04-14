@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入 - 羽毛球預約系統</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script>
+        // 已登入就直接進主應用
+        (function () {
+            try {
+                const token = localStorage.getItem('auth_token');
+                if (token) window.location.replace('/app');
+            } catch (_) {}
+        })();
+    </script>
+</head>
+<body>
+    <div id="login-app" class="login-container">
+        <div class="login-card">
+            <h1>🏸 羽毛球預約系統</h1>
+            <p class="login-subtitle">請登入以繼續</p>
+
+            <div id="login-form" class="login-form">
+                <div class="form-group">
+                    <label>帳號</label>
+                    <input type="text" id="login-username" placeholder="輸入帳號">
+                </div>
+                <div class="form-group">
+                    <label>密碼</label>
+                    <input type="password" id="login-password" placeholder="輸入密碼">
+                </div>
+                <button class="btn btn-primary btn-block" onclick="doLogin()">登入</button>
+                <p class="login-switch">還沒有帳號？<a href="#" onclick="showRegister(); return false;">立即註冊</a></p>
+            </div>
+
+            <div id="register-form" class="login-form" style="display: none;">
+                <div class="form-group">
+                    <label>角色</label>
+                    <select id="register-role">
+                        <option value="venue">館方</option>
+                        <option value="member">成員</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>名稱</label>
+                    <input type="text" id="register-name" placeholder="輸入名稱">
+                </div>
+                <div class="form-group">
+                    <label>聯絡方式</label>
+                    <input type="text" id="register-contact" placeholder="輸入聯絡方式">
+                </div>
+                <div class="form-group">
+                    <label>登入帳號</label>
+                    <input type="text" id="register-username" placeholder="設定登入帳號">
+                </div>
+                <div class="form-group">
+                    <label>密碼</label>
+                    <input type="password" id="register-password" placeholder="設定密碼">
+                </div>
+                <button class="btn btn-primary btn-block" onclick="doRegister()">註冊</button>
+                <p class="login-switch">已有帳號？<a href="#" onclick="showLogin(); return false;">返回登入</a></p>
+            </div>
+        </div>
+    </div>
+    <script src="/auth.js"></script>
+</body>
+</html>

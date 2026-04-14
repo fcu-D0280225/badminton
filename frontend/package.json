@@ -1,0 +1,19 @@
+{
+  "name": "badminton-frontend",
+  "version": "1.0.0",
+  "description": "羽毛球預約系統前端 - PWA",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "NODE_ENV=production node server.js",
+    "build": "echo 'No build step needed for PWA'"
+  },
+  "keywords": ["pwa", "badminton", "booking"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.2",
+    "http-proxy-middleware": "^2.0.6"
+  }
+}

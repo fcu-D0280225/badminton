@@ -1,0 +1,16 @@
+{
+  "name": "venue-management-app",
+  "version": "1.0.0",
+  "description": "羽毛球預約系統 - 館方管理 PWA",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "NODE_ENV=production node server.js"
+  },
+  "keywords": ["pwa", "badminton", "venue", "management"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

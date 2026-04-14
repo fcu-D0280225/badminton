@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="羽毛球預約系統 - 館方、成員管理">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="預約系統">
+    <title>羽毛球預約系統</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/styles.css">
+    <script>
+        // 盡早做登入狀態檢查，避免主畫面閃一下才跳轉
+        (function () {
+            try {
+                const token = localStorage.getItem('auth_token');
+                if (!token) window.location.replace('/login.html');
+            } catch (_) {
+                // 若瀏覽器阻擋 localStorage（極少數情況），仍讓後續 app.js 進行檢查/導向
+            }
+        })();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <h1>🏸 羽毛球預約系統</h1>
+            <div class="header-actions">
+                <span class="user-info" id="user-info"></span>
+                <button class="btn btn-secondary btn-logout" onclick="logout()">登出</button>
+                <button class="btn btn-install" onclick="showInstallQR()">📱 手機安裝</button>
+            </div>
+            <nav class="nav-tabs">
+                <button class="tab-btn" data-view="venue" id="tab-venue">館方</button>
+                <button class="tab-btn" data-view="member" id="tab-member">成員</button>
+            </nav>
+        </header>
+
+        <!-- QR Code 安裝彈窗 -->
+        <div id="qr-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeQRModal()">&times;</span>
+                <h2>📱 手機安裝</h2>
+                <div class="qr-instructions">
+                    <p><strong>步驟：</strong></p>
+                    <ol>
+                        <li>確保手機與電腦在同一 WiFi 網路</li>
+                        <li>使用手機掃描下方 QR Code</li>
+                        <li>在瀏覽器中選擇「添加到主畫面」</li>
+                    </ol>
+                </div>
+                <div id="qrcode" class="qrcode-container"></div>
+                <div class="qr-url">
+                    <p>或直接輸入網址：</p>
+                    <input type="text" id="qr-url-text" readonly onclick="this.select()">
+                    <button class="btn btn-secondary" onclick="copyUrl()">複製網址</button>
+                </div>
+                <div class="install-tips">
+                    <p><strong>安裝提示：</strong></p>
+                    <ul>
+                        <li><strong>Android:</strong> Chrome 瀏覽器 → 選單 → 「添加到主畫面」</li>
+                        <li><strong>iPhone:</strong> Safari 瀏覽器 → 分享 → 「加入主畫面」</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 日期預約詳情彈窗 -->
+        <div id="date-booking-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeDateBookingModal()">&times;</span>
+                <h2 id="date-booking-title">預約詳情</h2>
+                <div id="date-booking-content"></div>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <!-- 館方視圖 -->
+            <div id="venue-view" class="view">
+                <div class="section" id="venue-select-section">
+                    <h3>選擇館方</h3>
+                    <select id="venue-select" onchange="loadVenueData()">
+                        <option value="">請選擇館方</option>
+                    </select>
+                </div>
+
+                <div id="venue-content" class="venue-content" style="display: none;">
+                    <div class="section">
+                        <h3>日曆檢視</h3>
+                        <div class="calendar-controls">
+                            <button class="btn btn-secondary" onclick="previousMonth()">上月</button>
+                            <h4 id="calendar-month-year"></h4>
+                            <button class="btn btn-secondary" onclick="nextMonth()">下月</button>
+                        </div>
+                        <div id="venue-calendar"></div>
+                    </div>
+
+                    <div class="section">
+                        <h3>備註管理</h3>
+                        <textarea id="venue-note-content" placeholder="輸入備註內容"></textarea>
+                        <select id="venue-note-visibility">
+                            <option value="public">公開（給所有人看）</option>
+                            <option value="organizer">只給團主看</option>
+                            <option value="player">只給臨打看</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="createVenueNote()">新增備註</button>
+                        <div id="venue-notes-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 成員視圖（合併原團主 + 臨打） -->
+            <div id="member-view" class="view">
+                <div id="member-content">
+                    <!-- 找場地預約 -->
+                    <div class="section">
+                        <h3>找場地預約</h3>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+                            <div class="form-group" style="flex:1;min-width:140px;margin:0;">
+                                <label>場地</label>
+                                <select id="member-venue-select" style="width:100%;">
+                                    <option value="">選擇場地</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex:1;min-width:140px;margin:0;">
+                                <label>日期</label>
+                                <input type="date" id="member-book-date" style="width:100%;">
+                            </div>
+                            <button class="btn btn-secondary" onclick="searchAvailableSlots()">查詢可用時段</button>
+                        </div>
+                        <div id="member-available-slots" style="margin-top:12px;"></div>
+                    </div>
+
+                    <!-- 日曆：合併場地預約 + 臨打紀錄 -->
+                    <div class="section">
+                        <h3>日曆檢視</h3>
+                        <div class="calendar-controls">
+                            <button class="btn btn-secondary" onclick="previousMemberMonth()">上月</button>
+                            <h4 id="member-calendar-month-year"></h4>
+                            <button class="btn btn-secondary" onclick="nextMemberMonth()">下月</button>
+                        </div>
+                        <div id="member-calendar"></div>
+                    </div>
+
+                    <!-- 我預約的場地（原團主功能） -->
+                    <div class="section">
+                        <h3>我預約的場地</h3>
+                        <div id="organizer-bookings-list"></div>
+                    </div>
+
+                    <!-- 我參與的場次（原臨打功能） -->
+                    <div class="section">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                            <h3 style="margin:0;">我參與的場次</h3>
+                        </div>
+                        <!-- 信用分數 -->
+                        <div id="player-credit-score" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:14px;margin-bottom:12px;"></div>
+                        <div id="player-booking-history"></div>
+                    </div>
+
+                    <!-- 備註管理 -->
+                    <div class="section">
+                        <h3>備註管理</h3>
+                        <textarea id="organizer-note-content" placeholder="輸入備註內容"></textarea>
+                        <select id="organizer-note-visibility">
+                            <option value="public">公開（給所有人看）</option>
+                            <option value="player">只給參與者看</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="createOrganizerNote()">新增備註</button>
+                        <div id="organizer-notes-list"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

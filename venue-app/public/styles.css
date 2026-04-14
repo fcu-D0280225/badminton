@@ -1,0 +1,969 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+:root {
+    --color-primary: #10b981;
+    --color-primary-dark: #059669;
+    --color-danger: #dc2626;
+    --color-warning: #f59e0b;
+    --color-text: #111827;
+    --color-text-secondary: #6b7280;
+    --color-border: #e5e7eb;
+    --color-surface: #ffffff;
+    --color-bg: #f9fafb;
+    --radius-card: 10px;
+    --radius-btn: 8px;
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    /* 付款狀態語意色 */
+    --status-paid-bg: #d1fae5;      --status-paid-text: #065f46;    --status-paid-border: #10b981;
+    --status-unpaid-bg: #fee2e2;    --status-unpaid-text: #991b1b;  --status-unpaid-border: #dc2626;
+    --status-transfer-bg: #fef3c7;  --status-transfer-text: #92400e; --status-transfer-border: #f59e0b;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--color-bg);
+    min-height: 100vh;
+    padding: 20px;
+    font-size: 14px;
+}
+
+.header {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.nav-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: 2px solid #10b981;
+    background: white;
+    color: #10b981;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.tab-btn:hover {
+    background: #f0f0f0;
+}
+
+.tab-btn.active {
+    background: #10b981;
+    color: white;
+}
+
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.view {
+    display: none;
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.view.active {
+    display: block;
+}
+
+.section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.section:last-child {
+    border-bottom: none;
+}
+
+/* P3: 館方管理折疊區塊 */
+.venue-setup-details > summary {
+    color: #333;
+    margin-bottom: 0;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.venue-setup-details > summary::before {
+    content: '▶';
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    transition: transform 0.15s;
+}
+.venue-setup-details[open] > summary::before {
+    transform: rotate(90deg);
+}
+
+.section h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.section h3 {
+    color: #555;
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #10b981;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #10b981;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.filter-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-group input {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-group .btn {
+    white-space: nowrap;
+    min-width: auto;
+}
+
+.card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-left: 4px solid #10b981;
+}
+
+.card h4 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.card p {
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.card .badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 5px;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.star {
+    font-size: 24px;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.star.active {
+    color: #ffc107;
+}
+
+.star:hover {
+    color: #ffc107;
+}
+
+.list-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-item-content {
+    flex: 1;
+}
+
+.list-item-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.install-section {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.btn-install {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+}
+
+.btn-install:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Modal 樣式 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    right: 20px;
+    top: 15px;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+}
+
+.qrcode-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.qr-instructions {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.qr-instructions ol {
+    margin-left: 20px;
+    margin-top: 10px;
+}
+
+.qr-instructions li {
+    margin-bottom: 8px;
+    color: #555;
+}
+
+.qr-url {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.qr-url input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #f8f9fa;
+    cursor: pointer;
+}
+
+.qr-url input:focus {
+    outline: none;
+    border-color: #10b981;
+}
+
+.install-tips {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+    text-align: left;
+}
+
+.install-tips ul {
+    margin-left: 20px;
+    margin-top: 10px;
+}
+
+.install-tips li {
+    margin-bottom: 8px;
+    color: #555;
+    font-size: 14px;
+}
+
+/* 日曆樣式 */
+.calendar-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.calendar-controls h4 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.calendar-container {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.calendar-header-day {
+    text-align: center;
+    font-weight: 600;
+    color: #10b981;
+    padding: 10px;
+    font-size: 14px;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 2px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: 1px solid transparent;
+    position: relative;
+    min-height: 0;
+}
+
+.calendar-day:hover {
+    background: #f0fdf4;
+}
+
+.calendar-day.other-month {
+    color: #d1d5db;
+    cursor: default;
+}
+
+.calendar-day.today {
+    border-color: var(--color-primary);
+}
+
+.calendar-day.today .calendar-day-number {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+.calendar-day.has-booking {
+    background: #fafafa;
+}
+
+.calendar-day.available {
+    /* no fill — clean, empty days don't need color */
+}
+
+.calendar-day-number {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+}
+
+/* Density slot bars (A variant) */
+.cal-slot-bars {
+    display: flex;
+    gap: 2px;
+    margin-top: 3px;
+}
+.cal-slot-bar {
+    width: 5px;
+    height: 6px;
+    border-radius: 1px;
+    background: #e5e7eb;
+}
+.cal-slot-bar.s-light { background: #10b981; }
+.cal-slot-bar.s-busy  { background: #f59e0b; }
+.cal-slot-bar.s-full  { background: #dc2626; }
+
+/* Week view (C variant) */
+.cal-week-back-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+.cal-week-back-btn {
+    flex: 1;
+    font-size: 12px;
+    padding: 5px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    background: var(--color-surface);
+    cursor: pointer;
+    text-align: left;
+    color: var(--color-text-secondary);
+}
+.cal-week-nav-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    background: var(--color-surface);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text);
+}
+.cal-week-view {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+}
+.cal-week-header {
+    display: grid;
+    grid-template-columns: 28px repeat(7, 1fr);
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-border);
+}
+.cal-week-header .cal-week-time-col {
+    border: none;
+    background: var(--color-bg);
+}
+.cal-week-header-day {
+    text-align: center;
+    padding: 5px 2px;
+    border-left: 1px solid var(--color-border);
+}
+.cal-week-header-day.today .cal-week-day-name,
+.cal-week-header-day.today .cal-week-day-num { color: var(--color-primary); }
+.cal-week-header-day.selected { background: #d1fae5; }
+.cal-week-day-name {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+.cal-week-day-num {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+}
+.cal-week-body {
+    display: flex;
+    overflow-y: auto;
+    max-height: 380px;
+}
+.cal-week-time-col {
+    width: 28px;
+    flex-shrink: 0;
+}
+.cal-week-time-label {
+    font-size: 9px;
+    color: var(--color-text-secondary);
+    text-align: right;
+    padding: 2px 3px 0 0;
+    border-top: 1px solid var(--color-border);
+    box-sizing: border-box;
+}
+.cal-week-days-area {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-left: 1px solid var(--color-border);
+}
+.cal-week-day-col {
+    position: relative;
+    border-left: 1px solid var(--color-border);
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent calc(36px - 1px),
+        var(--color-border) calc(36px - 1px),
+        var(--color-border) 36px
+    );
+}
+.cal-week-booking {
+    position: absolute;
+    left: 1px;
+    right: 1px;
+    border-radius: 3px;
+    padding: 2px 3px;
+    font-size: 9px;
+    line-height: 1.2;
+    overflow: hidden;
+    cursor: pointer;
+    z-index: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.cal-week-booking.status-unpaid {
+    background: var(--status-unpaid-bg);
+    color: var(--status-unpaid-text);
+    border-left: 3px solid var(--status-unpaid-border);
+}
+.cal-week-booking.status-paid {
+    background: var(--status-paid-bg);
+    color: var(--status-paid-text);
+    border-left: 3px solid var(--status-paid-border);
+}
+.cal-week-booking.status-transfer {
+    background: var(--status-transfer-bg);
+    color: var(--status-transfer-text);
+    border-left: 3px solid var(--status-transfer-border);
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .header {
+        padding: 15px;
+    }
+
+    .nav-tabs {
+        flex-direction: column;
+    }
+
+    /* tab nav: 3 tabs 平均分配寬度，手機上不截字 */
+    .tab-nav {
+        padding: 8px 8px 0;
+        gap: 2px;
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 10px 4px;
+        font-size: 12px;
+        text-align: center;
+        min-height: 44px; /* 手機最小觸控高度 */
+    }
+
+    .view {
+        padding: 20px;
+    }
+
+    .filter-group {
+        flex-direction: column;
+    }
+
+    .list-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .list-item-actions {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .modal-content {
+        margin: 10% auto;
+        padding: 20px;
+        width: 95%;
+    }
+
+    .qrcode-container {
+        padding: 15px;
+    }
+
+    .calendar-controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .calendar-controls h4 {
+        font-size: 16px;
+    }
+
+    .calendar-day {
+        padding: 2px 1px;
+    }
+
+    .calendar-day-number {
+        font-size: 12px;
+    }
+
+    .cal-slot-bar {
+        width: 4px;
+        height: 5px;
+    }
+
+    .calendar-header-day {
+        font-size: 12px;
+        padding: 5px;
+    }
+}
+
+/* ===== Login Screen ===== */
+.login-screen {
+    position: fixed;
+    inset: 0;
+    background: #f0f4f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.login-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px 28px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+}
+
+.login-box h2 {
+    margin: 0 0 24px;
+    font-size: 22px;
+    text-align: center;
+    color: var(--color-primary-dark);
+}
+
+/* ===== Tabs ===== */
+.tab-nav {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px 0;
+    border-bottom: 2px solid #e5e7eb;
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    border-radius: 6px 6px 0 0;
+    transition: color 0.15s;
+}
+
+.tab-btn:hover {
+    color: var(--color-primary);
+    background: #ecfdf5;
+}
+
+.tab-btn.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    background: #ecfdf5;
+}
+
+.tab-panel {
+    padding: 4px 0;
+}
+
+/* ===== Billing Stat Chips (Split Hero, Variant A) ===== */
+.billing-chips {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.billing-chip {
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
+    padding: 12px 14px;
+    box-shadow: var(--shadow-card);
+}
+.billing-chip-label {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    margin-bottom: 4px;
+}
+.billing-chip-value {
+    font-size: 22px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+}
+.billing-chip-value.danger  { color: var(--color-danger); }
+.billing-chip-value.primary { color: var(--color-primary); }
+.billing-chip-sub {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    margin-top: 3px;
+}
+.billing-chip-progress {
+    height: 5px;
+    background: var(--color-border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+.billing-chip-progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--color-primary);
+    transition: width 0.4s ease;
+}
+/* 全部收款完成時 — 跨兩欄單張 chip */
+.billing-chips.all-paid {
+    grid-template-columns: 1fr;
+}
+.billing-chips.all-paid .billing-chip {
+    border-left: 4px solid var(--color-primary);
+}
+.billing-chips.all-paid .billing-chip-value {
+    color: var(--status-paid-text);
+    font-size: 20px;
+}
+
+/* ===== Billing List Group Labels ===== */
+.billing-group-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin: 14px 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* ===== R2: Billing Card with Left Status Border ===== */
+.billing-card {
+    display: flex;
+    overflow: hidden;
+    background: var(--color-surface);
+    border-radius: var(--radius-card);
+    margin-bottom: 8px;
+    box-shadow: var(--shadow-card);
+    cursor: pointer;
+    transition: box-shadow 0.15s;
+}
+.billing-card:hover {
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+}
+.billing-card .card-status-bar {
+    width: 4px;
+    flex-shrink: 0;
+}
+.billing-card.status-unpaid   .card-status-bar { background: var(--status-unpaid-border); }
+.billing-card.status-paid     .card-status-bar { background: var(--status-paid-border); }
+.billing-card.status-transfer .card-status-bar { background: var(--status-transfer-border); }
+.billing-card .card-body {
+    flex: 1;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    min-width: 0;
+}
+.billing-card .card-left { flex: 1; min-width: 0; }
+.billing-card .card-team {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.billing-card .card-meta {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-top: 2px;
+}
+.billing-card .card-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+.billing-card .card-right {
+    text-align: right;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+.billing-card .card-amount {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Status badge */
+.status-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 3px;
+}
+.badge-unpaid   { background: var(--status-unpaid-bg);   color: var(--status-unpaid-text); }
+.badge-paid     { background: var(--status-paid-bg);     color: var(--status-paid-text); }
+.badge-transfer { background: var(--status-transfer-bg); color: var(--status-transfer-text); }

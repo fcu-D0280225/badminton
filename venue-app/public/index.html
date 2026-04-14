@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="羽毛球預約系統 - 館方管理平台">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="館方管理">
+    <title>館方管理系統</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <!-- 登入畫面 -->
+    <div id="login-screen" class="login-screen" style="display: none;">
+        <div class="login-box">
+            <h2>館方登入</h2>
+            <div class="form-group">
+                <label>帳號：</label>
+                <input type="text" id="login-username" placeholder="輸入帳號">
+            </div>
+            <div class="form-group">
+                <label>密碼：</label>
+                <input type="password" id="login-password" placeholder="輸入密碼" onkeydown="if(event.key==='Enter')doLogin()">
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="doLogin()">登入</button>
+            <p id="login-error" style="color:red;display:none;margin-top:10px;"></p>
+        </div>
+    </div>
+
+    <div id="app">
+        <header class="header">
+            <h1>館方管理系統</h1>
+            <div class="install-section">
+                <span id="header-username" style="color:#fff;margin-right:10px;font-size:14px;"></span>
+                <button id="logout-btn" class="btn btn-secondary" style="display:none;margin-right:8px;" onclick="doLogout()">登出</button>
+                <button class="btn btn-install" onclick="showInstallQR()">手機安裝</button>
+            </div>
+        </header>
+
+        <!-- QR Code 安裝彈窗 -->
+        <div id="qr-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeQRModal()">&times;</span>
+                <h2>手機安裝</h2>
+                <div class="qr-instructions">
+                    <p><strong>步驟：</strong></p>
+                    <ol>
+                        <li>確保手機與電腦在同一 WiFi 網路</li>
+                        <li>使用手機掃描下方 QR Code</li>
+                        <li>在瀏覽器中選擇「添加到主畫面」</li>
+                    </ol>
+                </div>
+                <div id="qrcode" class="qrcode-container"></div>
+                <div class="qr-url">
+                    <p>或直接輸入網址：</p>
+                    <input type="text" id="qr-url-text" readonly onclick="this.select()">
+                    <button class="btn btn-secondary" onclick="copyUrl()">複製網址</button>
+                </div>
+                <div class="install-tips">
+                    <p><strong>安裝提示：</strong></p>
+                    <ul>
+                        <li><strong>Android:</strong> Chrome 瀏覽器 → 選單 → 「添加到主畫面」</li>
+                        <li><strong>iPhone:</strong> Safari 瀏覽器 → 分享 → 「加入主畫面」</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <!-- 館方視圖 -->
+            <div id="venue-view" class="view active">
+
+                <!-- 分頁導覽 -->
+                <div class="tab-nav">
+                    <button class="tab-btn active" onclick="showTab('tab-bookings')">預約管理</button>
+                    <button class="tab-btn" onclick="showTab('tab-billing')">收費管理</button>
+                    <button class="tab-btn" onclick="showTab('tab-analytics')">分析報表</button>
+                </div>
+
+                <!-- ===== 預約管理 ===== -->
+                <div id="tab-bookings" class="tab-panel active">
+                    <details class="section venue-setup-details">
+                        <summary>館方管理</summary>
+                        <div class="form-group" style="margin-top:12px;">
+                            <label>館方名稱：</label>
+                            <input type="text" id="venue-name" placeholder="輸入館方名稱">
+                        </div>
+                        <div class="form-group">
+                            <label>聯絡方式：</label>
+                            <input type="text" id="venue-contact" placeholder="輸入聯絡方式">
+                        </div>
+                        <button class="btn btn-primary" onclick="createVenue()">建立館方</button>
+                    </details>
+
+                    <div class="section">
+                        <h3>選擇館方</h3>
+                        <select id="venue-select" onchange="loadVenueData()">
+                            <option value="">請選擇館方</option>
+                        </select>
+                    </div>
+
+                    <div id="venue-content" class="venue-content">
+                        <!-- 預約紀錄 -->
+                        <div class="section">
+                            <h3>預約紀錄</h3>
+                            <div class="filter-group">
+                                <input type="date" id="venue-filter-date" placeholder="選擇日期">
+                                <input type="text" id="venue-filter-name" placeholder="預約者姓名">
+                                <input type="text" id="venue-filter-timeslot" placeholder="時段">
+                                <button class="btn btn-primary" onclick="filterVenueBookings()">搜尋</button>
+                                <button class="btn btn-secondary" onclick="resetVenueFilters()">清除</button>
+                            </div>
+                            <div id="venue-bookings-list"></div>
+                        </div>
+
+                        <!-- 可用時段 - 日曆顯示 -->
+                        <div class="section">
+                            <h3>預約日曆</h3>
+                            <div class="calendar-controls">
+                                <button class="btn btn-secondary" onclick="previousMonth()">◀ 上個月</button>
+                                <h4 id="calendar-month-year"></h4>
+                                <button class="btn btn-secondary" onclick="nextMonth()">下個月 ▶</button>
+                            </div>
+                            <div id="venue-calendar" class="calendar-container"></div>
+                        </div>
+
+                        <!-- 日期預約詳情彈窗 -->
+                        <div id="date-booking-modal" class="modal" style="display: none;">
+                            <div class="modal-content">
+                                <span class="close" onclick="closeDateBookingModal()">&times;</span>
+                                <h2 id="date-booking-title">預約詳情</h2>
+                                <div id="date-booking-content"></div>
+                            </div>
+                        </div>
+
+                        <!-- 備註管理 -->
+                        <div class="section">
+                            <h3>備註管理</h3>
+                            <textarea id="venue-note-content" placeholder="輸入備註內容"></textarea>
+                            <select id="venue-note-visibility">
+                                <option value="public">公開（給所有人看）</option>
+                                <option value="organizer">只給團主看</option>
+                                <option value="player">只給臨打看</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="createVenueNote()">新增備註</button>
+                            <div id="venue-notes-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== 收費管理 ===== -->
+                <div id="tab-billing" class="tab-panel" style="display:none;">
+                    <!-- 新增記錄表單 -->
+                    <div class="section">
+                        <h3>新增收費記錄</h3>
+                        <div class="form-group">
+                            <label>球隊名稱：</label>
+                            <input type="text" id="billing-team-name" placeholder="例：飛翔隊">
+                        </div>
+                        <div class="form-group">
+                            <label>場地編號（選填）：</label>
+                            <input type="text" id="billing-court" placeholder="例：A1">
+                        </div>
+                        <div class="form-group">
+                            <label>日期：</label>
+                            <input type="date" id="billing-date">
+                        </div>
+                        <div class="form-group">
+                            <label>開始時間：</label>
+                            <input type="time" id="billing-start-time">
+                        </div>
+                        <div class="form-group">
+                            <label>結束時間：</label>
+                            <input type="time" id="billing-end-time">
+                        </div>
+                        <div class="form-group">
+                            <label>金額（元）：</label>
+                            <input type="number" id="billing-amount" placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>付款狀態：</label>
+                            <select id="billing-status">
+                                <option value="unpaid">未付款</option>
+                                <option value="cash">現金</option>
+                                <option value="transfer">轉帳</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+                            <input type="checkbox" id="billing-recurring" style="width:auto;">
+                            <label for="billing-recurring" style="margin:0;">重複訂場（連續 5 週）</label>
+                        </div>
+                        <button class="btn btn-primary" onclick="createBillingRecord()">新增記錄</button>
+                    </div>
+
+                    <!-- 未收款總覽 -->
+                    <div id="billing-summary-banner" style="display:none;"></div>
+
+                    <!-- 篩選 + 清單 -->
+                    <div class="section">
+                        <h3>收費清單</h3>
+                        <div class="filter-group" style="flex-wrap:wrap;gap:8px;">
+                            <input type="month" id="billing-filter-month" onchange="loadBillingRecords()">
+                            <label style="display:flex;align-items:center;gap:4px;margin:0;">
+                                <input type="checkbox" id="billing-filter-unpaid" onchange="loadBillingRecords()" style="width:auto;" checked>
+                                只看未付款
+                            </label>
+                            <button class="btn btn-secondary" onclick="exportBillingCsv()">匯出 CSV</button>
+                        </div>
+                        <div id="billing-list" style="margin-top:12px;"></div>
+                    </div>
+                </div>
+
+                <!-- ===== 分析報表 ===== -->
+                <div id="tab-analytics" class="tab-panel" style="display:none;">
+                    <div class="section">
+                        <h3>月份報表</h3>
+                        <div class="filter-group">
+                            <input type="month" id="analytics-month">
+                            <button class="btn btn-primary" onclick="loadAnalytics()">查詢</button>
+                        </div>
+                        <div id="analytics-content" style="margin-top:16px;"></div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- 編輯收費記錄彈窗 -->
+    <div id="billing-edit-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeBillingEditModal()">&times;</span>
+            <h2>編輯收費記錄</h2>
+            <input type="hidden" id="edit-billing-id">
+            <div class="form-group">
+                <label>付款狀態：</label>
+                <select id="edit-billing-status">
+                    <option value="unpaid">未付款</option>
+                    <option value="cash">現金</option>
+                    <option value="transfer">轉帳</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>備註：</label>
+                <input type="text" id="edit-billing-note" placeholder="付款備註（選填）">
+            </div>
+            <div class="form-group">
+                <label>金額（元）：</label>
+                <input type="number" id="edit-billing-amount" min="0">
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+                <button class="btn btn-primary" onclick="saveBillingEdit()">儲存</button>
+                <button class="btn btn-danger" onclick="confirmDeleteBillingRecord()">刪除</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
