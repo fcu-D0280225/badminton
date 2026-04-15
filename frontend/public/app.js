@@ -146,18 +146,24 @@ function initTabs() {
 
     const tabVenue = document.getElementById('tab-venue');
     const tabMember = document.getElementById('tab-member');
+    const tabBooker = document.getElementById('tab-booker');
     const venueView = document.getElementById('venue-view');
     const memberView = document.getElementById('member-view');
+    const bookerView = document.getElementById('booker-view');
+
+    // 先全部隱藏
+    tabVenue.classList.add('hidden');
+    tabMember.classList.add('hidden');
+    tabBooker.classList.add('hidden');
 
     if (role === 'venue') {
         tabVenue.classList.remove('hidden');
-        tabMember.classList.add('hidden');
         venueView.classList.add('active');
-        memberView.classList.remove('active');
+    } else if (role === 'booker') {
+        tabBooker.classList.remove('hidden');
+        bookerView.classList.add('active');
     } else {
-        tabVenue.classList.add('hidden');
         tabMember.classList.remove('hidden');
-        venueView.classList.remove('active');
         memberView.classList.add('active');
     }
 
@@ -177,6 +183,7 @@ function initTabs() {
             document.getElementById(`${viewName}-view`).classList.add('active');
             if (viewName === 'venue') loadVenues().then(() => loadVenueData());
             if (viewName === 'member') loadMemberData();
+            if (viewName === 'booker') loadBookerData();
         });
     });
 }
@@ -188,6 +195,8 @@ async function loadInitialData() {
         const section = document.getElementById('venue-select-section');
         if (section) section.style.display = 'none';
         await loadVenueData();
+    } else if (auth.role === 'booker') {
+        await loadBookerData();
     } else {
         await loadMemberData();
     }
@@ -2157,4 +2166,316 @@ function urlBase64ToUint8Array(base64String) {
     const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
     const rawData = window.atob(base64);
     return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+// ========== 團主（Booker）功能 ==========
+
+let currentRosterBookingId = null;
+
+async function loadBookerData() {
+    await loadBookerVenueList();
+    await loadBookerBookings();
+}
+
+async function loadBookerVenueList() {
+    try {
+        const res = await authFetch(`${API_BASE}/venues`);
+        const venues = await res.json();
+        const sel = document.getElementById('booker-venue-select');
+        if (!sel) return;
+        sel.innerHTML = '<option value="">選擇場地</option>';
+        venues.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.id;
+            opt.textContent = v.name;
+            sel.appendChild(opt);
+        });
+    } catch (e) { console.error('載入場地失敗:', e); }
+}
+
+async function searchBookerSlots() {
+    const venueId = document.getElementById('booker-venue-select')?.value;
+    const date = document.getElementById('booker-book-date')?.value;
+    const container = document.getElementById('booker-available-slots');
+
+    if (!venueId || !date) {
+        alert('請選擇場地和日期');
+        return;
+    }
+
+    container.innerHTML = '<p style="color:#666;">查詢中...</p>';
+
+    try {
+        const res = await authFetch(`${API_BASE}/venues/${venueId}/available-time-slots?date=${date}`);
+        const available = await res.json();
+        const full = ALL_TIME_SLOTS.filter(s => !available.includes(s));
+
+        if (available.length === 0 && full.length === 0) {
+            container.innerHTML = '<p style="color:#999;">當天無時段資料</p>';
+            return;
+        }
+
+        const availHtml = available.length > 0 ? `
+            <p style="font-size:13px;font-weight:600;color:#333;margin:0 0 6px;">可預約時段</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+                ${available.map(slot => `
+                    <button class="btn btn-primary" style="font-size:13px;"
+                        onclick="bookerBook('${venueId}','${date}','${slot}')">
+                        ${slot}
+                    </button>
+                `).join('')}
+            </div>` : '';
+
+        const fullHtml = full.length > 0 ? `
+            <p style="font-size:13px;font-weight:600;color:#999;margin:0 0 6px;">已滿</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                ${full.map(slot => `
+                    <button class="btn btn-secondary" style="font-size:13px;opacity:0.5;" disabled>
+                        ${slot}
+                    </button>
+                `).join('')}
+            </div>` : '';
+
+        container.innerHTML = availHtml + fullHtml;
+    } catch (error) {
+        container.innerHTML = '<p style="color:red;">查詢失敗，請稍後重試</p>';
+    }
+}
+
+async function bookerBook(venueId, date, timeSlot) {
+    const auth = getAuth();
+    if (!auth.entityId) {
+        alert('無法取得團主資料，請重新登入');
+        return;
+    }
+
+    const recurring = confirm(
+        `預約 ${date} ${timeSlot}\n\n` +
+        '要設定為重複預約嗎？\n確定 = 設定重複，取消 = 單次預約'
+    );
+
+    if (recurring) {
+        const weeksInput = prompt('重複幾週？（最多 52 週）', '8');
+        if (!weeksInput || isNaN(+weeksInput) || +weeksInput < 1) return;
+        const recurringWeeks = Math.min(Math.round(+weeksInput), 52);
+        const biweekly = confirm('重複方式：確定 = 每兩週，取消 = 每週');
+        const recurringType = biweekly ? 'biweekly' : 'weekly';
+
+        try {
+            const res = await authFetch(`${API_BASE}/bookings/recurring`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    venueId: parseInt(venueId),
+                    bookerId: parseInt(auth.entityId),
+                    date, timeSlot,
+                    status: 'confirmed',
+                    amount: 0,
+                    recurringWeeks,
+                    recurringType,
+                }),
+            });
+            if (!res.ok) throw new Error('伺服器錯誤');
+            const bookings = await res.json();
+            alert(`✅ 已建立 ${bookings.length} 筆重複預約！`);
+        } catch (error) {
+            alert('重複預約失敗：' + error.message);
+            return;
+        }
+    } else {
+        if (!confirm(`確定要預約 ${date} ${timeSlot}？`)) return;
+        try {
+            const res = await authFetch(`${API_BASE}/bookings`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    venueId: parseInt(venueId),
+                    bookerId: parseInt(auth.entityId),
+                    date, timeSlot,
+                    status: 'confirmed',
+                    amount: 0,
+                }),
+            });
+            if (!res.ok) throw new Error('伺服器錯誤');
+            alert('✅ 預約成功！');
+        } catch (error) {
+            alert('預約失敗：' + error.message);
+            return;
+        }
+    }
+
+    document.getElementById('booker-available-slots').innerHTML = '';
+    await loadBookerBookings();
+}
+
+async function loadBookerBookings() {
+    const auth = getAuth();
+    const container = document.getElementById('booker-bookings-list');
+    if (!container) return;
+
+    try {
+        const res = await authFetch(`${API_BASE}/bookers/${auth.entityId}/bookings`);
+        if (!res.ok) throw new Error('載入失敗');
+        const bookings = await res.json();
+
+        if (bookings.length === 0) {
+            container.innerHTML = '<p style="color:#999;">尚無預約紀錄</p>';
+            return;
+        }
+
+        const today = new Date().toISOString().split('T')[0];
+
+        container.innerHTML = bookings.map(b => {
+            const isPast = b.date < today;
+            const isCancelled = b.status === 'cancelled';
+            const participantCount = (b.participants || []).length;
+            const checkedInCount = (b.participants || []).filter(p => p.checkedIn).length;
+
+            let statusBadge = '';
+            if (isCancelled) {
+                statusBadge = '<span style="background:#fee2e2;color:#991b1b;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600;">已取消</span>';
+            } else if (isPast) {
+                statusBadge = '<span style="background:#e5e7eb;color:#6b7280;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600;">已結束</span>';
+            } else {
+                statusBadge = '<span style="background:#d1fae5;color:#065f46;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600;">進行中</span>';
+            }
+
+            const borderColor = isCancelled ? '#dc2626' : (isPast ? '#e5e7eb' : '#10b981');
+
+            return `
+                <div style="background:#fff;border-radius:10px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.08);display:flex;overflow:hidden;">
+                    <div style="width:4px;flex-shrink:0;background:${borderColor};"></div>
+                    <div style="flex:1;padding:10px 12px;">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                            <div>
+                                <div style="font-size:14px;font-weight:600;">${b.venue?.name || '場地'}</div>
+                                <div style="font-size:12px;color:#6b7280;margin-top:2px;">${b.date} ${b.timeSlot}</div>
+                                <div style="font-size:12px;color:#6b7280;margin-top:2px;">
+                                    人員：${participantCount} 人${checkedInCount > 0 ? `（${checkedInCount} 已報到）` : ''}
+                                </div>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                                ${statusBadge}
+                                ${!isCancelled ? `
+                                    <button class="btn btn-primary" style="font-size:12px;padding:4px 10px;"
+                                        onclick="openRosterModal(${b.id}, '${b.venue?.name || '場地'}', '${b.date}', '${b.timeSlot}')">
+                                        管理名單
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        container.innerHTML = '<p style="color:red;">載入失敗，請稍後重試</p>';
+    }
+}
+
+// ── 名單管理 Modal ────────────────────────────────────────────
+
+function openRosterModal(bookingId, venueName, date, timeSlot) {
+    currentRosterBookingId = bookingId;
+    document.getElementById('roster-modal-title').textContent = `${venueName} — ${date} ${timeSlot}`;
+    document.getElementById('participant-name').value = '';
+    document.getElementById('participant-phone').value = '';
+    document.getElementById('roster-modal').style.display = 'block';
+    loadRosterList();
+}
+
+function closeRosterModal() {
+    document.getElementById('roster-modal').style.display = 'none';
+    currentRosterBookingId = null;
+    loadBookerBookings();
+}
+
+async function loadRosterList() {
+    const container = document.getElementById('roster-list');
+    if (!currentRosterBookingId) return;
+
+    try {
+        const res = await authFetch(`${API_BASE}/bookings/${currentRosterBookingId}/participants`);
+        if (!res.ok) throw new Error('載入失敗');
+        const participants = await res.json();
+
+        if (participants.length === 0) {
+            container.innerHTML = '<p style="color:#999;font-size:13px;">尚未加入任何人</p>';
+            return;
+        }
+
+        container.innerHTML = `
+            <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">共 ${participants.length} 人</div>
+            ${participants.map(p => `
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f9fafb;border-radius:8px;margin-bottom:6px;">
+                    <div style="flex:1;">
+                        <span style="font-size:14px;font-weight:500;">${escapeHtml(p.name)}</span>
+                        ${p.phone ? `<span style="font-size:12px;color:#6b7280;margin-left:6px;">${escapeHtml(p.phone)}</span>` : ''}
+                    </div>
+                    <button style="border:none;background:${p.checkedIn ? '#d1fae5' : '#f3f4f6'};color:${p.checkedIn ? '#065f46' : '#6b7280'};padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;"
+                        onclick="toggleCheckin(${currentRosterBookingId}, ${p.id})">
+                        ${p.checkedIn ? '✓ 已報到' : '未報到'}
+                    </button>
+                    <button style="border:none;background:#fee2e2;color:#991b1b;padding:4px 8px;border-radius:6px;font-size:12px;cursor:pointer;"
+                        onclick="removeParticipant(${currentRosterBookingId}, ${p.id}, '${escapeHtml(p.name)}')">
+                        移除
+                    </button>
+                </div>
+            `).join('')}
+        `;
+    } catch (error) {
+        container.innerHTML = '<p style="color:red;font-size:13px;">載入名單失敗</p>';
+    }
+}
+
+async function addParticipant() {
+    const name = document.getElementById('participant-name').value.trim();
+    const phone = document.getElementById('participant-phone').value.trim();
+
+    if (!name) {
+        alert('請輸入姓名');
+        return;
+    }
+
+    try {
+        const res = await authFetch(`${API_BASE}/bookings/${currentRosterBookingId}/participants`, {
+            method: 'POST',
+            body: JSON.stringify({ name, phone: phone || undefined }),
+        });
+        if (!res.ok) throw new Error('新增失敗');
+        document.getElementById('participant-name').value = '';
+        document.getElementById('participant-phone').value = '';
+        await loadRosterList();
+    } catch (error) {
+        alert('新增失敗：' + error.message);
+    }
+}
+
+async function removeParticipant(bookingId, participantId, name) {
+    if (!confirm(`確定要移除 ${name}？`)) return;
+    try {
+        const res = await authFetch(`${API_BASE}/bookings/${bookingId}/participants/${participantId}`, {
+            method: 'DELETE',
+        });
+        if (!res.ok) throw new Error('移除失敗');
+        await loadRosterList();
+    } catch (error) {
+        alert('移除失敗：' + error.message);
+    }
+}
+
+async function toggleCheckin(bookingId, participantId) {
+    try {
+        const res = await authFetch(`${API_BASE}/bookings/${bookingId}/participants/${participantId}/checkin`, {
+            method: 'PUT',
+        });
+        if (!res.ok) throw new Error('操作失敗');
+        await loadRosterList();
+    } catch (error) {
+        alert('報到操作失敗：' + error.message);
+    }
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }

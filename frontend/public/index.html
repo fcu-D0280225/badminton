@@ -36,6 +36,7 @@
             <nav class="nav-tabs">
                 <button class="tab-btn" data-view="venue" id="tab-venue">館方</button>
                 <button class="tab-btn" data-view="member" id="tab-member">成員</button>
+                <button class="tab-btn" data-view="booker" id="tab-booker">團主</button>
             </nav>
         </header>
 
@@ -109,6 +110,58 @@
                         <button class="btn btn-primary" onclick="createVenueNote()">新增備註</button>
                         <div id="venue-notes-list"></div>
                     </div>
+                </div>
+            </div>
+
+            <!-- 團主視圖（booker） -->
+            <div id="booker-view" class="view">
+                <div id="booker-content">
+                    <!-- 開團：預約場地 -->
+                    <div class="section">
+                        <h3>開團預約</h3>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+                            <div class="form-group" style="flex:1;min-width:140px;margin:0;">
+                                <label>場地</label>
+                                <select id="booker-venue-select" style="width:100%;">
+                                    <option value="">選擇場地</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex:1;min-width:140px;margin:0;">
+                                <label>日期</label>
+                                <input type="date" id="booker-book-date" style="width:100%;">
+                            </div>
+                            <button class="btn btn-secondary" onclick="searchBookerSlots()">查詢可用時段</button>
+                        </div>
+                        <div id="booker-available-slots" style="margin-top:12px;"></div>
+                    </div>
+
+                    <!-- 我的預約 -->
+                    <div class="section">
+                        <h3>我的預約</h3>
+                        <div id="booker-bookings-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 參與者管理彈窗 -->
+            <div id="roster-modal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="close" onclick="closeRosterModal()">&times;</span>
+                    <h2 id="roster-modal-title">人員名單</h2>
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex;gap:8px;align-items:flex-end;">
+                            <div class="form-group" style="flex:1;margin:0;">
+                                <label>姓名</label>
+                                <input type="text" id="participant-name" placeholder="輸入姓名">
+                            </div>
+                            <div class="form-group" style="flex:1;margin:0;">
+                                <label>電話（選填）</label>
+                                <input type="text" id="participant-phone" placeholder="電話">
+                            </div>
+                            <button class="btn btn-primary" onclick="addParticipant()">加入</button>
+                        </div>
+                    </div>
+                    <div id="roster-list"></div>
                 </div>
             </div>
 

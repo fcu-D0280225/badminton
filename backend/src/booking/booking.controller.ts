@@ -11,6 +11,7 @@ import {
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { BookingService } from './booking.service';
 import { Booking } from '../entities/booking.entity';
+import { BookingParticipant } from '../entities/booking-participant.entity';
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/bookings')
@@ -91,5 +92,35 @@ export class BookingController {
   @Delete(':id')
   async deleteBooking(@Param('id') id: string): Promise<void> {
     return await this.bookingService.deleteBooking(+id);
+  }
+
+  // ── 參與者管理 ─────────────────────────────────────────────────
+  @Get(':id/participants')
+  async getParticipants(
+    @Param('id') id: string,
+  ): Promise<BookingParticipant[]> {
+    return await this.bookingService.getParticipants(+id);
+  }
+
+  @Post(':id/participants')
+  async addParticipant(
+    @Param('id') id: string,
+    @Body() data: { name: string; phone?: string },
+  ): Promise<BookingParticipant> {
+    return await this.bookingService.addParticipant(+id, data);
+  }
+
+  @Delete(':id/participants/:participantId')
+  async removeParticipant(
+    @Param('participantId') participantId: string,
+  ): Promise<void> {
+    return await this.bookingService.removeParticipant(+participantId);
+  }
+
+  @Put(':id/participants/:participantId/checkin')
+  async toggleParticipantCheckin(
+    @Param('participantId') participantId: string,
+  ): Promise<BookingParticipant> {
+    return await this.bookingService.toggleParticipantCheckin(+participantId);
   }
 }

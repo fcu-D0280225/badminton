@@ -11,6 +11,7 @@ import { Account, AccountRole } from '../entities/account.entity';
 import { Venue } from '../entities/venue.entity';
 import { Organizer } from '../entities/organizer.entity';
 import { Player } from '../entities/player.entity';
+import { Booker } from '../entities/booker.entity';
 
 export interface LoginResult {
   access_token: string;
@@ -39,6 +40,8 @@ export class AuthService {
     private organizerRepository: Repository<Organizer>,
     @InjectRepository(Player)
     private playerRepository: Repository<Player>,
+    @InjectRepository(Booker)
+    private bookerRepository: Repository<Booker>,
     private jwtService: JwtService,
   ) {}
 
@@ -103,6 +106,14 @@ export class AuthService {
       );
       entityId = organizer.id; // organizerId
       linkedEntityId = player.id; // playerId
+    } else if (dto.role === 'booker') {
+      const booker = await this.bookerRepository.save(
+        this.bookerRepository.create({
+          name: dto.name,
+          contact: dto.contact,
+        }),
+      );
+      entityId = booker.id;
     } else if (dto.role === 'organizer') {
       const organizer = await this.organizerRepository.save(
         this.organizerRepository.create({
@@ -177,6 +188,12 @@ export class AuthService {
         where: { id: entityId },
       });
       return o?.name || '';
+    }
+    if (role === 'booker') {
+      const b = await this.bookerRepository.findOne({
+        where: { id: entityId },
+      });
+      return b?.name || '';
     }
     const p = await this.playerRepository.findOne({ where: { id: entityId } });
     return p?.name || '';

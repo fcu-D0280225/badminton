@@ -4,12 +4,15 @@ import {
   Column,
   ManyToOne,
   OneToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import { Venue } from './venue.entity';
 import { Organizer } from './organizer.entity';
 import { Player } from './player.entity';
 import { Payment } from './payment.entity';
+import { Booker } from './booker.entity';
+import { BookingParticipant } from './booking-participant.entity';
 
 @Entity('bookings')
 export class Booking {
@@ -36,6 +39,12 @@ export class Booking {
   @Column({ nullable: true })
   playerId: number;
 
+  @ManyToOne(() => Booker, (booker) => booker.bookings, { nullable: true })
+  booker: Booker;
+
+  @Column({ nullable: true })
+  bookerId: number;
+
   @Column()
   date: string; // YYYY-MM-DD
 
@@ -60,6 +69,9 @@ export class Booking {
   @OneToOne(() => Payment, (payment) => payment.booking, { nullable: true })
   @JoinColumn()
   payment: Payment;
+
+  @OneToMany(() => BookingParticipant, (p) => p.booking)
+  participants: BookingParticipant[];
 
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

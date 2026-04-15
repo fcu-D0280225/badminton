@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto';
 import { Booking } from '../entities/booking.entity';
 import { Payment } from '../entities/payment.entity';
 import { Account } from '../entities/account.entity';
+import { BookingParticipant } from '../entities/booking-participant.entity';
 import { WaitlistService } from '../waitlist/waitlist.service';
 import { PushService } from '../push/push.service';
 
@@ -17,6 +18,8 @@ export class BookingService {
     private paymentRepository: Repository<Payment>,
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
+    @InjectRepository(BookingParticipant)
+    private participantRepository: Repository<BookingParticipant>,
     private waitlistService: WaitlistService,
     private pushService: PushService,
   ) {}
@@ -81,7 +84,7 @@ export class BookingService {
   // ── 取得所有預約 ─────────────────────────────────────────────────
   async findAll(): Promise<Booking[]> {
     return await this.bookingRepository.find({
-      relations: ['venue', 'organizer', 'player', 'payment'],
+      relations: ['venue', 'organizer', 'player', 'booker', 'payment', 'participants'],
     });
   }
 
@@ -89,7 +92,7 @@ export class BookingService {
   async findOne(id: number): Promise<Booking> {
     return await this.bookingRepository.findOne({
       where: { id },
-      relations: ['venue', 'organizer', 'player', 'payment'],
+      relations: ['venue', 'organizer', 'player', 'booker', 'payment', 'participants'],
     });
   }
 
@@ -199,6 +202,50 @@ export class BookingService {
       body: `${booking.date} ${booking.timeSlot} 的預約已被取消`,
       url: '/',
     });
+  }
+
+  // ── 取得 booker 的所有預約 ──────────────────────────────────────
+  async findByBooker(bookerId: number): Promise<Booking[]> {
+    return await this.bookingRepository.find({
+      where: { bookerId },
+      relations: ['venue', 'payment', 'participants'],
+      order: { date: 'DESC' },
+    });
+  }
+
+  // ── 參與者管理 ─────────────────────────────────────────────────
+  async getParticipants(bookingId: number): Promise<BookingParticipant[]> {
+    return await this.participantRepository.find({
+      where: { bookingId },
+      order: { addedAt: 'ASC' },
+    });
+  }
+
+  async addParticipant(
+    bookingId: number,
+    data: { name: string; phone?: string },
+  ): Promise<BookingParticipant> {
+    return await this.participantRepository.save(
+      this.participantRepository.create({
+        bookingId,
+        name: data.name,
+        phone: data.phone,
+      }),
+    );
+  }
+
+  async removeParticipant(participantId: number): Promise<void> {
+    await this.participantRepository.delete(participantId);
+  }
+
+  async toggleParticipantCheckin(
+    participantId: number,
+  ): Promise<BookingParticipant> {
+    const p = await this.participantRepository.findOne({
+      where: { id: participantId },
+    });
+    p.checkedIn = !p.checkedIn;
+    return await this.participantRepository.save(p);
   }
 
   // ── 私有：從 playerId/organizerId 找 accountId ─────────────────
