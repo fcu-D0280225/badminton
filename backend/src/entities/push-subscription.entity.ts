@@ -8,7 +8,7 @@ export class PushSubscriptionEntity {
   @Column()
   accountId: number;
 
-  @Column({ type: 'text', unique: true })
+  @Column({ type: 'varchar', length: 500, unique: true })
   endpoint: string;
 
   @Column({ type: 'text' })
