@@ -6,10 +6,13 @@ import {
   Body,
   Headers,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PushService } from './push.service';
 import { AuthService } from '../auth/auth.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('api/push')
 export class PushController {
   constructor(

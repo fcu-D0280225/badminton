@@ -6,9 +6,12 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { WaitlistService } from './waitlist.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('api/waitlist')
 export class WaitlistController {
   constructor(private readonly waitlistService: WaitlistService) {}

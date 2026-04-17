@@ -6,10 +6,13 @@ import {
   Delete,
   Body,
   Param,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RatingService } from './rating.service';
 import { Rating } from '../entities/rating.entity';
 
+@UseGuards(JwtAuthGuard)
 @Controller('api/ratings')
 export class RatingController {
   constructor(private readonly ratingService: RatingService) {}

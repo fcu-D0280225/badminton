@@ -7,11 +7,14 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OrganizerService } from './organizer.service';
 import { Organizer } from '../entities/organizer.entity';
 import { OrganizerNote } from '../entities/organizer-note.entity';
 
+@UseGuards(JwtAuthGuard)
 @Controller('api/organizers')
 export class OrganizerController {
   constructor(private readonly organizerService: OrganizerService) {}
