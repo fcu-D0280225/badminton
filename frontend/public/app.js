@@ -2626,11 +2626,20 @@ async function loadPlayerBookingHistoryList() {
         bookings.forEach(b => {
             const card = document.createElement('div');
             card.className = 'card';
+            const venueId = b.venue?.id;
+            const organizerId = b.organizer?.id;
+            const rateVenueBtn = venueId
+                ? `<button class="btn btn-secondary" style="margin-right:6px;" onclick="openPlayerRatingForm('venue', ${venueId}, '${escapeHtml(b.venue?.name || '')}', this)">評分館方</button>`
+                : '';
+            const rateOrganizerBtn = organizerId
+                ? `<button class="btn btn-secondary" onclick="openPlayerRatingForm('organizer', ${organizerId}, '${escapeHtml(b.organizer?.name || '')}', this)">評分團主</button>`
+                : '';
             card.innerHTML = `
                 <h4>${escapeHtml(b.date)} ${escapeHtml(b.timeSlot)}</h4>
                 <p><strong>館方：</strong>${escapeHtml(b.venue?.name || '未知')}</p>
                 <p><strong>團主：</strong>${escapeHtml(b.organizer?.name || '無')}</p>
                 <p><strong>狀態：</strong><span class="badge badge-${b.status === 'confirmed' ? 'success' : 'warning'}">${escapeHtml(b.status || '')}</span></p>
+                <div class="plv-rating-actions" style="margin-top:8px;">${rateVenueBtn}${rateOrganizerBtn}</div>
             `;
             container.appendChild(card);
         });
@@ -2638,6 +2647,77 @@ async function loadPlayerBookingHistoryList() {
         console.error('載入報名紀錄失敗:', err);
         container.innerHTML = '<p style="color:#b91c1c;">載入報名紀錄失敗</p>';
     }
+}
+
+function openPlayerRatingForm(type, targetId, targetName, btn) {
+    const card = btn.closest('.card');
+    if (!card) return;
+    // Remove any existing form for this card first
+    const existing = card.querySelector('.plv-rating-form');
+    if (existing) { existing.remove(); return; }
+    const form = document.createElement('div');
+    form.className = 'plv-rating-form';
+    form.style.cssText = 'margin-top:10px;padding:10px;border-top:1px solid #e5e7eb;';
+    const stars = [1,2,3,4,5].map(n => `<label style="margin-right:6px;cursor:pointer;"><input type="radio" name="plv-rating-score-${type}-${targetId}" value="${n}" ${n === 5 ? 'checked' : ''}/> ${n}星</label>`).join('');
+    form.innerHTML = `
+        <div style="margin-bottom:6px;"><strong>評分 ${type === 'venue' ? '館方' : '團主'}：</strong>${escapeHtml(targetName)}</div>
+        <div style="margin-bottom:6px;">${stars}</div>
+        <textarea placeholder="留言（選填）" style="width:100%;min-height:60px;margin-bottom:6px;" data-plv-comment></textarea>
+        <button class="btn btn-primary" onclick="submitPlayerRating('${type}', ${targetId}, this)">送出評分</button>
+        <button class="btn btn-secondary" onclick="this.closest('.plv-rating-form').remove()">取消</button>
+    `;
+    card.appendChild(form);
+}
+window.openPlayerRatingForm = openPlayerRatingForm;
+
+async function submitPlayerRating(type, targetId, btn) {
+    const playerId = getPlayerId();
+    if (!playerId) { alert('無法取得臨打身份'); return; }
+    const form = btn.closest('.plv-rating-form');
+    if (!form) return;
+    const checked = form.querySelector(`input[name="plv-rating-score-${type}-${targetId}"]:checked`);
+    const score = checked ? parseInt(checked.value, 10) : 5;
+    const comment = form.querySelector('[data-plv-comment]').value.trim();
+    const payload = { playerId: parseInt(playerId, 10), score, comment: comment || null };
+    if (type === 'venue') payload.venueId = targetId;
+    else payload.organizerId = targetId;
+    try {
+        const res = await authFetch(`${API_BASE}/ratings`, {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || '送出失敗');
+        }
+        alert('評分已送出');
+        form.remove();
+        await loadPlayerRatingHistory();
+        await loadPlayerVenueNotes();
+        await loadPlayerOrganizerNotes();
+    } catch (err) {
+        alert('送出評分失敗：' + err.message);
+    }
+}
+window.submitPlayerRating = submitPlayerRating;
+
+async function fetchAverageRating(type, targetId) {
+    try {
+        const res = await authFetch(`${API_BASE}/ratings/average/${type}/${targetId}`);
+        if (!res.ok) return null;
+        const raw = await res.json();
+        const avg = typeof raw === 'number' ? raw : (raw?.average ?? raw?.avg ?? null);
+        return avg;
+    } catch {
+        return null;
+    }
+}
+
+function formatAverageRating(avg) {
+    if (avg == null || Number.isNaN(Number(avg))) return '<span style="color:#94a3b8;">尚無評分</span>';
+    const num = Number(avg);
+    const stars = '★'.repeat(Math.round(num)) + '☆'.repeat(Math.max(0, 5 - Math.round(num)));
+    return `<span style="color:#f59e0b;">${stars}</span> ${num.toFixed(2)}/5`;
 }
 
 async function loadPlayerVenueNotes() {
@@ -2654,7 +2734,8 @@ async function loadPlayerVenueNotes() {
             return;
         }
         container.innerHTML = '';
-        data.forEach(item => {
+        const seenVenues = new Set();
+        for (const item of data) {
             const card = document.createElement('div');
             card.className = 'card';
             const notesHtml = item.notes && item.notes.length
@@ -2662,13 +2743,23 @@ async function loadPlayerVenueNotes() {
                      ${item.notes.map(n => `<p style="margin:4px 0;">${escapeHtml(n.content)}</p>`).join('')}
                    </div>`
                 : '<p style="color:#94a3b8;">無備註</p>';
+            const venueId = item.booking?.venue?.id;
             card.innerHTML = `
                 <h4>${escapeHtml(item.booking?.date || '')} ${escapeHtml(item.booking?.timeSlot || '')}</h4>
                 <p><strong>館方：</strong>${escapeHtml(item.booking?.venue?.name || '未知')}</p>
+                ${venueId ? `<p><strong>平均評分：</strong><span data-plv-venue-avg="${venueId}">載入中…</span></p>` : ''}
                 ${notesHtml}
             `;
             container.appendChild(card);
-        });
+            if (venueId && !seenVenues.has(venueId)) {
+                seenVenues.add(venueId);
+                fetchAverageRating('venue', venueId).then(avg => {
+                    document.querySelectorAll(`[data-plv-venue-avg="${venueId}"]`).forEach(el => {
+                        el.innerHTML = formatAverageRating(avg);
+                    });
+                });
+            }
+        }
     } catch (err) {
         console.error('載入館方備註失敗:', err);
         container.innerHTML = '<p style="color:#b91c1c;">載入館方備註失敗</p>';
@@ -2689,7 +2780,8 @@ async function loadPlayerOrganizerNotes() {
             return;
         }
         container.innerHTML = '';
-        data.forEach(item => {
+        const seenOrganizers = new Set();
+        for (const item of data) {
             const card = document.createElement('div');
             card.className = 'card';
             const notesHtml = item.notes && item.notes.length
@@ -2697,13 +2789,23 @@ async function loadPlayerOrganizerNotes() {
                      ${item.notes.map(n => `<p style="margin:4px 0;">${escapeHtml(n.content)}</p>`).join('')}
                    </div>`
                 : '<p style="color:#94a3b8;">無備註</p>';
+            const organizerId = item.booking?.organizer?.id;
             card.innerHTML = `
                 <h4>${escapeHtml(item.booking?.date || '')} ${escapeHtml(item.booking?.timeSlot || '')}</h4>
                 <p><strong>團主：</strong>${escapeHtml(item.booking?.organizer?.name || '未知')}</p>
+                ${organizerId ? `<p><strong>平均評分：</strong><span data-plv-organizer-avg="${organizerId}">載入中…</span></p>` : ''}
                 ${notesHtml}
             `;
             container.appendChild(card);
-        });
+            if (organizerId && !seenOrganizers.has(organizerId)) {
+                seenOrganizers.add(organizerId);
+                fetchAverageRating('organizer', organizerId).then(avg => {
+                    document.querySelectorAll(`[data-plv-organizer-avg="${organizerId}"]`).forEach(el => {
+                        el.innerHTML = formatAverageRating(avg);
+                    });
+                });
+            }
+        }
     } catch (err) {
         console.error('載入團主備註失敗:', err);
         container.innerHTML = '<p style="color:#b91c1c;">載入團主備註失敗</p>';
