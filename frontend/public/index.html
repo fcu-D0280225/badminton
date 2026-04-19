@@ -37,6 +37,7 @@
                 <button class="tab-btn" data-view="venue" id="tab-venue">館方</button>
                 <button class="tab-btn" data-view="member" id="tab-member">成員</button>
                 <button class="tab-btn" data-view="booker" id="tab-booker">團主</button>
+                <button class="tab-btn" data-view="player" id="tab-player">臨打</button>
             </nav>
         </header>
 
@@ -162,6 +163,60 @@
                         </div>
                     </div>
                     <div id="roster-list"></div>
+                </div>
+            </div>
+
+            <!-- 臨打視圖 -->
+            <div id="player-view" class="view">
+                <div id="player-content">
+                    <!-- 信用分數 -->
+                    <div class="section">
+                        <h3>信用分數</h3>
+                        <div id="plv-credit-score" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:14px;"></div>
+                    </div>
+
+                    <!-- 可用場次（可報名的場地） -->
+                    <div class="section">
+                        <h3>可報名場次</h3>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+                            <div class="form-group" style="flex:1;min-width:140px;margin:0;">
+                                <label>場地</label>
+                                <select id="plv-venue-select" style="width:100%;">
+                                    <option value="">選擇場地</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex:1;min-width:140px;margin:0;">
+                                <label>日期</label>
+                                <input type="date" id="plv-date" style="width:100%;">
+                            </div>
+                            <button class="btn btn-secondary" onclick="searchPlayerOpenSlots()">查詢場次</button>
+                        </div>
+                        <div id="plv-open-slots" style="margin-top:12px;"></div>
+                    </div>
+
+                    <!-- 我的報名紀錄 -->
+                    <div class="section">
+                        <h3>我的報名紀錄</h3>
+                        <div id="plv-booking-history"></div>
+                    </div>
+
+                    <!-- 館方預約與備註 -->
+                    <div class="section">
+                        <h3>館方相關預約與備註</h3>
+                        <div id="plv-venue-bookings"></div>
+                    </div>
+
+                    <!-- 團主預約與備註 -->
+                    <div class="section">
+                        <h3>團主相關預約與備註</h3>
+                        <div id="plv-organizer-bookings"></div>
+                    </div>
+
+                    <!-- 我的評分 -->
+                    <div class="section">
+                        <h3>我的評分紀錄</h3>
+                        <div id="plv-ratings"></div>
+                    </div>
                 </div>
             </div>
 

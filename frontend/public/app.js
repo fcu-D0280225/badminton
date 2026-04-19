@@ -147,14 +147,17 @@ function initTabs() {
     const tabVenue = document.getElementById('tab-venue');
     const tabMember = document.getElementById('tab-member');
     const tabBooker = document.getElementById('tab-booker');
+    const tabPlayer = document.getElementById('tab-player');
     const venueView = document.getElementById('venue-view');
     const memberView = document.getElementById('member-view');
     const bookerView = document.getElementById('booker-view');
+    const playerView = document.getElementById('player-view');
 
     // 先全部隱藏
     tabVenue.classList.add('hidden');
     tabMember.classList.add('hidden');
     tabBooker.classList.add('hidden');
+    if (tabPlayer) tabPlayer.classList.add('hidden');
 
     if (role === 'venue') {
         tabVenue.classList.remove('hidden');
@@ -162,6 +165,9 @@ function initTabs() {
     } else if (role === 'booker') {
         tabBooker.classList.remove('hidden');
         bookerView.classList.add('active');
+    } else if (role === 'player') {
+        if (tabPlayer) tabPlayer.classList.remove('hidden');
+        if (playerView) playerView.classList.add('active');
     } else {
         tabMember.classList.remove('hidden');
         memberView.classList.add('active');
@@ -184,6 +190,7 @@ function initTabs() {
             if (viewName === 'venue') loadVenues().then(() => loadVenueData());
             if (viewName === 'member') loadMemberData();
             if (viewName === 'booker') loadBookerData();
+            if (viewName === 'player') loadPlayerViewData();
         });
     });
 }
@@ -197,6 +204,8 @@ async function loadInitialData() {
         await loadVenueData();
     } else if (auth.role === 'booker') {
         await loadBookerData();
+    } else if (auth.role === 'player') {
+        await loadPlayerViewData();
     } else {
         await loadMemberData();
     }
@@ -2478,4 +2487,257 @@ function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+// ========== 臨打視圖（player-view）==========
+
+async function loadPlayerViewData() {
+    await loadPlayerVenueOptions();
+    await loadPlayerCreditScoreCard();
+    await loadPlayerBookingHistoryList();
+    await loadPlayerVenueNotes();
+    await loadPlayerOrganizerNotes();
+    await loadPlayerRatingHistory();
+}
+window.loadPlayerViewData = loadPlayerViewData;
+
+async function loadPlayerVenueOptions() {
+    const select = document.getElementById('plv-venue-select');
+    if (!select) return;
+    try {
+        const res = await authFetch(`${API_BASE}/venues`);
+        if (!res.ok) throw new Error('載入場地失敗');
+        const venues = await res.json();
+        select.innerHTML = '<option value="">選擇場地</option>';
+        venues.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.id;
+            opt.textContent = v.name;
+            select.appendChild(opt);
+        });
+    } catch (err) {
+        console.error('載入場地選單失敗:', err);
+    }
+}
+
+async function searchPlayerOpenSlots() {
+    const venueId = document.getElementById('plv-venue-select').value;
+    const date = document.getElementById('plv-date').value;
+    const container = document.getElementById('plv-open-slots');
+    if (!venueId || !date) {
+        alert('請選擇場地與日期');
+        return;
+    }
+    container.innerHTML = '<p>查詢中…</p>';
+    try {
+        const res = await authFetch(`${API_BASE}/venues/${venueId}/bookings?date=${encodeURIComponent(date)}`);
+        if (!res.ok) throw new Error('查詢失敗');
+        const bookings = await res.json();
+        if (!bookings.length) {
+            container.innerHTML = '<p>當日沒有預約場次。</p>';
+            return;
+        }
+        container.innerHTML = '';
+        bookings.forEach(b => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            const organizerName = b.organizer?.name || '未知';
+            const current = b.participants?.length || 0;
+            card.innerHTML = `
+                <h4>${escapeHtml(b.date)} ${escapeHtml(b.timeSlot)}</h4>
+                <p><strong>團主：</strong>${escapeHtml(organizerName)}</p>
+                <p><strong>目前人數：</strong>${current}</p>
+                <button class="btn btn-primary" onclick="signUpAsPlayer(${b.id})">我要報名</button>
+            `;
+            container.appendChild(card);
+        });
+    } catch (err) {
+        console.error('查詢場次失敗:', err);
+        container.innerHTML = '<p style="color:#b91c1c;">查詢失敗</p>';
+    }
+}
+window.searchPlayerOpenSlots = searchPlayerOpenSlots;
+
+async function signUpAsPlayer(bookingId) {
+    const auth = getAuth();
+    const name = auth.name || '臨打';
+    try {
+        const res = await authFetch(`${API_BASE}/bookings/${bookingId}/participants`, {
+            method: 'POST',
+            body: JSON.stringify({ name, type: 'player' }),
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || '報名失敗');
+        }
+        alert('報名成功');
+        await loadPlayerBookingHistoryList();
+    } catch (err) {
+        alert('報名失敗：' + err.message);
+    }
+}
+window.signUpAsPlayer = signUpAsPlayer;
+
+async function loadPlayerCreditScoreCard() {
+    const container = document.getElementById('plv-credit-score');
+    if (!container) return;
+    const playerId = getPlayerId();
+    if (!playerId) {
+        container.innerHTML = '<p>無法取得臨打身份</p>';
+        return;
+    }
+    try {
+        const res = await authFetch(`${API_BASE}/players/${playerId}/credit-score`);
+        if (!res.ok) throw new Error('載入失敗');
+        const data = await res.json();
+        const score = data?.score ?? data?.creditScore ?? 0;
+        const total = data?.totalBookings ?? data?.total ?? 0;
+        const attended = data?.attendedBookings ?? data?.attended ?? 0;
+        container.innerHTML = `
+            <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+                <div><strong>分數：</strong><span style="font-size:20px;color:#2563eb;">${score}</span></div>
+                <div><strong>總預約：</strong>${total}</div>
+                <div><strong>已報到：</strong>${attended}</div>
+            </div>
+        `;
+    } catch (err) {
+        console.error('載入信用分數失敗:', err);
+        container.innerHTML = '<p style="color:#b91c1c;">載入信用分數失敗</p>';
+    }
+}
+
+async function loadPlayerBookingHistoryList() {
+    const container = document.getElementById('plv-booking-history');
+    if (!container) return;
+    const playerId = getPlayerId();
+    if (!playerId) {
+        container.innerHTML = '<p>無法取得臨打身份</p>';
+        return;
+    }
+    try {
+        const res = await authFetch(`${API_BASE}/players/${playerId}/booking-history`);
+        if (!res.ok) throw new Error('載入失敗');
+        const bookings = await res.json();
+        if (!bookings.length) {
+            container.innerHTML = '<p>沒有報名紀錄</p>';
+            return;
+        }
+        container.innerHTML = '';
+        bookings.forEach(b => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <h4>${escapeHtml(b.date)} ${escapeHtml(b.timeSlot)}</h4>
+                <p><strong>館方：</strong>${escapeHtml(b.venue?.name || '未知')}</p>
+                <p><strong>團主：</strong>${escapeHtml(b.organizer?.name || '無')}</p>
+                <p><strong>狀態：</strong><span class="badge badge-${b.status === 'confirmed' ? 'success' : 'warning'}">${escapeHtml(b.status || '')}</span></p>
+            `;
+            container.appendChild(card);
+        });
+    } catch (err) {
+        console.error('載入報名紀錄失敗:', err);
+        container.innerHTML = '<p style="color:#b91c1c;">載入報名紀錄失敗</p>';
+    }
+}
+
+async function loadPlayerVenueNotes() {
+    const container = document.getElementById('plv-venue-bookings');
+    if (!container) return;
+    const playerId = getPlayerId();
+    if (!playerId) return;
+    try {
+        const res = await authFetch(`${API_BASE}/players/${playerId}/venue-bookings-notes`);
+        if (!res.ok) throw new Error('載入失敗');
+        const data = await res.json();
+        if (!data.length) {
+            container.innerHTML = '<p>沒有館方備註</p>';
+            return;
+        }
+        container.innerHTML = '';
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            const notesHtml = item.notes && item.notes.length
+                ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb;">
+                     ${item.notes.map(n => `<p style="margin:4px 0;">${escapeHtml(n.content)}</p>`).join('')}
+                   </div>`
+                : '<p style="color:#94a3b8;">無備註</p>';
+            card.innerHTML = `
+                <h4>${escapeHtml(item.booking?.date || '')} ${escapeHtml(item.booking?.timeSlot || '')}</h4>
+                <p><strong>館方：</strong>${escapeHtml(item.booking?.venue?.name || '未知')}</p>
+                ${notesHtml}
+            `;
+            container.appendChild(card);
+        });
+    } catch (err) {
+        console.error('載入館方備註失敗:', err);
+        container.innerHTML = '<p style="color:#b91c1c;">載入館方備註失敗</p>';
+    }
+}
+
+async function loadPlayerOrganizerNotes() {
+    const container = document.getElementById('plv-organizer-bookings');
+    if (!container) return;
+    const playerId = getPlayerId();
+    if (!playerId) return;
+    try {
+        const res = await authFetch(`${API_BASE}/players/${playerId}/organizer-bookings-notes`);
+        if (!res.ok) throw new Error('載入失敗');
+        const data = await res.json();
+        if (!data.length) {
+            container.innerHTML = '<p>沒有團主備註</p>';
+            return;
+        }
+        container.innerHTML = '';
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            const notesHtml = item.notes && item.notes.length
+                ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb;">
+                     ${item.notes.map(n => `<p style="margin:4px 0;">${escapeHtml(n.content)}</p>`).join('')}
+                   </div>`
+                : '<p style="color:#94a3b8;">無備註</p>';
+            card.innerHTML = `
+                <h4>${escapeHtml(item.booking?.date || '')} ${escapeHtml(item.booking?.timeSlot || '')}</h4>
+                <p><strong>團主：</strong>${escapeHtml(item.booking?.organizer?.name || '未知')}</p>
+                ${notesHtml}
+            `;
+            container.appendChild(card);
+        });
+    } catch (err) {
+        console.error('載入團主備註失敗:', err);
+        container.innerHTML = '<p style="color:#b91c1c;">載入團主備註失敗</p>';
+    }
+}
+
+async function loadPlayerRatingHistory() {
+    const container = document.getElementById('plv-ratings');
+    if (!container) return;
+    const playerId = getPlayerId();
+    if (!playerId) return;
+    try {
+        const res = await authFetch(`${API_BASE}/ratings/player/${playerId}`);
+        if (!res.ok) throw new Error('載入失敗');
+        const ratings = await res.json();
+        if (!ratings.length) {
+            container.innerHTML = '<p>還沒有評分紀錄</p>';
+            return;
+        }
+        container.innerHTML = '';
+        ratings.forEach(r => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            const target = r.venue ? `館方：${r.venue.name}` : `團主：${r.organizer?.name || '未知'}`;
+            const stars = '★'.repeat(r.score || 0) + '☆'.repeat(Math.max(0, 5 - (r.score || 0)));
+            card.innerHTML = `
+                <h4>${escapeHtml(target)}</h4>
+                <p><strong>評分：</strong><span style="color:#f59e0b;font-size:18px;">${stars}</span> (${r.score || 0}/5)</p>
+                ${r.comment ? `<p><strong>留言：</strong>${escapeHtml(r.comment)}</p>` : ''}
+            `;
+            container.appendChild(card);
+        });
+    } catch (err) {
+        console.error('載入評分失敗:', err);
+        container.innerHTML = '<p style="color:#b91c1c;">載入評分失敗</p>';
+    }
 }
