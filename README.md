@@ -20,9 +20,9 @@
 
 ## 技術架構
 
-- 後端：NestJS + TypeORM + SQLite
+- 後端：NestJS + TypeORM + mysql2
 - 前端：Node.js + Express + PWA
-- 資料庫：SQLite
+- 資料庫：MySQL 8（連線資訊由 backend/.env 提供，參考 backend/.env.example）
 
 ## 安裝和運行
 
