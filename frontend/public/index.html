@@ -91,6 +91,27 @@
 
                 <div id="venue-content" class="venue-content" style="display: none;">
                     <div class="section">
+                        <h3>搜尋預約</h3>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+                            <div class="form-group" style="flex:1;min-width:140px;margin:0;">
+                                <label>日期</label>
+                                <input type="date" id="venue-filter-date" style="width:100%;">
+                            </div>
+                            <div class="form-group" style="flex:1;min-width:140px;margin:0;">
+                                <label>預約者姓名</label>
+                                <input type="text" id="venue-filter-name" placeholder="姓名" style="width:100%;">
+                            </div>
+                            <div class="form-group" style="flex:1;min-width:140px;margin:0;">
+                                <label>時段</label>
+                                <input type="text" id="venue-filter-timeslot" placeholder="例：18:00-20:00" style="width:100%;">
+                            </div>
+                            <button class="btn btn-secondary" onclick="filterVenueBookings()">搜尋</button>
+                            <button class="btn btn-secondary" onclick="resetVenueBookingsFilter()">重置</button>
+                        </div>
+                        <div id="venue-bookings-list" style="margin-top:12px;"></div>
+                    </div>
+
+                    <div class="section">
                         <h3>日曆檢視</h3>
                         <div class="calendar-controls">
                             <button class="btn btn-secondary" onclick="previousMonth()">上月</button>

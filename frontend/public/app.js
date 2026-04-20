@@ -294,6 +294,13 @@ async function loadVenueData() {
     await loadVenueNotes();
 }
 
+function resetVenueBookingsFilter() {
+    document.getElementById('venue-filter-date').value = '';
+    document.getElementById('venue-filter-name').value = '';
+    document.getElementById('venue-filter-timeslot').value = '';
+    document.getElementById('venue-bookings-list').innerHTML = '';
+}
+
 async function filterVenueBookings() {
     const venueId = getVenueId();
     if (!venueId) {
