@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
-            .then(() => initPushNotifications())
+            .then(() => refreshNotifButton())
             .catch(console.error);
     }
     initQRCode();
@@ -2145,28 +2145,63 @@ async function loadPlayerCreditScore() {
 // Web Push 訂閱
 // ═══════════════════════════════════════════════════════════════
 
-async function initPushNotifications() {
-    if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
+function pushSupported() {
+    return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+}
 
+async function refreshNotifButton() {
+    const btn = document.getElementById('btn-notif');
+    if (!btn) return;
+    if (!pushSupported()) {
+        btn.style.display = '';
+        btn.textContent = '🚫 不支援';
+        btn.disabled = true;
+        return;
+    }
+    btn.disabled = false;
+    btn.style.display = '';
     try {
         const reg = await navigator.serviceWorker.ready;
         const existing = await reg.pushManager.getSubscription();
-        if (existing) return; // 已訂閱
+        btn.textContent = existing ? '🔕 關閉通知' : '🔔 開啟通知';
+        btn.dataset.subscribed = existing ? '1' : '0';
+    } catch {
+        btn.textContent = '🔔 開啟通知';
+        btn.dataset.subscribed = '0';
+    }
+}
 
+async function toggleNotifications() {
+    const btn = document.getElementById('btn-notif');
+    if (!pushSupported()) return;
+    if (btn?.dataset.subscribed === '1') {
+        await disableNotifications();
+    } else {
+        await enableNotifications();
+    }
+    await refreshNotifButton();
+}
+
+async function enableNotifications() {
+    try {
         const permission = await Notification.requestPermission();
-        if (permission !== 'granted') return;
+        if (permission !== 'granted') {
+            alert('需要授權通知權限才能開啟。請到瀏覽器設定中允許此網站發送通知。');
+            return;
+        }
 
         const keyRes = await fetch(`${API_BASE}/push/vapid-public-key`);
-        if (!keyRes.ok) return;
+        if (!keyRes.ok) throw new Error('無法取得 VAPID key');
         const { publicKey } = await keyRes.json();
 
+        const reg = await navigator.serviceWorker.ready;
         const subscription = await reg.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(publicKey),
         });
 
         const { token } = getAuth();
-        await fetch(`${API_BASE}/push/subscribe`, {
+        const res = await fetch(`${API_BASE}/push/subscribe`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -2174,7 +2209,32 @@ async function initPushNotifications() {
             },
             body: JSON.stringify({ subscription }),
         });
-    } catch { /* push 不影響主功能 */ }
+        if (!res.ok) throw new Error('訂閱失敗');
+        alert('已開啟通知，當有新場次或場次異動時會收到推播。');
+    } catch (e) {
+        alert('開啟通知失敗：' + (e?.message || e));
+    }
+}
+
+async function disableNotifications() {
+    try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (!sub) return;
+        const endpoint = sub.endpoint;
+        await sub.unsubscribe();
+        const { token } = getAuth();
+        await fetch(`${API_BASE}/push/unsubscribe`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ endpoint }),
+        });
+    } catch (e) {
+        alert('關閉通知失敗：' + (e?.message || e));
+    }
 }
 
 function urlBase64ToUint8Array(base64String) {
