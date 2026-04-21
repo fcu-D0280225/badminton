@@ -248,6 +248,26 @@ export class BookingService {
     return await this.participantRepository.save(p);
   }
 
+  async updateParticipantPayment(
+    participantId: number,
+    data: { paymentStatus?: string; amount?: number },
+  ): Promise<BookingParticipant> {
+    const p = await this.participantRepository.findOne({
+      where: { id: participantId },
+    });
+    if (data.paymentStatus !== undefined) {
+      const allowed = ['unpaid', 'paid', 'refunded'];
+      if (!allowed.includes(data.paymentStatus)) {
+        throw new Error(`無效的付款狀態：${data.paymentStatus}`);
+      }
+      p.paymentStatus = data.paymentStatus;
+    }
+    if (data.amount !== undefined) {
+      p.amount = data.amount;
+    }
+    return await this.participantRepository.save(p);
+  }
+
   // ── 私有：從 playerId/organizerId 找 accountId ─────────────────
   private async resolveAccountId(
     playerId?: number,

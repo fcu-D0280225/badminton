@@ -123,4 +123,15 @@ export class BookingController {
   ): Promise<BookingParticipant> {
     return await this.bookingService.toggleParticipantCheckin(+participantId);
   }
+
+  @Put(':id/participants/:participantId/payment')
+  async updateParticipantPayment(
+    @Param('participantId') participantId: string,
+    @Body() data: { paymentStatus?: string; amount?: number },
+  ): Promise<BookingParticipant> {
+    return await this.bookingService.updateParticipantPayment(
+      +participantId,
+      data,
+    );
+  }
 }

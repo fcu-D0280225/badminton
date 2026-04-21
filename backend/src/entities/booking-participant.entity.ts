@@ -30,6 +30,12 @@ export class BookingParticipant {
   @Column({ default: false })
   checkedIn: boolean;
 
+  @Column({ default: 'unpaid' })
+  paymentStatus: string; // unpaid | paid | refunded
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  amount: number;
+
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   addedAt: Date;
 }

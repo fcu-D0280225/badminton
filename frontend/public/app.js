@@ -2464,6 +2464,13 @@ function closeRosterModal() {
     loadBookerBookings();
 }
 
+const PAYMENT_BADGE = {
+    paid:     { label: '✓ 已付',  bg: '#d1fae5', fg: '#065f46' },
+    unpaid:   { label: '待付',    bg: '#fef3c7', fg: '#92400e' },
+    refunded: { label: '↩ 退款',  bg: '#e0e7ff', fg: '#3730a3' },
+};
+const PAYMENT_NEXT = { unpaid: 'paid', paid: 'refunded', refunded: 'unpaid' };
+
 async function loadRosterList() {
     const container = document.getElementById('roster-list');
     if (!currentRosterBookingId) return;
@@ -2478,14 +2485,38 @@ async function loadRosterList() {
             return;
         }
 
-        container.innerHTML = `
-            <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">共 ${participants.length} 人</div>
-            ${participants.map(p => `
-                <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f9fafb;border-radius:8px;margin-bottom:6px;">
-                    <div style="flex:1;">
+        const totals = participants.reduce((acc, p) => {
+            const amt = Number(p.amount) || 0;
+            const status = p.paymentStatus || 'unpaid';
+            acc[status] = (acc[status] || 0) + amt;
+            return acc;
+        }, { paid: 0, unpaid: 0, refunded: 0 });
+
+        const summaryHtml = `
+            <div style="display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px;background:#eff6ff;border-radius:8px;margin-bottom:10px;font-size:12px;">
+                <span><strong>共 ${participants.length} 人</strong></span>
+                <span style="color:#065f46;">已付 $${totals.paid.toFixed(0)}</span>
+                <span style="color:#92400e;">待付 $${totals.unpaid.toFixed(0)}</span>
+                <span style="color:#3730a3;">退款 $${totals.refunded.toFixed(0)}</span>
+            </div>`;
+
+        const rowsHtml = participants.map(p => {
+            const status = p.paymentStatus || 'unpaid';
+            const badge = PAYMENT_BADGE[status] || PAYMENT_BADGE.unpaid;
+            const amount = Number(p.amount) || 0;
+            return `
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 10px;background:#f9fafb;border-radius:8px;margin-bottom:6px;">
+                    <div style="flex:1;min-width:140px;">
                         <span style="font-size:14px;font-weight:500;">${escapeHtml(p.name)}</span>
                         ${p.phone ? `<span style="font-size:12px;color:#6b7280;margin-left:6px;">${escapeHtml(p.phone)}</span>` : ''}
                     </div>
+                    <input type="number" min="0" step="1" value="${amount}" data-pid="${p.id}"
+                        onchange="updateParticipantAmount(${p.id}, this.value)"
+                        style="width:70px;padding:4px 6px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;" title="費用">
+                    <button style="border:none;background:${badge.bg};color:${badge.fg};padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;"
+                        onclick="cycleParticipantPayment(${p.id}, '${status}')" title="點擊切換付款狀態">
+                        ${badge.label}
+                    </button>
                     <button style="border:none;background:${p.checkedIn ? '#d1fae5' : '#f3f4f6'};color:${p.checkedIn ? '#065f46' : '#6b7280'};padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;"
                         onclick="toggleCheckin(${currentRosterBookingId}, ${p.id})">
                         ${p.checkedIn ? '✓ 已報到' : '未報到'}
@@ -2494,11 +2525,45 @@ async function loadRosterList() {
                         onclick="removeParticipant(${currentRosterBookingId}, ${p.id}, '${escapeHtml(p.name)}')">
                         移除
                     </button>
-                </div>
-            `).join('')}
-        `;
+                </div>`;
+        }).join('');
+
+        container.innerHTML = summaryHtml + rowsHtml;
     } catch (error) {
         container.innerHTML = '<p style="color:red;font-size:13px;">載入名單失敗</p>';
+    }
+}
+
+async function cycleParticipantPayment(participantId, currentStatus) {
+    const next = PAYMENT_NEXT[currentStatus] || 'paid';
+    try {
+        const res = await authFetch(`${API_BASE}/bookings/${currentRosterBookingId}/participants/${participantId}/payment`, {
+            method: 'PUT',
+            body: JSON.stringify({ paymentStatus: next }),
+        });
+        if (!res.ok) throw new Error('更新失敗');
+        await loadRosterList();
+    } catch (error) {
+        alert('付款狀態更新失敗：' + error.message);
+    }
+}
+
+async function updateParticipantAmount(participantId, value) {
+    const amount = Number(value);
+    if (Number.isNaN(amount) || amount < 0) {
+        alert('費用需為大於等於 0 的數字');
+        await loadRosterList();
+        return;
+    }
+    try {
+        const res = await authFetch(`${API_BASE}/bookings/${currentRosterBookingId}/participants/${participantId}/payment`, {
+            method: 'PUT',
+            body: JSON.stringify({ amount }),
+        });
+        if (!res.ok) throw new Error('更新失敗');
+        await loadRosterList();
+    } catch (error) {
+        alert('費用更新失敗：' + error.message);
     }
 }
 
