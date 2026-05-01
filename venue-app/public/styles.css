@@ -1264,6 +1264,57 @@ body.admin-shell-active #tab-analytics {
     font-weight: 600;
 }
 
+/* FEAT-009: KPI 卡片（場館總覽首頁） */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 16px;
+}
+.kpi-card {
+    background: var(--admin-surface);
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: var(--admin-shadow);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+.kpi-icon {
+    font-size: 28px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--admin-active-bg);
+    color: var(--admin-active-text);
+    flex-shrink: 0;
+}
+.kpi-body { flex: 1; min-width: 0; }
+.kpi-label {
+    font-size: 12px;
+    color: var(--admin-sidebar-muted);
+    margin-bottom: 4px;
+}
+.kpi-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--admin-topbar-text);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.kpi-sub {
+    font-size: 11px;
+    color: var(--admin-sidebar-muted);
+    margin-top: 4px;
+}
+
 /* RWD：mobile 把 sidebar 收掉、開啟底部 tab bar、main 補底部 padding */
 @media (max-width: 768px) {
     .admin-sidebar { display: none; }
@@ -1273,4 +1324,16 @@ body.admin-shell-active #tab-analytics {
     .admin-topbar-title { font-size: 15px; }
     .admin-content { padding: 12px 12px 20px; }
     .admin-panel { padding: 14px; border-radius: 8px; }
+
+    /* KPI 手機版：2 欄 grid，第三張卡橫跨 2 欄 */
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .kpi-grid .kpi-card:nth-child(3) {
+        grid-column: span 2;
+    }
+    .kpi-card { padding: 12px 14px; gap: 10px; }
+    .kpi-icon { width: 40px; height: 40px; font-size: 22px; border-radius: 8px; }
+    .kpi-value { font-size: 18px; }
 }

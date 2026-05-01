@@ -107,8 +107,36 @@
                 <!-- FEAT-008 admin shell：依 sidebar/bottom-tab 切換的 3 個 group -->
                 <!-- ============================================================ -->
 
-                <!-- 場館總覽 group：sub-tab 切換 收費管理 / 分析報表 -->
+                <!-- 場館總覽 group：KPI 卡片 + sub-tab 切換 收費管理 / 分析報表 -->
                 <div class="admin-group" id="admin-group-overview">
+                    <!-- FEAT-009: KPI 卡片（今日預約數 / 本月收入 / 待確認匯款筆數） -->
+                    <div class="kpi-grid" id="overview-kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon">📅</div>
+                            <div class="kpi-body">
+                                <div class="kpi-label">今日預約數</div>
+                                <div class="kpi-value" id="kpi-today-bookings">—</div>
+                                <div class="kpi-sub" id="kpi-today-bookings-sub">　</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon">💰</div>
+                            <div class="kpi-body">
+                                <div class="kpi-label">本月收入</div>
+                                <div class="kpi-value" id="kpi-month-revenue">—</div>
+                                <div class="kpi-sub" id="kpi-month-revenue-sub">　</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon">⏳</div>
+                            <div class="kpi-body">
+                                <div class="kpi-label">待確認匯款</div>
+                                <div class="kpi-value" id="kpi-pending-confirm">—</div>
+                                <div class="kpi-sub" id="kpi-pending-confirm-sub">　</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="admin-panel">
                         <div class="admin-subtabs" role="tablist">
                             <button class="admin-subtab-btn active" id="admin-subtab-billing" onclick="showTab('tab-billing')">收費管理</button>

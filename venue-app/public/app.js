@@ -126,6 +126,8 @@ function showAdminGroup(group) {
         const subActive = document.querySelector('.admin-subtab-btn.active');
         const subTabId = subActive && subActive.id === 'admin-subtab-analytics' ? 'tab-analytics' : 'tab-billing';
         showTab(subTabId);
+        // FEAT-009: 載入 KPI（今日預約數 / 本月收入 / 待確認匯款）
+        loadOverviewKpis();
     } else {
         const billing = document.getElementById('tab-billing');
         const analytics = document.getElementById('tab-analytics');
@@ -377,6 +379,8 @@ async function loadVenueData() {
     // await filterVenueBookings();
     await loadVenueCalendar();
     await loadVenueNotes();
+    // FEAT-009: 場館切換時更新 KPI
+    if (typeof loadOverviewKpis === 'function') loadOverviewKpis();
 }
 
 async function filterVenueBookings() {
@@ -1279,3 +1283,66 @@ window.confirmDeleteBillingRecord = confirmDeleteBillingRecord;
 window.exportBillingCsv = exportBillingCsv;
 window.loadAnalytics = loadAnalytics;
 window.copyUrl = copyUrl;
+window.showAdminGroup = showAdminGroup;
+window.loadOverviewKpis = loadOverviewKpis;
+
+// ========== FEAT-009: 場館總覽 KPI 卡片 ==========
+
+async function loadOverviewKpis() {
+    const venueId = getBillingVenueId();
+    const today    = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+    const monthStr = todayStr.slice(0, 7);
+
+    const todayEl     = document.getElementById('kpi-today-bookings');
+    const todaySubEl  = document.getElementById('kpi-today-bookings-sub');
+    const revEl       = document.getElementById('kpi-month-revenue');
+    const revSubEl    = document.getElementById('kpi-month-revenue-sub');
+    const pendEl      = document.getElementById('kpi-pending-confirm');
+    const pendSubEl   = document.getElementById('kpi-pending-confirm-sub');
+
+    if (!venueId) {
+        if (todayEl)   todayEl.textContent = '—';
+        if (todaySubEl)todaySubEl.textContent = '請先選擇館方';
+        if (revEl)     revEl.textContent = '—';
+        if (revSubEl)  revSubEl.textContent = '';
+        if (pendEl)    pendEl.textContent = '—';
+        if (pendSubEl) pendSubEl.textContent = '';
+        return;
+    }
+
+    const fmt = n => `NT$${Number(n).toLocaleString()}`;
+
+    // 1) 今日預約數：撈該館預約清單後過濾 date == today
+    try {
+        const res = await authFetch(`${API_BASE}/venues/${venueId}/bookings?date=${todayStr}`);
+        const bookings = await res.json();
+        const list = Array.isArray(bookings) ? bookings : [];
+        if (todayEl)    todayEl.textContent = String(list.length);
+        if (todaySubEl) todaySubEl.textContent = `${todayStr}`;
+    } catch {
+        if (todayEl)    todayEl.textContent = '—';
+        if (todaySubEl) todaySubEl.textContent = '載入失敗';
+    }
+
+    // 2) 本月收入 + 3) 待確認匯款：用同一份 billing/records 結果
+    try {
+        const res = await authFetch(`${API_BASE}/billing/records?month=${monthStr}`);
+        const records = await res.json();
+        const arr = Array.isArray(records) ? records : [];
+        const paid     = arr.filter(r => r.paymentStatus === 'cash' || r.paymentStatus === 'paid');
+        const transfer = arr.filter(r => r.paymentStatus === 'transfer');
+        const revenue  = paid.reduce((s, r) => s + Number(r.amount || 0), 0);
+        if (revEl)     revEl.textContent = fmt(revenue);
+        if (revSubEl)  revSubEl.textContent = `${monthStr}・已收款 ${paid.length} 筆`;
+        if (pendEl)    pendEl.textContent = String(transfer.length);
+        if (pendSubEl) pendSubEl.textContent = transfer.length > 0
+            ? `合計 ${fmt(transfer.reduce((s, r) => s + Number(r.amount || 0), 0))}`
+            : '無';
+    } catch {
+        if (revEl)     revEl.textContent = '—';
+        if (revSubEl)  revSubEl.textContent = '載入失敗';
+        if (pendEl)    pendEl.textContent = '—';
+        if (pendSubEl) pendSubEl.textContent = '載入失敗';
+    }
+}
