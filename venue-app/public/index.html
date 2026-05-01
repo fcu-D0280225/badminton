@@ -34,6 +34,7 @@
     </div>
 
     <div id="app">
+        <!-- 舊 header 改由 .admin-topbar 取代；保留作為非 admin-shell-active 模式時 fallback -->
         <header class="header">
             <h1>館方管理系統</h1>
             <div class="install-section">
@@ -42,6 +43,22 @@
                 <button class="btn btn-install" onclick="showInstallQR()">手機安裝</button>
             </div>
         </header>
+
+        <!-- FEAT-008: 響應式 admin shell（左側 sidebar 桌機版 / 底部 tab 行動版） -->
+        <aside class="admin-sidebar" aria-label="主導覽">
+            <div class="admin-sidebar-header">🏸 館方管理</div>
+            <nav class="admin-sidebar-nav">
+                <button class="admin-nav-item active" data-admin-group="overview" onclick="showAdminGroup('overview')">
+                    <span class="admin-nav-icon">📊</span><span class="admin-nav-label">場館總覽</span>
+                </button>
+                <button class="admin-nav-item" data-admin-group="bookings" onclick="showAdminGroup('bookings')">
+                    <span class="admin-nav-icon">📅</span><span class="admin-nav-label">預約管理</span>
+                </button>
+                <button class="admin-nav-item" data-admin-group="settings" onclick="showAdminGroup('settings')">
+                    <span class="admin-nav-icon">⚙️</span><span class="admin-nav-label">場館設定</span>
+                </button>
+            </nav>
+        </aside>
 
         <!-- QR Code 安裝彈窗 -->
         <div id="qr-modal" class="modal" style="display: none;">
@@ -72,16 +89,53 @@
             </div>
         </div>
 
-        <main class="main-content">
+        <main class="admin-main">
+            <header class="admin-topbar">
+                <div class="admin-topbar-title" id="admin-topbar-title">場館總覽</div>
+                <div class="admin-topbar-actions">
+                    <span id="header-username" class="admin-topbar-username"></span>
+                    <button id="logout-btn" class="btn btn-secondary" style="display:none;" onclick="doLogout()">登出</button>
+                    <button class="btn btn-install" onclick="showInstallQR()">手機安裝</button>
+                </div>
+            </header>
+
+            <div class="admin-content">
             <!-- 館方視圖 -->
             <div id="venue-view" class="view active">
 
-                <!-- 分頁導覽 -->
-                <div class="tab-nav">
-                    <button class="tab-btn active" onclick="showTab('tab-bookings')">預約管理</button>
-                    <button class="tab-btn" onclick="showTab('tab-billing')">收費管理</button>
-                    <button class="tab-btn" onclick="showTab('tab-analytics')">分析報表</button>
+                <!-- ============================================================ -->
+                <!-- FEAT-008 admin shell：依 sidebar/bottom-tab 切換的 3 個 group -->
+                <!-- ============================================================ -->
+
+                <!-- 場館總覽 group：sub-tab 切換 收費管理 / 分析報表 -->
+                <div class="admin-group" id="admin-group-overview">
+                    <div class="admin-panel">
+                        <div class="admin-subtabs" role="tablist">
+                            <button class="admin-subtab-btn active" id="admin-subtab-billing" onclick="showTab('tab-billing')">收費管理</button>
+                            <button class="admin-subtab-btn" id="admin-subtab-analytics" onclick="showTab('tab-analytics')">分析報表</button>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- 場館設定 group placeholder（FEAT-011 實作具體欄位） -->
+                <div class="admin-group hidden" id="admin-group-settings">
+                    <div class="admin-panel">
+                        <div class="admin-panel-placeholder">
+                            <div class="ph-icon">⚙️</div>
+                            <div class="ph-title">場館設定</div>
+                            <div class="ph-desc">場館名稱／地址／開放時段／收費 表單即將推出</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 預約管理 group：包住既有 tab-bookings panel -->
+                <div class="admin-group hidden" id="admin-group-bookings">
+                    <!-- tab-nav 隱藏，保留以維持 showTab fallback -->
+                    <div class="tab-nav" style="display:none;">
+                        <button class="tab-btn active" onclick="showTab('tab-bookings')">預約管理</button>
+                        <button class="tab-btn" onclick="showTab('tab-billing')">收費管理</button>
+                        <button class="tab-btn" onclick="showTab('tab-analytics')">分析報表</button>
+                    </div>
 
                 <!-- ===== 預約管理 ===== -->
                 <div id="tab-bookings" class="tab-panel active">
@@ -153,8 +207,9 @@
                         </div>
                     </div>
                 </div>
+                </div><!-- /#admin-group-bookings -->
 
-                <!-- ===== 收費管理 ===== -->
+                <!-- ===== 收費管理 ===== (FEAT-008: 屬於「場館總覽」group，由 JS 統一隱藏/顯示) -->
                 <div id="tab-billing" class="tab-panel" style="display:none;">
                     <!-- 新增記錄表單 -->
                     <div class="section">
@@ -229,7 +284,23 @@
                 </div>
 
             </div>
+            </div><!-- /.admin-content -->
         </main>
+
+        <!-- 行動裝置版底部 tab bar -->
+        <nav class="admin-bottom-tabs" aria-label="主導覽（行動版）">
+            <div class="admin-bottom-grid">
+                <button class="admin-bottom-tab active" data-admin-group="overview" onclick="showAdminGroup('overview')">
+                    <span class="bt-icon">📊</span><span>總覽</span>
+                </button>
+                <button class="admin-bottom-tab" data-admin-group="bookings" onclick="showAdminGroup('bookings')">
+                    <span class="bt-icon">📅</span><span>預約</span>
+                </button>
+                <button class="admin-bottom-tab" data-admin-group="settings" onclick="showAdminGroup('settings')">
+                    <span class="bt-icon">⚙️</span><span>設定</span>
+                </button>
+            </div>
+        </nav>
     </div>
 
     <!-- 編輯收費記錄彈窗 -->

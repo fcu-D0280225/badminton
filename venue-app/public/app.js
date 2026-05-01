@@ -101,13 +101,85 @@ function hideLoginScreen(username) {
 
 // ========== Tab 切換 ==========
 
-function showTab(tabId) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(tabId).style.display = 'block';
-    const idx = ['tab-bookings', 'tab-billing', 'tab-analytics'].indexOf(tabId);
-    document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+// 將 tab-* panel 對應到 FEAT-008 admin shell 的 3 個 group
+const TAB_TO_GROUP = {
+    'tab-bookings':  'bookings',
+    'tab-billing':   'overview',
+    'tab-analytics': 'overview',
+};
 
+const GROUP_TITLES = {
+    overview: '場館總覽',
+    bookings: '預約管理',
+    settings: '場館設定',
+};
+
+function showAdminGroup(group) {
+    // 切換 group 容器顯示
+    ['overview', 'bookings', 'settings'].forEach(g => {
+        const el = document.getElementById('admin-group-' + g);
+        if (el) el.classList.toggle('hidden', g !== group);
+    });
+
+    // 切換 sub-panel：overview group 顯示目前選中的 billing/analytics；其餘 group 全部關掉這兩個
+    if (group === 'overview') {
+        const subActive = document.querySelector('.admin-subtab-btn.active');
+        const subTabId = subActive && subActive.id === 'admin-subtab-analytics' ? 'tab-analytics' : 'tab-billing';
+        showTab(subTabId);
+    } else {
+        const billing = document.getElementById('tab-billing');
+        const analytics = document.getElementById('tab-analytics');
+        if (billing)   billing.style.display = 'none';
+        if (analytics) analytics.style.display = 'none';
+    }
+
+    // sidebar / 底部 tab 的 active state
+    document.querySelectorAll('[data-admin-group]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.adminGroup === group);
+    });
+
+    // topbar 標題
+    const title = document.getElementById('admin-topbar-title');
+    if (title) title.textContent = GROUP_TITLES[group] || '';
+}
+
+function showTab(tabId) {
+    // 切 sub-tab 內容
+    document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+    document.getElementById(tabId).style.display = 'block';
+
+    // 同步舊 .tab-btn active state（隱藏的 fallback nav）
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const idx = ['tab-bookings', 'tab-billing', 'tab-analytics'].indexOf(tabId);
+    const oldBtns = document.querySelectorAll('.tab-btn');
+    if (idx >= 0 && oldBtns[idx]) oldBtns[idx].classList.add('active');
+
+    // 同步新 admin sub-tab active state（場館總覽內的 sub-tab 列）
+    const subBilling = document.getElementById('admin-subtab-billing');
+    const subAnalytics = document.getElementById('admin-subtab-analytics');
+    if (subBilling)   subBilling.classList.toggle('active',   tabId === 'tab-billing');
+    if (subAnalytics) subAnalytics.classList.toggle('active', tabId === 'tab-analytics');
+
+    // 若觸發的 tab 屬於不同 group，順手切 group（讓舊 showTab 呼叫者自動跳對）
+    const targetGroup = TAB_TO_GROUP[tabId];
+    if (targetGroup) {
+        const activeBtn = document.querySelector('[data-admin-group].active');
+        const currentGroup = activeBtn ? activeBtn.dataset.adminGroup : null;
+        if (currentGroup !== targetGroup) {
+            // 避免遞迴：直接更新 group 容器與 sidebar/bottom-tab，不呼叫 showAdminGroup
+            ['overview', 'bookings', 'settings'].forEach(g => {
+                const el = document.getElementById('admin-group-' + g);
+                if (el) el.classList.toggle('hidden', g !== targetGroup);
+            });
+            document.querySelectorAll('[data-admin-group]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.adminGroup === targetGroup);
+            });
+            const title = document.getElementById('admin-topbar-title');
+            if (title) title.textContent = GROUP_TITLES[targetGroup] || '';
+        }
+    }
+
+    // data load
     const venueId = document.getElementById('venue-select').value;
     if (!venueId) return;
     if (tabId === 'tab-billing') loadBillingRecords();
@@ -122,6 +194,9 @@ function showTab(tabId) {
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
+    // 啟用 FEAT-008 響應式 admin shell（sidebar + bottom-tab + content panel）
+    document.body.classList.add('admin-shell-active');
+
     // 若有 token，直接顯示主畫面；否則顯示登入
     if (getToken()) {
         document.getElementById('login-screen').style.display = 'none';
@@ -132,8 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoginScreen();
     }
 
-    // 預設顯示收費管理 tab（場館主每日主任務）
-    showTab('tab-billing');
+    // 預設進入「場館總覽」group（內部 sub-tab 預設 收費管理 — 場館主每日主任務）
+    showAdminGroup('overview');
 
     // 設定 billing 日期預設值為今天
     const today = new Date().toISOString().slice(0, 10);

@@ -967,3 +967,310 @@ body {
 .badge-unpaid   { background: var(--status-unpaid-bg);   color: var(--status-unpaid-text); }
 .badge-paid     { background: var(--status-paid-bg);     color: var(--status-paid-text); }
 .badge-transfer { background: var(--status-transfer-bg); color: var(--status-transfer-text); }
+
+/* ========================================================================== */
+/* FEAT-008: 館方後台響應式 layout 框架（admin 淺灰企業配色）                  */
+/* ========================================================================== */
+
+:root {
+    --admin-bg:           #f3f4f6;
+    --admin-surface:      #ffffff;
+    --admin-sidebar-bg:   #ffffff;
+    --admin-sidebar-text: #374151;
+    --admin-sidebar-muted:#9ca3af;
+    --admin-active-bg:    #eef2ff;
+    --admin-active-text:  #4f46e5;
+    --admin-border:       #e5e7eb;
+    --admin-topbar-bg:    #ffffff;
+    --admin-topbar-text:  #111827;
+    --admin-shadow:       0 1px 2px rgba(15,23,42,.04), 0 1px 3px rgba(15,23,42,.06);
+    --admin-radius:       8px;
+    --admin-sidebar-w:    232px;
+    --admin-bottom-h:     58px;
+}
+
+body.admin-shell-active {
+    background: var(--admin-bg);
+    padding: 0;
+}
+
+body.admin-shell-active #app {
+    /* 由新 shell 接管整體 layout */
+    display: flex;
+    min-height: 100vh;
+}
+
+body.admin-shell-active > .header,
+body.admin-shell-active .header {
+    /* 舊外層 .header 在新 shell 內失效（被 .admin-topbar 取代） */
+    display: none;
+}
+
+body.admin-shell-active .view.active,
+body.admin-shell-active .view {
+    /* admin shell 內 .view 不再是 card（admin-panel 接手） */
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+}
+
+body.admin-shell-active .main-content {
+    max-width: none;
+    margin: 0;
+}
+
+.admin-shell {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    width: var(--admin-sidebar-w);
+    flex-shrink: 0;
+    background: var(--admin-sidebar-bg);
+    border-right: 1px solid var(--admin-border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.admin-sidebar-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--admin-border);
+    color: var(--admin-topbar-text);
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-sidebar-nav {
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.admin-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--admin-radius);
+    border: none;
+    background: transparent;
+    color: var(--admin-sidebar-text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, color 0.15s;
+}
+
+.admin-nav-item:hover {
+    background: var(--admin-bg);
+}
+
+.admin-nav-item.active {
+    background: var(--admin-active-bg);
+    color: var(--admin-active-text);
+    font-weight: 600;
+}
+
+.admin-nav-icon {
+    font-size: 16px;
+    width: 22px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.admin-nav-label {
+    flex: 1;
+}
+
+.admin-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--admin-topbar-bg);
+    border-bottom: 1px solid var(--admin-border);
+    padding: 14px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--admin-shadow);
+}
+
+.admin-topbar-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--admin-topbar-text);
+}
+
+.admin-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-topbar-actions .btn {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.admin-topbar-username {
+    color: var(--admin-sidebar-muted);
+    font-size: 13px;
+    margin-right: 4px;
+}
+
+.admin-content {
+    padding: 20px 24px;
+    flex: 1;
+    background: var(--admin-bg);
+}
+
+.admin-panel {
+    background: var(--admin-surface);
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: var(--admin-shadow);
+}
+
+.admin-panel.hidden,
+.admin-group.hidden {
+    display: none;
+}
+
+/* admin-shell 模式下，把舊有的 tab-panel 視覺等同 admin-panel（白底 / 圓角 / 陰影） */
+body.admin-shell-active #tab-billing,
+body.admin-shell-active #tab-analytics,
+body.admin-shell-active #tab-bookings {
+    background: var(--admin-surface);
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: var(--admin-shadow);
+}
+body.admin-shell-active #tab-billing,
+body.admin-shell-active #tab-analytics {
+    margin-top: 14px;
+}
+@media (max-width: 768px) {
+    body.admin-shell-active #tab-billing,
+    body.admin-shell-active #tab-analytics,
+    body.admin-shell-active #tab-bookings {
+        padding: 14px;
+        border-radius: 8px;
+    }
+}
+
+.admin-panel-placeholder {
+    text-align: center;
+    padding: 48px 16px;
+    color: var(--admin-sidebar-muted);
+}
+.admin-panel-placeholder .ph-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+}
+.admin-panel-placeholder .ph-title {
+    font-size: 16px;
+    color: var(--admin-sidebar-text);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+.admin-panel-placeholder .ph-desc {
+    font-size: 13px;
+}
+
+/* 場館總覽內的 sub-tab 列（收費管理 / 分析報表） */
+.admin-subtabs {
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid var(--admin-border);
+    margin-bottom: 20px;
+}
+.admin-subtab-btn {
+    padding: 8px 14px;
+    border: none;
+    background: transparent;
+    color: var(--admin-sidebar-text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+.admin-subtab-btn:hover {
+    color: var(--admin-active-text);
+}
+.admin-subtab-btn.active {
+    color: var(--admin-active-text);
+    border-bottom-color: var(--admin-active-text);
+    font-weight: 600;
+}
+
+/* 行動裝置版底部 tab bar */
+.admin-bottom-tabs {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--admin-bottom-h);
+    background: var(--admin-surface);
+    border-top: 1px solid var(--admin-border);
+    z-index: 30;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    box-shadow: 0 -1px 3px rgba(0,0,0,0.04);
+}
+
+.admin-bottom-tabs .admin-bottom-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    height: var(--admin-bottom-h);
+}
+
+.admin-bottom-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border: none;
+    background: transparent;
+    color: var(--admin-sidebar-muted);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 4px;
+}
+.admin-bottom-tab .bt-icon { font-size: 18px; line-height: 1; }
+.admin-bottom-tab.active {
+    color: var(--admin-active-text);
+    font-weight: 600;
+}
+
+/* RWD：mobile 把 sidebar 收掉、開啟底部 tab bar、main 補底部 padding */
+@media (max-width: 768px) {
+    .admin-sidebar { display: none; }
+    .admin-bottom-tabs { display: block; }
+    .admin-main { padding-bottom: var(--admin-bottom-h); }
+    .admin-topbar { padding: 12px 14px; }
+    .admin-topbar-title { font-size: 15px; }
+    .admin-content { padding: 12px 12px 20px; }
+    .admin-panel { padding: 14px; border-radius: 8px; }
+}
