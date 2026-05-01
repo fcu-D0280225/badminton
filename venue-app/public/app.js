@@ -383,59 +383,168 @@ async function loadVenueData() {
     if (typeof loadOverviewKpis === 'function') loadOverviewKpis();
 }
 
+// FEAT-010: 預約管理頁狀態
+const BOOKING_PAGE_SIZE = 20;
+let _venueBookingsCache = [];
+let _venueBookingsPage = 1;
+
+const STATUS_LABEL = { pending: '待確認', confirmed: '已確認', cancelled: '已取消' };
+const STATUS_CLASS = { pending: 'status-pending', confirmed: 'status-confirmed', cancelled: 'status-cancelled' };
+
+function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 async function filterVenueBookings() {
     const venueId = document.getElementById('venue-select').value;
     if (!venueId) {
         alert('請先選擇館方');
         return;
     }
-    
-    const date = document.getElementById('venue-filter-date').value;
+
+    const date       = document.getElementById('venue-filter-date').value;
     const playerName = document.getElementById('venue-filter-name').value.trim();
-    const timeSlot = document.getElementById('venue-filter-timeslot').value.trim();
-    
-    // 建立查詢參數
+    const timeSlot   = document.getElementById('venue-filter-timeslot').value.trim();
+    const statusEl   = document.getElementById('venue-filter-status');
+    const status     = statusEl ? statusEl.value : '';
+
     let url = `${API_BASE}/venues/${venueId}/bookings?`;
-    if (date) url += `date=${date}&`;
+    if (date)       url += `date=${date}&`;
     if (playerName) url += `playerName=${encodeURIComponent(playerName)}&`;
-    if (timeSlot) url += `timeSlot=${encodeURIComponent(timeSlot)}&`;
-    
+    if (timeSlot)   url += `timeSlot=${encodeURIComponent(timeSlot)}&`;
+
+    const list = document.getElementById('venue-bookings-list');
+    list.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">搜尋中...</p>';
+
     try {
-        const list = document.getElementById('venue-bookings-list');
-        list.innerHTML = '<p>搜尋中...</p>';
-        
         const res = await authFetch(url);
         const bookings = await res.json();
-
-        list.innerHTML = '';
-        
-        if (bookings.length === 0) {
-            list.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">沒有找到符合條件的預約紀錄</p>';
-            return;
-        }
-        
-        bookings.forEach(booking => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            
-            const participant = booking.organizer?.name || booking.player?.name || '未知';
-            const paymentStatus = booking.payment?.status || 'unpaid';
-            const paymentAmount = booking.payment?.amount || 0;
-            
-            card.innerHTML = `
-                <h4>${booking.date} ${booking.timeSlot}</h4>
-                <p><strong>預約者：</strong>${participant}</p>
-                <p><strong>狀態：</strong><span class="badge badge-${paymentStatus === 'paid' ? 'success' : 'warning'}">${paymentStatus === 'paid' ? '已付款' : '未付款'}</span></p>
-                <p><strong>金額：</strong>$${paymentAmount}</p>
-                ${booking.notes ? `<p><strong>備註：</strong>${booking.notes}</p>` : ''}
-            `;
-            
-            list.appendChild(card);
-        });
+        // status filter 由前端做（後端目前沒收 status query）
+        _venueBookingsCache = status
+            ? bookings.filter(b => (b.status || 'pending') === status)
+            : bookings;
+        _venueBookingsPage = 1;
+        renderVenueBookings();
     } catch (error) {
         console.error('載入預約紀錄失敗:', error);
-        const list = document.getElementById('venue-bookings-list');
-        list.innerHTML = '<p style="color: red;">載入失敗，請稍後重試</p>';
+        list.innerHTML = '<p style="color:#dc2626;text-align:center;padding:20px;">載入失敗，請稍後重試</p>';
+        const pg = document.getElementById('bookings-pagination');
+        if (pg) pg.innerHTML = '';
+    }
+}
+
+function renderVenueBookings() {
+    const list = document.getElementById('venue-bookings-list');
+    const pg   = document.getElementById('bookings-pagination');
+    const all  = _venueBookingsCache;
+
+    if (!all.length) {
+        list.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">沒有找到符合條件的預約紀錄</p>';
+        if (pg) pg.innerHTML = '';
+        return;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(all.length / BOOKING_PAGE_SIZE));
+    if (_venueBookingsPage > totalPages) _venueBookingsPage = totalPages;
+    const start = (_venueBookingsPage - 1) * BOOKING_PAGE_SIZE;
+    const slice = all.slice(start, start + BOOKING_PAGE_SIZE);
+
+    // 桌機表格 + 手機卡片：兩個 DOM 並存，由 CSS 切換
+    const tableRows = slice.map(b => bookingTableRowHtml(b)).join('');
+    const cards     = slice.map(b => bookingCardHtml(b)).join('');
+
+    list.innerHTML = `
+        <div class="bookings-table-wrap">
+            <table class="bookings-table">
+                <thead>
+                    <tr><th>日期</th><th>時段</th><th>預約者</th><th>狀態</th><th>付款</th><th style="text-align:right;">操作</th></tr>
+                </thead>
+                <tbody>${tableRows}</tbody>
+            </table>
+        </div>
+        <div class="bookings-cards">${cards}</div>
+    `;
+
+    if (pg) {
+        if (totalPages <= 1) {
+            pg.innerHTML = `<div class="bookings-pagination-info">共 ${all.length} 筆</div>`;
+        } else {
+            pg.innerHTML = `
+                <button class="btn btn-secondary btn-sm" ${_venueBookingsPage === 1 ? 'disabled' : ''} onclick="gotoBookingsPage(${_venueBookingsPage - 1})">‹ 上一頁</button>
+                <span class="bookings-pagination-info">第 ${_venueBookingsPage} / ${totalPages} 頁・共 ${all.length} 筆</span>
+                <button class="btn btn-secondary btn-sm" ${_venueBookingsPage === totalPages ? 'disabled' : ''} onclick="gotoBookingsPage(${_venueBookingsPage + 1})">下一頁 ›</button>
+            `;
+        }
+    }
+}
+
+function gotoBookingsPage(p) {
+    _venueBookingsPage = p;
+    renderVenueBookings();
+    document.getElementById('venue-bookings-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function bookingActionsHtml(b) {
+    const status = b.status || 'pending';
+    const btns = [];
+    if (status !== 'confirmed') btns.push(`<button class="btn btn-primary btn-sm" onclick="updateBookingStatus(${b.id}, 'confirmed')">確認</button>`);
+    if (status !== 'cancelled') btns.push(`<button class="btn btn-danger btn-sm"  onclick="updateBookingStatus(${b.id}, 'cancelled')">取消</button>`);
+    return btns.join(' ');
+}
+
+function bookingTableRowHtml(b) {
+    const participant   = b.organizer?.name || b.player?.name || b.booker?.name || '未知';
+    const status        = b.status || 'pending';
+    const paymentStatus = b.payment?.status || 'unpaid';
+    const paymentAmount = b.payment?.amount || 0;
+    return `
+        <tr class="booking-row ${STATUS_CLASS[status] || ''}">
+            <td>${escapeHtml(b.date)}</td>
+            <td>${escapeHtml(b.timeSlot)}</td>
+            <td>${escapeHtml(participant)}</td>
+            <td><span class="booking-status-badge badge-${status}">${STATUS_LABEL[status] || status}</span></td>
+            <td>${paymentStatus === 'paid' ? `已付款 NT$${paymentAmount}` : `<span style="color:#dc2626;">未付款</span>`}</td>
+            <td style="text-align:right;white-space:nowrap;">${bookingActionsHtml(b)}</td>
+        </tr>
+    `;
+}
+
+function bookingCardHtml(b) {
+    const participant   = b.organizer?.name || b.player?.name || b.booker?.name || '未知';
+    const status        = b.status || 'pending';
+    const paymentStatus = b.payment?.status || 'unpaid';
+    const paymentAmount = b.payment?.amount || 0;
+    return `
+        <div class="booking-card ${STATUS_CLASS[status] || ''}">
+            <div class="booking-card-head">
+                <div class="booking-card-when">${escapeHtml(b.date)}・${escapeHtml(b.timeSlot)}</div>
+                <span class="booking-status-badge badge-${status}">${STATUS_LABEL[status] || status}</span>
+            </div>
+            <div class="booking-card-meta">預約者：${escapeHtml(participant)}</div>
+            <div class="booking-card-meta">付款：${paymentStatus === 'paid' ? `已付款 NT$${paymentAmount}` : '<span style="color:#dc2626;">未付款</span>'}</div>
+            ${b.notes ? `<div class="booking-card-meta">備註：${escapeHtml(b.notes)}</div>` : ''}
+            <div class="booking-card-actions">${bookingActionsHtml(b)}</div>
+        </div>
+    `;
+}
+
+async function updateBookingStatus(id, status) {
+    if (status === 'cancelled' && !confirm('確定要取消此筆預約嗎？')) return;
+    try {
+        const res = await authFetch(`${API_BASE}/bookings/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        // 同步本地 cache 並重繪
+        const idx = _venueBookingsCache.findIndex(b => b.id === id);
+        if (idx >= 0) _venueBookingsCache[idx].status = status;
+        renderVenueBookings();
+        // KPI 也更新一下（待確認筆數可能變動）
+        if (typeof loadOverviewKpis === 'function') loadOverviewKpis();
+    } catch (e) {
+        alert('更新失敗：' + (e.message || e));
     }
 }
 
@@ -894,6 +1003,8 @@ function resetVenueFilters() {
     document.getElementById('venue-filter-date').value = '';
     document.getElementById('venue-filter-name').value = '';
     document.getElementById('venue-filter-timeslot').value = '';
+    const s = document.getElementById('venue-filter-status');
+    if (s) s.value = '';
     // 重新載入所有預約紀錄
     filterVenueBookings();
 }
@@ -1285,6 +1396,8 @@ window.loadAnalytics = loadAnalytics;
 window.copyUrl = copyUrl;
 window.showAdminGroup = showAdminGroup;
 window.loadOverviewKpis = loadOverviewKpis;
+window.updateBookingStatus = updateBookingStatus;
+window.gotoBookingsPage = gotoBookingsPage;
 
 // ========== FEAT-009: 場館總覽 KPI 卡片 ==========
 

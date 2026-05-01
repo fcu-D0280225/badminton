@@ -188,17 +188,24 @@
                     </div>
 
                     <div id="venue-content" class="venue-content">
-                        <!-- 預約紀錄 -->
+                        <!-- 預約紀錄（FEAT-010: 桌機分頁表格 + 手機卡片，狀態 badge + 確認/取消 inline） -->
                         <div class="section">
                             <h3>預約紀錄</h3>
                             <div class="filter-group">
                                 <input type="date" id="venue-filter-date" placeholder="選擇日期">
                                 <input type="text" id="venue-filter-name" placeholder="預約者姓名">
                                 <input type="text" id="venue-filter-timeslot" placeholder="時段">
+                                <select id="venue-filter-status" onchange="filterVenueBookings()">
+                                    <option value="">全部狀態</option>
+                                    <option value="pending">待確認</option>
+                                    <option value="confirmed">已確認</option>
+                                    <option value="cancelled">已取消</option>
+                                </select>
                                 <button class="btn btn-primary" onclick="filterVenueBookings()">搜尋</button>
                                 <button class="btn btn-secondary" onclick="resetVenueFilters()">清除</button>
                             </div>
                             <div id="venue-bookings-list"></div>
+                            <div class="bookings-pagination" id="bookings-pagination"></div>
                         </div>
 
                         <!-- 可用時段 - 日曆顯示 -->

@@ -1264,6 +1264,116 @@ body.admin-shell-active #tab-analytics {
     font-weight: 600;
 }
 
+/* FEAT-010: 預約管理表格 / 卡片 / 狀態 badge / 分頁 */
+.bookings-table-wrap {
+    overflow-x: auto;
+    margin-top: 8px;
+}
+.bookings-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
+}
+.bookings-table thead th {
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--admin-bg);
+    border-bottom: 1px solid var(--admin-border);
+    font-weight: 600;
+    color: var(--admin-sidebar-text);
+    font-size: 13px;
+    white-space: nowrap;
+}
+.bookings-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--admin-border);
+    color: var(--admin-topbar-text);
+    vertical-align: middle;
+}
+.bookings-table tbody tr:hover { background: #fafafa; }
+.bookings-table .booking-row.status-cancelled td:not(:last-child) {
+    color: var(--admin-sidebar-muted);
+    text-decoration: line-through;
+}
+
+.bookings-cards {
+    display: none; /* mobile-only */
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+}
+.booking-card {
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 2px rgba(15,23,42,.04);
+}
+.booking-card.status-cancelled .booking-card-when,
+.booking-card.status-cancelled .booking-card-meta {
+    color: var(--admin-sidebar-muted);
+    text-decoration: line-through;
+}
+.booking-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.booking-card-when {
+    font-weight: 600;
+    color: var(--admin-topbar-text);
+    font-size: 14px;
+}
+.booking-card-meta {
+    font-size: 13px;
+    color: var(--admin-sidebar-text);
+    margin-top: 2px;
+}
+.booking-card-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+/* 狀態 badge */
+.booking-status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+.booking-status-badge.badge-pending   { background: #fef3c7; color: #92400e; }
+.booking-status-badge.badge-confirmed { background: #d1fae5; color: #065f46; }
+.booking-status-badge.badge-cancelled { background: #e5e7eb; color: #6b7280; }
+
+/* btn-sm 對齊既有 */
+.btn.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* 分頁列 */
+.bookings-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+.bookings-pagination-info {
+    font-size: 13px;
+    color: var(--admin-sidebar-muted);
+}
+
 /* FEAT-009: KPI 卡片（場館總覽首頁） */
 .kpi-grid {
     display: grid;
@@ -1336,4 +1446,8 @@ body.admin-shell-active #tab-analytics {
     .kpi-card { padding: 12px 14px; gap: 10px; }
     .kpi-icon { width: 40px; height: 40px; font-size: 22px; border-radius: 8px; }
     .kpi-value { font-size: 18px; }
+
+    /* FEAT-010: 手機切換為 card 列表，隱藏桌機表格 */
+    .bookings-table-wrap { display: none; }
+    .bookings-cards { display: flex; }
 }
