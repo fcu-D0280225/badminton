@@ -38,7 +38,7 @@ npm run dev
 
 3. 訪問應用：
 - 前端： 
-- 後端API：http://localhost:3000
+- 後端API：http://localhost:3010
 
 ## 手機安裝
 

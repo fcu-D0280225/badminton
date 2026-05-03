@@ -4,17 +4,18 @@ const http = require('http');
 
 const app = express();
 const PORT = 3001;
-const API_TARGET = 'http://localhost:3000';
+const BACKEND_PORT = 3010;
+const API_TARGET = `http://localhost:${BACKEND_PORT}`;
 
 // API 代理：將 /api 轉發到後端（使用內建 http，無需額外套件）
 app.use('/api', (req, res) => {
   const url = new URL('/api' + req.url, API_TARGET);
   const options = {
     hostname: 'localhost',
-    port: 3000,
+    port: BACKEND_PORT,
     path: url.pathname + url.search,
     method: req.method,
-    headers: { ...req.headers, host: 'localhost:3000' },
+    headers: { ...req.headers, host: `localhost:${BACKEND_PORT}` },
   };
   const proxy = http.request(options, (proxyRes) => {
     res.writeHead(proxyRes.statusCode, proxyRes.headers);

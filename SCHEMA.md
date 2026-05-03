@@ -199,6 +199,5 @@ npm run test:e2e
 
 ### 注意事項
 
-1. `frontend/server.js` 與 `client/vite.config.js` 的 API proxy 目標寫的是 `http://localhost:3000`，但 backend 實際執行於 **3010**，部署時需確認是否要調整。
-2. TypeORM `synchronize: true` 僅適合開發，正式環境應改用 migration。
-3. 初始 seed 帳號密碼為 `0000` / `1111`，正式環境務必更改。
+1. TypeORM `synchronize: true` 僅適合開發，正式環境應改用 migration。
+2. 初始 seed 帳號密碼為 `0000` / `1111`，正式環境務必更改。
