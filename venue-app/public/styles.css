@@ -1197,6 +1197,24 @@ body.admin-shell-active #tab-analytics {
     font-size: 13px;
 }
 
+/* FEAT-011: 場館設定狀態提示 */
+.venue-settings-status {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+.venue-settings-status.is-info {
+    background: var(--color-bg-secondary, #eef);
+    color: var(--color-text, #234);
+    border: 1px solid var(--color-border, #cce);
+}
+.venue-settings-status.is-error {
+    background: #fdecea;
+    color: #b00020;
+    border: 1px solid #f5b8b1;
+}
+
 /* 場館總覽內的 sub-tab 列（收費管理 / 分析報表） */
 .admin-subtabs {
     display: flex;

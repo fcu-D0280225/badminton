@@ -135,6 +135,11 @@ function showAdminGroup(group) {
         if (analytics) analytics.style.display = 'none';
     }
 
+    // FEAT-011: 進入「場館設定」時自動載入場館資料
+    if (group === 'settings') {
+        loadVenueSettings();
+    }
+
     // sidebar / 底部 tab 的 active state
     document.querySelectorAll('[data-admin-group]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.adminGroup === group);
@@ -1398,6 +1403,8 @@ window.showAdminGroup = showAdminGroup;
 window.loadOverviewKpis = loadOverviewKpis;
 window.updateBookingStatus = updateBookingStatus;
 window.gotoBookingsPage = gotoBookingsPage;
+window.loadVenueSettings = loadVenueSettings;
+window.saveVenueSettings = saveVenueSettings;
 
 // ========== FEAT-009: 場館總覽 KPI 卡片 ==========
 
@@ -1457,5 +1464,90 @@ async function loadOverviewKpis() {
         if (revSubEl)  revSubEl.textContent = '載入失敗';
         if (pendEl)    pendEl.textContent = '—';
         if (pendSubEl) pendSubEl.textContent = '載入失敗';
+    }
+}
+
+// ========== FEAT-011: 場館設定（編輯場館基本資料） ==========
+
+function getCurrentVenueIdForSettings() {
+    if (_currentVenueId) return _currentVenueId;
+    const sel = document.getElementById('venue-select');
+    return sel ? sel.value : '';
+}
+
+function showVenueSettingsStatus(text, kind) {
+    const el = document.getElementById('venue-settings-status');
+    if (!el) return;
+    if (!text) {
+        el.style.display = 'none';
+        el.textContent = '';
+        return;
+    }
+    el.textContent = text;
+    el.style.display = 'block';
+    el.className = 'venue-settings-status ' + (kind === 'error' ? 'is-error' : 'is-info');
+}
+
+async function loadVenueSettings() {
+    const venueId = getCurrentVenueIdForSettings();
+    if (!venueId) {
+        showVenueSettingsStatus('尚未選擇館方，請先登入或於上方選擇館方', 'error');
+        return;
+    }
+    showVenueSettingsStatus('載入中⋯', 'info');
+    try {
+        const res = await authFetch(`${API_BASE}/venues/${venueId}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const v = await res.json();
+        document.getElementById('vs-name').value          = v.name || '';
+        document.getElementById('vs-contact').value       = v.contact || '';
+        document.getElementById('vs-address').value       = v.address || '';
+        document.getElementById('vs-opening-hours').value = v.openingHours || '';
+        document.getElementById('vs-fee-info').value      = v.feeInfo || '';
+        document.getElementById('vs-description').value   = v.description || '';
+        showVenueSettingsStatus('', null);
+    } catch (err) {
+        console.error('載入場館設定失敗:', err);
+        showVenueSettingsStatus('載入失敗，請稍後重試', 'error');
+    }
+}
+
+async function saveVenueSettings() {
+    const venueId = getCurrentVenueIdForSettings();
+    if (!venueId) {
+        showVenueSettingsStatus('尚未選擇館方', 'error');
+        return;
+    }
+    const name = document.getElementById('vs-name').value.trim();
+    if (!name) {
+        showVenueSettingsStatus('場館名稱為必填', 'error');
+        return;
+    }
+    const payload = {
+        name,
+        contact:      document.getElementById('vs-contact').value.trim(),
+        address:      document.getElementById('vs-address').value.trim(),
+        openingHours: document.getElementById('vs-opening-hours').value,
+        feeInfo:      document.getElementById('vs-fee-info').value,
+        description:  document.getElementById('vs-description').value,
+    };
+    showVenueSettingsStatus('儲存中⋯', 'info');
+    try {
+        const res = await authFetch(`${API_BASE}/venues/${venueId}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        showVenueSettingsStatus('已儲存', 'info');
+        // 同步左側館方下拉名稱
+        const sel = document.getElementById('venue-select');
+        if (sel) {
+            for (const opt of sel.options) {
+                if (opt.value == venueId) opt.textContent = name;
+            }
+        }
+    } catch (err) {
+        console.error('儲存場館設定失敗:', err);
+        showVenueSettingsStatus('儲存失敗，請稍後重試', 'error');
     }
 }

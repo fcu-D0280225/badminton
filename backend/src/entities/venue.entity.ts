@@ -19,6 +19,12 @@ export class Venue {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  @Column({ type: 'text', nullable: true })
+  openingHours: string;
+
+  @Column({ type: 'text', nullable: true })
+  feeInfo: string;
+
   @OneToMany(() => Booking, (booking) => booking.venue)
   bookings: Booking[];
 

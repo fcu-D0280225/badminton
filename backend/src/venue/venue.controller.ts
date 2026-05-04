@@ -34,6 +34,14 @@ export class VenueController {
     return await this.venueService.findOne(+id);
   }
 
+  @Put(':id')
+  async updateVenue(
+    @Param('id') id: string,
+    @Body() data: Partial<Venue>,
+  ): Promise<Venue> {
+    return await this.venueService.updateVenue(+id, data);
+  }
+
   @Get(':id/bookings')
   async getBookings(
     @Param('id') id: string,

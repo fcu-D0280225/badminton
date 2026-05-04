@@ -38,6 +38,28 @@ export class VenueService {
     });
   }
 
+  // 更新館方基本資訊（白名單欄位，避免任意 column 被覆寫）
+  async updateVenue(id: number, data: Partial<Venue>): Promise<Venue> {
+    const allowed: Array<keyof Venue> = [
+      'name',
+      'contact',
+      'address',
+      'description',
+      'openingHours',
+      'feeInfo',
+    ];
+    const patch: Partial<Venue> = {};
+    for (const key of allowed) {
+      if (data[key] !== undefined) {
+        (patch as any)[key] = data[key];
+      }
+    }
+    if (Object.keys(patch).length > 0) {
+      await this.venueRepository.update(id, patch);
+    }
+    return await this.venueRepository.findOne({ where: { id } });
+  }
+
   // 取得館方的預約紀錄（含付款資訊）
   async getBookings(
     venueId: number,
