@@ -26,4 +26,7 @@ export const api = {
   
   // 获取开团者的活动
   getOrganizerEvents: (name) => axios.get(`${API_BASE_URL}/events/organizer/${name}`),
+
+  // 評分團主（FEAT-015）
+  createOrganizerRating: (data) => axios.post(`${API_BASE_URL}/ratings`, data),
 };
