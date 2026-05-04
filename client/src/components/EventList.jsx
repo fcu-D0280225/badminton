@@ -2,18 +2,35 @@ import { useState, useEffect, useRef } from 'react';
 import { api } from '../api';
 
 const PULL_THRESHOLD = 64;
+const NAME_KEY = 'badminton.participantName';
+const PHONE_KEY = 'badminton.participantPhone';
 
 function EventList() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
-  const [pull, setPull] = useState(0); // px pulled down (0 when not pulling)
+  const [pull, setPull] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const startY = useRef(null);
+
+  const [participantName, setParticipantName] = useState(() =>
+    typeof window !== 'undefined' ? localStorage.getItem(NAME_KEY) || '' : ''
+  );
+  const [phone, setPhone] = useState(() =>
+    typeof window !== 'undefined' ? localStorage.getItem(PHONE_KEY) || '' : ''
+  );
+  const [bookingState, setBookingState] = useState('idle'); // idle | submitting | success | error
+  const [bookingError, setBookingError] = useState('');
 
   useEffect(() => {
     loadEvents();
   }, []);
+
+  // 開啟新詳情時重置報名狀態
+  useEffect(() => {
+    setBookingState('idle');
+    setBookingError('');
+  }, [selectedId]);
 
   const loadEvents = async () => {
     try {
@@ -22,7 +39,6 @@ function EventList() {
       setEvents(response.data);
     } catch (error) {
       console.error('加载活动失败:', error);
-      alert('加载活动失败，请稍后重试');
     } finally {
       setLoading(false);
     }
@@ -49,7 +65,6 @@ function EventList() {
     if (startY.current == null || refreshing) return;
     const delta = e.touches[0].clientY - startY.current;
     if (delta > 0 && window.scrollY === 0) {
-      // dampen so it feels like a rubber band
       setPull(Math.min(delta * 0.5, PULL_THRESHOLD * 1.5));
     }
   };
@@ -66,6 +81,39 @@ function EventList() {
   const formatDateTime = (date, time) => `${date} ${time}`;
 
   const selected = selectedId != null ? events.find(e => e.id === selectedId) : null;
+  const selectedFull = selected
+    ? selected.current_participants >= selected.max_participants
+    : false;
+
+  const handleNameChange = (val) => {
+    setParticipantName(val);
+    try { localStorage.setItem(NAME_KEY, val); } catch {}
+  };
+  const handlePhoneChange = (val) => {
+    setPhone(val);
+    try { localStorage.setItem(PHONE_KEY, val); } catch {}
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!selected || !participantName.trim() || selectedFull) return;
+    setBookingState('submitting');
+    setBookingError('');
+    try {
+      await api.createBooking({
+        event_id: selected.id,
+        participant_name: participantName.trim(),
+        phone: phone.trim(),
+      });
+      setBookingState('success');
+      // 背景刷新列表，名額同步
+      loadEvents();
+      // 1.5 秒後自動關閉 modal
+      setTimeout(() => setSelectedId(null), 1500);
+    } catch (error) {
+      setBookingState('error');
+      setBookingError(error.response?.data?.error || '預約失敗，請稍後重試');
+    }
+  };
 
   if (loading) {
     return (
@@ -82,7 +130,6 @@ function EventList() {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* 下拉刷新指示器 */}
       <div
         className="flex items-center justify-center text-sm text-gray-500 overflow-hidden transition-[height] duration-150"
         style={{ height: refreshing ? PULL_THRESHOLD : pull }}
@@ -159,14 +206,13 @@ function EventList() {
         </div>
       )}
 
-      {/* 詳情 modal */}
       {selected && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
           onClick={() => setSelectedId(null)}
         >
           <div
-            className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md sm:mx-4 max-h-[80vh] overflow-y-auto p-6 shadow-xl"
+            className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md sm:mx-4 max-h-[85vh] overflow-y-auto p-6 shadow-xl"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-start mb-4">
@@ -177,15 +223,17 @@ function EventList() {
                 aria-label="關閉"
               >×</button>
             </div>
-            <div className="space-y-3 text-sm text-gray-700">
-              <div><span className="font-semibold">場次：</span>{selected.title}</div>
+
+            {/* 步驟一：場次資訊 */}
+            <div className="space-y-3 text-sm text-gray-700 mb-5">
+              <div className="text-xs font-semibold text-blue-600 uppercase tracking-wide">步驟 1 · 確認場次資訊</div>
               <div><span className="font-semibold">場館 / 地點：</span>{selected.location}</div>
               <div><span className="font-semibold">日期時間：</span>{formatDateTime(selected.date, selected.time)}</div>
               <div><span className="font-semibold">開團者：</span>{selected.organizer_name}</div>
               <div>
                 <span className="font-semibold">名額：</span>
                 {selected.current_participants} / {selected.max_participants}
-                {selected.current_participants >= selected.max_participants
+                {selectedFull
                   ? <span className="ml-2 px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs">已額滿</span>
                   : <span className="ml-2 px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs">尚有名額</span>}
               </div>
@@ -196,8 +244,70 @@ function EventList() {
                 </div>
               )}
             </div>
-            <div className="mt-6 text-xs text-gray-500">
-              提示：報名請至「我的預約」分頁。
+
+            {/* 步驟二：報名表單 */}
+            <div className="border-t border-gray-200 pt-4">
+              <div className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-3">步驟 2 · 送出報名</div>
+
+              {bookingState === 'success' ? (
+                <div
+                  role="status"
+                  className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-green-700 text-sm flex items-center"
+                >
+                  <span className="mr-2">✓</span>
+                  <span>報名成功！</span>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">您的姓名 *</label>
+                    <input
+                      type="text"
+                      value={participantName}
+                      onChange={(e) => handleNameChange(e.target.value)}
+                      placeholder="請輸入您的姓名"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">聯絡電話（選填）</label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => handlePhoneChange(e.target.value)}
+                      placeholder="請輸入聯絡電話"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {bookingError && (
+                    <div className="text-sm text-red-600">{bookingError}</div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleConfirmBooking}
+                    disabled={
+                      selectedFull ||
+                      !participantName.trim() ||
+                      bookingState === 'submitting'
+                    }
+                    className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      selectedFull
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : !participantName.trim() || bookingState === 'submitting'
+                        ? 'bg-blue-300 text-white cursor-not-allowed'
+                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                    }`}
+                  >
+                    {selectedFull
+                      ? '已額滿'
+                      : bookingState === 'submitting'
+                      ? '送出中⋯'
+                      : '確認報名'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
