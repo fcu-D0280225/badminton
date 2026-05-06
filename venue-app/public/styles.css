@@ -30,7 +30,7 @@ body {
     background: var(--color-bg);
     min-height: 100vh;
     padding: 20px;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .header {
