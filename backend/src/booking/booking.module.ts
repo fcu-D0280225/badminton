@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { BookingController } from './booking.controller';
 import { BookingService } from './booking.service';
+import { HoldExpiryService } from './hold-expiry.service';
 import { Booking } from '../entities/booking.entity';
 import { Venue } from '../entities/venue.entity';
 import { Organizer } from '../entities/organizer.entity';
@@ -15,6 +17,7 @@ import { PushModule } from '../push/push.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     TypeOrmModule.forFeature([
       Booking,
       Venue,
@@ -29,7 +32,7 @@ import { PushModule } from '../push/push.module';
     PushModule,
   ],
   controllers: [BookingController],
-  providers: [BookingService],
+  providers: [BookingService, HoldExpiryService],
   exports: [BookingService],
 })
 export class BookingModule {}

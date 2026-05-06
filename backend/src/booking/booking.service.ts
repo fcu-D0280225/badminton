@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not, LessThan } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { Booking } from '../entities/booking.entity';
 import { Payment } from '../entities/payment.entity';
@@ -8,6 +8,9 @@ import { Account } from '../entities/account.entity';
 import { BookingParticipant } from '../entities/booking-participant.entity';
 import { WaitlistService } from '../waitlist/waitlist.service';
 import { PushService } from '../push/push.service';
+
+/** 預約保留時間（分鐘）：pending 狀態下未付款超過此時間自動取消 */
+const HOLD_MINUTES = 15;
 
 @Injectable()
 export class BookingService {
@@ -29,8 +32,16 @@ export class BookingService {
     data: Partial<Booking> & { amount?: number },
   ): Promise<Booking> {
     const { amount, ...bookingData } = data;
+
+    // 重複預約檢查：同一成員不可重複預約同場次
+    await this.assertNoDuplicate(bookingData);
+
+    // 設定保留到期時間（僅 pending 狀態）
+    const holdExpiresAt = new Date();
+    holdExpiresAt.setMinutes(holdExpiresAt.getMinutes() + HOLD_MINUTES);
+
     const booking = await this.bookingRepository.save(
-      this.bookingRepository.create(bookingData),
+      this.bookingRepository.create({ ...bookingData, holdExpiresAt }),
     );
 
     const payment = this.paymentRepository.create({
@@ -149,6 +160,52 @@ export class BookingService {
     await this.bookingRepository.delete(id);
   }
 
+  // ── 掃描並釋出過期保留（由 HoldExpiryService 的 cron 呼叫）─────
+  async releaseExpiredHolds(): Promise<number> {
+    const now = new Date();
+    const expired = await this.bookingRepository.find({
+      where: {
+        status: 'pending',
+        holdExpiresAt: LessThan(now),
+      },
+    });
+
+    for (const booking of expired) {
+      await this.updateBooking(booking.id, {
+        status: 'cancelled',
+        holdExpiresAt: null,
+      });
+      // 推播：告知預約者保留時間已到
+      await this.notifyHoldExpired(booking);
+    }
+
+    return expired.length;
+  }
+
+  // ── 私有：重複預約檢查 ─────────────────────────────────────────
+  private async assertNoDuplicate(data: Partial<Booking>): Promise<void> {
+    const { venueId, date, timeSlot, playerId, organizerId, bookerId } = data;
+    if (!venueId || !date || !timeSlot) return;
+
+    // 只需要有任一身份欄位就檢查
+    const memberConditions: object[] = [];
+    if (playerId)    memberConditions.push({ venueId, date, timeSlot, playerId,    status: Not('cancelled') });
+    if (organizerId) memberConditions.push({ venueId, date, timeSlot, organizerId, status: Not('cancelled') });
+    if (bookerId)    memberConditions.push({ venueId, date, timeSlot, bookerId,    status: Not('cancelled') });
+
+    if (memberConditions.length === 0) return;
+
+    const existing = await this.bookingRepository.findOne({
+      where: memberConditions as any,
+    });
+
+    if (existing) {
+      throw new ConflictException(
+        `同一場次已有預約（id: ${existing.id}），不可重複預約`,
+      );
+    }
+  }
+
   // ── 私有：取消後觸發候補通知 ────────────────────────────────────
   private async triggerWaitlistNotification(booking: Booking): Promise<void> {
     if (!booking?.venueId || !booking?.date || !booking?.timeSlot) return;
@@ -162,7 +219,6 @@ export class BookingService {
 
     await this.waitlistService.markNotified(first.id);
 
-    // 找對應的 accountId
     const accountId = await this.resolveAccountId(
       first.playerId,
       first.organizerId,
@@ -185,7 +241,7 @@ export class BookingService {
     if (!accountId) return;
     await this.pushService.notifyAccount(accountId, {
       title: '🏸 預約確認',
-      body: `${booking.date} ${booking.timeSlot} 預約已建立`,
+      body: `${booking.date} ${booking.timeSlot} 預約已建立，請於 ${HOLD_MINUTES} 分鐘內完成付款`,
       url: '/',
     });
   }
@@ -200,6 +256,20 @@ export class BookingService {
     await this.pushService.notifyAccount(accountId, {
       title: '🏸 預約已取消',
       body: `${booking.date} ${booking.timeSlot} 的預約已被取消`,
+      url: '/',
+    });
+  }
+
+  // ── 私有：保留到期推播 ─────────────────────────────────────────
+  private async notifyHoldExpired(booking: Booking): Promise<void> {
+    const accountId = await this.resolveAccountId(
+      booking.playerId,
+      booking.organizerId,
+    );
+    if (!accountId) return;
+    await this.pushService.notifyAccount(accountId, {
+      title: '🏸 預約保留已到期',
+      body: `${booking.date} ${booking.timeSlot} 因逾 ${HOLD_MINUTES} 分鐘未付款，預約已自動取消`,
       url: '/',
     });
   }
@@ -275,7 +345,6 @@ export class BookingService {
   ): Promise<number | null> {
     if (!playerId && !organizerId) return null;
     try {
-      // member 角色：entityId=organizerId, linkedEntityId=playerId
       if (playerId) {
         const acc = await this.accountRepository.findOne({
           where: [

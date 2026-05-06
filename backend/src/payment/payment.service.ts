@@ -48,7 +48,7 @@ export class PaymentService {
     return await this.findOne(id);
   }
 
-  // 標記為已付款
+  // 標記為已付款，同時清除預約的保留到期時間
   async markAsPaid(
     id: number,
     paymentMethod?: string,
@@ -64,7 +64,15 @@ export class PaymentService {
       if (transactionId) {
         payment.transactionId = transactionId;
       }
-      return await this.paymentRepository.save(payment);
+      const saved = await this.paymentRepository.save(payment);
+
+      // 付款成功 → 清除保留倒數，並將預約升為 confirmed
+      await this.bookingRepository.update(payment.bookingId, {
+        holdExpiresAt: null,
+        status: 'confirmed',
+      });
+
+      return saved;
     }
     return null;
   }

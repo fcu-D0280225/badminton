@@ -94,7 +94,7 @@ function showLoginScreen() {
 
 function hideLoginScreen(username) {
     document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
+    document.getElementById('app').style.display = '';
     document.getElementById('header-username').textContent = username || '';
     document.getElementById('logout-btn').style.display = 'inline-block';
 }
@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 若有 token，直接顯示主畫面；否則顯示登入
     if (getToken()) {
         document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app').style.display = 'block';
+        document.getElementById('app').style.display = '';
         document.getElementById('logout-btn').style.display = 'inline-block';
         fetchAndSetVenueId().then(() => loadInitialData());
     } else {
@@ -325,6 +325,11 @@ window.onclick = function(event) {
 // 載入初始資料
 async function loadInitialData() {
     await loadVenues();
+    loadOverviewKpis();
+    if (_currentVenueId) {
+        loadBillingRecords();
+        loadVenueData();
+    }
 }
 
 // ========== 館方功能 ==========
@@ -343,6 +348,8 @@ async function loadVenues() {
             option.textContent = venue.name;
             select.appendChild(option);
         });
+        // 還原 JWT 取得的 venueId（重建 dropdown 後 value 會被清掉）
+        if (_currentVenueId) select.value = String(_currentVenueId);
     } catch (error) {
         console.error('載入館方失敗:', error);
     }

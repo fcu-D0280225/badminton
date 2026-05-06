@@ -6,10 +6,11 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\" \"npm run venue:dev\"",
     "backend:dev": "cd backend && npm run start:dev",
     "frontend:dev": "cd frontend && npm run dev",
-    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "venue:dev": "cd venue-app && npm run dev",
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ../venue-app && npm install",
     "build": "cd backend && npm run build && cd ../frontend && npm run build"
   },
   "keywords": ["booking", "reservation", "badminton", "nestjs", "pwa"],

@@ -73,6 +73,9 @@ export class Booking {
   @OneToMany(() => BookingParticipant, (p) => p.booking)
   participants: BookingParticipant[];
 
+  @Column({ type: 'datetime', nullable: true })
+  holdExpiresAt: Date; // pending 狀態的保留到期時間，付款完成後清除
+
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 }
