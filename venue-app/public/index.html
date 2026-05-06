@@ -63,7 +63,7 @@
         <!-- QR Code 安裝彈窗 -->
         <div id="qr-modal" class="modal" style="display: none;">
             <div class="modal-content">
-                <span class="close" onclick="closeQRModal()">&times;</span>
+                <button class="close" onclick="closeQRModal()" aria-label="關閉">&times;</button>
                 <h2>手機安裝</h2>
                 <div class="qr-instructions">
                     <p><strong>步驟：</strong></p>
@@ -249,7 +249,7 @@
                         <!-- 日期預約詳情彈窗 -->
                         <div id="date-booking-modal" class="modal" style="display: none;">
                             <div class="modal-content">
-                                <span class="close" onclick="closeDateBookingModal()">&times;</span>
+                                <button class="close" onclick="closeDateBookingModal()" aria-label="關閉">&times;</button>
                                 <h2 id="date-booking-title">預約詳情</h2>
                                 <div id="date-booking-content"></div>
                             </div>
@@ -368,7 +368,7 @@
     <!-- 編輯收費記錄彈窗 -->
     <div id="billing-edit-modal" class="modal" style="display:none;">
         <div class="modal-content">
-            <span class="close" onclick="closeBillingEditModal()">&times;</span>
+            <button class="close" onclick="closeBillingEditModal()" aria-label="關閉">&times;</button>
             <h2>編輯收費記錄</h2>
             <input type="hidden" id="edit-billing-id">
             <div class="form-group">

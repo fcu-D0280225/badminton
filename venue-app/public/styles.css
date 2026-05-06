@@ -349,6 +349,10 @@ body {
     position: absolute;
     right: 20px;
     top: 15px;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
 }
 
 .close:hover,
