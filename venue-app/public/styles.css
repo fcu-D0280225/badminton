@@ -1453,3 +1453,17 @@ body.admin-shell-active #tab-analytics {
     .bookings-table-wrap { display: none; }
     .bookings-cards { display: flex; }
 }
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+    @keyframes modalSlideIn {
+        from { transform: translateY(0); opacity: 1; }
+        to   { transform: translateY(0); opacity: 1; }
+    }
+    .modal-content { animation: none; }
+    .btn, .btn-install, .admin-nav-item,
+    .billing-card, .billing-chip-progress-fill,
+    .venue-setup-details > summary::before {
+        transition: none;
+    }
+}
