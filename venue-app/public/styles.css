@@ -169,7 +169,6 @@ body {
 
 .btn-primary:hover {
     background: #059669;
-    transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
 }
 
@@ -302,7 +301,6 @@ body {
 }
 
 .btn-install:hover {
-    transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
 }
 
