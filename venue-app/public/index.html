@@ -180,10 +180,23 @@
                                 <button class="btn btn-secondary" onclick="loadVenueSettings()">重新載入</button>
                             </div>
                         </div>
+
+                        <!-- 備註管理：給館方寫公告給用戶（公開/團主/臨打三種可見性） -->
+                        <div class="section">
+                            <h3>備註管理</h3>
+                            <textarea id="venue-note-content" placeholder="輸入備註內容"></textarea>
+                            <select id="venue-note-visibility">
+                                <option value="public">公開（給所有人看）</option>
+                                <option value="organizer">只給團主看</option>
+                                <option value="player">只給臨打看</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="createVenueNote()">新增備註</button>
+                            <div id="venue-notes-list"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 預約管理 group：包住既有 tab-bookings panel -->
+                <!-- 預約管理 group：dashboard 式（待確認 inbox + 今日預約 + 日曆 + 進階搜尋） -->
                 <div class="admin-group hidden" id="admin-group-bookings">
                     <!-- tab-nav 隱藏，保留以維持 showTab fallback -->
                     <div class="tab-nav" style="display:none;">
@@ -192,33 +205,58 @@
                         <button class="tab-btn" onclick="showTab('tab-analytics')">分析報表</button>
                     </div>
 
-                <!-- ===== 預約管理 ===== -->
                 <div id="tab-bookings" class="tab-panel active">
-                    <details class="section venue-setup-details">
-                        <summary>館方管理</summary>
-                        <div class="form-group" style="margin-top:12px;">
-                            <label>館方名稱：</label>
-                            <input type="text" id="venue-name" placeholder="輸入館方名稱">
-                        </div>
-                        <div class="form-group">
-                            <label>聯絡方式：</label>
-                            <input type="text" id="venue-contact" placeholder="輸入聯絡方式">
-                        </div>
-                        <button class="btn btn-primary" onclick="createVenue()">建立館方</button>
-                    </details>
-
-                    <div class="section">
-                        <h3>選擇館方</h3>
-                        <select id="venue-select" onchange="loadVenueData()">
-                            <option value="">請選擇館方</option>
-                        </select>
-                    </div>
+                    <!-- 隱藏：保留 venue-select DOM 給既有 JS 引用（JWT 自動填入 venueId） -->
+                    <select id="venue-select" onchange="loadVenueData()" style="display:none;">
+                        <option value="">請選擇館方</option>
+                    </select>
+                    <!-- 隱藏：保留建立館方欄位的 DOM 給既有 createVenue() 引用（場館設定頁有獨立的建立流程） -->
+                    <input type="hidden" id="venue-name">
+                    <input type="hidden" id="venue-contact">
 
                     <div id="venue-content" class="venue-content">
-                        <!-- 預約紀錄（FEAT-010: 桌機分頁表格 + 手機卡片，狀態 badge + 確認/取消 inline） -->
+                        <!-- 🔔 待確認預約 inbox -->
+                        <div class="section bookings-inbox-section">
+                            <h3 class="bookings-inbox-title">
+                                <span>🔔 待確認預約</span>
+                                <span id="bookings-inbox-count" class="bookings-inbox-count"></span>
+                            </h3>
+                            <div id="bookings-inbox-list"></div>
+                        </div>
+
+                        <!-- 📅 今日預約 -->
                         <div class="section">
-                            <h3>預約紀錄</h3>
-                            <div class="filter-group">
+                            <h3>
+                                📅 今日預約
+                                <span id="bookings-today-date" class="bookings-today-date"></span>
+                            </h3>
+                            <div id="bookings-today-list"></div>
+                        </div>
+
+                        <!-- 📆 預約日曆 -->
+                        <div class="section">
+                            <h3>📆 預約日曆</h3>
+                            <div class="calendar-controls">
+                                <button class="btn btn-secondary" onclick="previousMonth()">◀ 上個月</button>
+                                <h4 id="calendar-month-year"></h4>
+                                <button class="btn btn-secondary" onclick="nextMonth()">下個月 ▶</button>
+                            </div>
+                            <div id="venue-calendar" class="calendar-container"></div>
+                        </div>
+
+                        <!-- 日期預約詳情彈窗（從日曆觸發） -->
+                        <div id="date-booking-modal" class="modal" style="display: none;">
+                            <div class="modal-content">
+                                <button class="close" onclick="closeDateBookingModal()" aria-label="關閉">&times;</button>
+                                <h2 id="date-booking-title">預約詳情</h2>
+                                <div id="date-booking-content"></div>
+                            </div>
+                        </div>
+
+                        <!-- 全部預約 / 進階篩選（預設摺疊） -->
+                        <details class="section bookings-all-details">
+                            <summary>查看全部預約 / 進階篩選</summary>
+                            <div class="filter-group" style="margin-top:12px;">
                                 <input type="date" id="venue-filter-date" placeholder="選擇日期">
                                 <input type="text" id="venue-filter-name" placeholder="預約者姓名">
                                 <input type="text" id="venue-filter-timeslot" placeholder="時段">
@@ -233,40 +271,7 @@
                             </div>
                             <div id="venue-bookings-list"></div>
                             <div class="bookings-pagination" id="bookings-pagination"></div>
-                        </div>
-
-                        <!-- 可用時段 - 日曆顯示 -->
-                        <div class="section">
-                            <h3>預約日曆</h3>
-                            <div class="calendar-controls">
-                                <button class="btn btn-secondary" onclick="previousMonth()">◀ 上個月</button>
-                                <h4 id="calendar-month-year"></h4>
-                                <button class="btn btn-secondary" onclick="nextMonth()">下個月 ▶</button>
-                            </div>
-                            <div id="venue-calendar" class="calendar-container"></div>
-                        </div>
-
-                        <!-- 日期預約詳情彈窗 -->
-                        <div id="date-booking-modal" class="modal" style="display: none;">
-                            <div class="modal-content">
-                                <button class="close" onclick="closeDateBookingModal()" aria-label="關閉">&times;</button>
-                                <h2 id="date-booking-title">預約詳情</h2>
-                                <div id="date-booking-content"></div>
-                            </div>
-                        </div>
-
-                        <!-- 備註管理 -->
-                        <div class="section">
-                            <h3>備註管理</h3>
-                            <textarea id="venue-note-content" placeholder="輸入備註內容"></textarea>
-                            <select id="venue-note-visibility">
-                                <option value="public">公開（給所有人看）</option>
-                                <option value="organizer">只給團主看</option>
-                                <option value="player">只給臨打看</option>
-                            </select>
-                            <button class="btn btn-primary" onclick="createVenueNote()">新增備註</button>
-                            <div id="venue-notes-list"></div>
-                        </div>
+                        </details>
                     </div>
                 </div>
                 </div><!-- /#admin-group-bookings -->
