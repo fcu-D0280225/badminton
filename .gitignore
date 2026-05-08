@@ -4,6 +4,7 @@ frontend/node_modules/
 backend/database.db
 backend/dist/
 backend/coverage/
+client/dist/
 .DS_Store
 *.log
 .env
