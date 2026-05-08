@@ -17,7 +17,7 @@ function OrganizerView() {
 
   const loadEvents = async () => {
     if (!organizerName.trim()) return;
-    
+
     try {
       setLoading(true);
       const response = await api.getOrganizerEvents(organizerName);
@@ -32,7 +32,7 @@ function OrganizerView() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!organizerName.trim()) {
       alert('请先输入开团者姓名');
       return;
@@ -43,7 +43,7 @@ function OrganizerView() {
         ...formData,
         organizer_name: organizerName,
       });
-      
+
       alert('活动创建成功！');
       setFormData({
         title: '',
@@ -78,13 +78,15 @@ function OrganizerView() {
     return `${date} ${time}`;
   };
 
+  const inputCls = 'w-full px-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent';
+
   return (
     <div>
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">开团者管理</h2>
-        
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100 mb-4">开团者管理</h2>
+
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
             开团者姓名
           </label>
           <div className="flex gap-2">
@@ -93,12 +95,12 @@ function OrganizerView() {
               value={organizerName}
               onChange={(e) => setOrganizerName(e.target.value)}
               placeholder="请输入您的姓名"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`flex-1 ${inputCls}`}
             />
             <button
               onClick={loadEvents}
               disabled={!organizerName.trim() || loading}
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? '加载中...' : '查看我的活动'}
             </button>
@@ -116,11 +118,11 @@ function OrganizerView() {
       </div>
 
       {showForm && organizerName && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">创建活动</h3>
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 mb-6">
+          <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-4">创建活动</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                 活动标题 *
               </label>
               <input
@@ -128,25 +130,25 @@ function OrganizerView() {
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={inputCls}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                 活动描述
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows="3"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={inputCls}
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                   地点 *
                 </label>
                 <input
@@ -154,12 +156,12 @@ function OrganizerView() {
                   required
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputCls}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                   最大人数 *
                 </label>
                 <input
@@ -168,14 +170,14 @@ function OrganizerView() {
                   min="1"
                   value={formData.max_participants}
                   onChange={(e) => setFormData({ ...formData, max_participants: parseInt(e.target.value) })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputCls}
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                   日期 *
                 </label>
                 <input
@@ -183,12 +185,12 @@ function OrganizerView() {
                   required
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputCls}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-1">
                   时间 *
                 </label>
                 <input
@@ -196,7 +198,7 @@ function OrganizerView() {
                   required
                   value={formData.time}
                   onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={inputCls}
                 />
               </div>
             </div>
@@ -213,15 +215,15 @@ function OrganizerView() {
 
       {organizerName && events.length > 0 && (
         <div>
-          <h3 className="text-xl font-bold text-gray-800 mb-4">我的活动</h3>
+          <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-4">我的活动</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {events.map((event) => (
               <div
                 key={event.id}
-                className="bg-white rounded-lg shadow-md p-6"
+                className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6"
               >
                 <div className="flex justify-between items-start mb-3">
-                  <h4 className="text-lg font-bold text-gray-800">{event.title}</h4>
+                  <h4 className="text-lg font-bold text-gray-800 dark:text-slate-100">{event.title}</h4>
                   <button
                     onClick={() => handleDelete(event.id)}
                     className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
@@ -231,10 +233,10 @@ function OrganizerView() {
                 </div>
 
                 {event.description && (
-                  <p className="text-gray-600 mb-3 text-sm">{event.description}</p>
+                  <p className="text-gray-600 dark:text-slate-300 mb-3 text-sm">{event.description}</p>
                 )}
 
-                <div className="space-y-2 text-sm text-gray-600 mb-4">
+                <div className="space-y-2 text-sm text-gray-600 dark:text-slate-300 mb-4">
                   <div className="flex items-center">
                     <span className="font-medium w-20">地点：</span>
                     <span>{event.location}</span>
@@ -245,20 +247,20 @@ function OrganizerView() {
                   </div>
                   <div className="flex items-center">
                     <span className="font-medium w-20">人数：</span>
-                    <span className={event.current_participants >= event.max_participants ? 'text-red-600 font-bold' : ''}>
+                    <span className={event.current_participants >= event.max_participants ? 'text-red-600 dark:text-red-400 font-bold' : ''}>
                       {event.current_participants}/{event.max_participants}
                     </span>
                   </div>
                 </div>
 
                 {event.bookings && event.bookings.length > 0 && (
-                  <div className="border-t pt-3">
-                    <p className="text-sm font-medium text-gray-700 mb-2">预约名单：</p>
+                  <div className="border-t border-gray-200 dark:border-slate-700 pt-3">
+                    <p className="text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">预约名单：</p>
                     <ul className="space-y-1">
                       {event.bookings.map((booking) => (
-                        <li key={booking.id} className="text-sm text-gray-600">
+                        <li key={booking.id} className="text-sm text-gray-600 dark:text-slate-300">
                           • {booking.participant_name}
-                          {booking.phone && <span className="text-gray-400 ml-2">({booking.phone})</span>}
+                          {booking.phone && <span className="text-gray-400 dark:text-slate-500 ml-2">({booking.phone})</span>}
                         </li>
                       ))}
                     </ul>
@@ -271,8 +273,8 @@ function OrganizerView() {
       )}
 
       {organizerName && events.length === 0 && !loading && (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <p className="text-gray-500">您还没有创建任何活动</p>
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-8 text-center">
+          <p className="text-gray-500 dark:text-slate-400">您还没有创建任何活动</p>
         </div>
       )}
     </div>

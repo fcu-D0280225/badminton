@@ -103,15 +103,15 @@ function ParticipantView() {
 
   return (
     <div>
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">我的預約</h2>
-        <p className="text-sm text-gray-500 mb-4">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100 mb-4">我的預約</h2>
+        <p className="text-sm text-gray-500 dark:text-slate-400 mb-4">
           要報名新場次請至「探索」分頁，點選場次卡片即可兩步完成報名。
         </p>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-200 mb-2">
               您的姓名 *
             </label>
             <input
@@ -119,14 +119,14 @@ function ParticipantView() {
               value={participantName}
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="請輸入您的姓名"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           <button
             onClick={loadMyBookings}
             disabled={!participantName.trim() || loading}
-            className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-slate-600 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? '載入中...' : '查詢我的預約'}
           </button>
@@ -137,8 +137,8 @@ function ParticipantView() {
         <div
           className={`mb-4 px-4 py-3 rounded-lg text-sm ${
             statusMsg.type === 'error'
-              ? 'bg-red-50 border border-red-200 text-red-700'
-              : 'bg-blue-50 border border-blue-200 text-blue-700'
+              ? 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
+              : 'bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-200'
           }`}
           role="status"
         >
@@ -147,8 +147,8 @@ function ParticipantView() {
       )}
 
       {showBookings && bookings.length > 0 && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">預約記錄</h3>
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 mb-6">
+          <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-4">預約記錄</h3>
           <div className="space-y-4">
             {bookings.map((booking) => {
               const confirming = confirmCancelId === booking.id;
@@ -156,12 +156,12 @@ function ParticipantView() {
               return (
                 <div
                   key={booking.id}
-                  className="border border-gray-200 rounded-lg p-4"
+                  className="border border-gray-200 dark:border-slate-700 rounded-lg p-4"
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 className="font-bold text-gray-800 mb-1">{booking.title}</h4>
-                      <div className="text-sm text-gray-600 space-y-1">
+                      <h4 className="font-bold text-gray-800 dark:text-slate-100 mb-1">{booking.title}</h4>
+                      <div className="text-sm text-gray-600 dark:text-slate-300 space-y-1">
                         <p>開團者：{booking.organizer_name}</p>
                         <p>地點：{booking.location}</p>
                         <p>時間：{formatDateTime(booking.date, booking.time)}</p>
@@ -181,7 +181,7 @@ function ParticipantView() {
                       {confirming && (
                         <button
                           onClick={() => setConfirmCancelId(null)}
-                          className="text-xs text-gray-500 hover:text-gray-700"
+                          className="text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200"
                         >
                           放棄
                         </button>
@@ -189,7 +189,7 @@ function ParticipantView() {
                       {!ratingOpen && (
                         <button
                           onClick={() => openRating(booking.id)}
-                          className="px-4 py-2 bg-amber-100 text-amber-700 rounded-lg text-sm hover:bg-amber-200 transition-colors"
+                          className="px-4 py-2 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 rounded-lg text-sm hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors"
                         >
                           評分團主
                         </button>
@@ -198,14 +198,14 @@ function ParticipantView() {
                   </div>
 
                   {ratingOpen && (
-                    <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
                       {ratingState === 'success' ? (
-                        <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                        <div className="text-sm text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg px-3 py-2">
                           ✓ 評分已送出，謝謝！
                         </div>
                       ) : (
                         <div className="space-y-2">
-                          <div className="text-xs font-medium text-gray-600">為團主 {booking.organizer_name} 打分：</div>
+                          <div className="text-xs font-medium text-gray-600 dark:text-slate-300">為團主 {booking.organizer_name} 打分：</div>
                           <div className="flex items-center gap-1" role="radiogroup" aria-label="評分">
                             {[1, 2, 3, 4, 5].map(n => (
                               <button
@@ -215,11 +215,13 @@ function ParticipantView() {
                                 aria-checked={ratingScore === n}
                                 onClick={() => setRatingScore(n)}
                                 className={`text-2xl leading-none transition-colors ${
-                                  n <= ratingScore ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-300'
+                                  n <= ratingScore
+                                    ? 'text-yellow-500 dark:text-yellow-400'
+                                    : 'text-gray-300 dark:text-slate-600 hover:text-yellow-300 dark:hover:text-yellow-400'
                                 }`}
                               >★</button>
                             ))}
-                            <span className="ml-2 text-xs text-gray-500">
+                            <span className="ml-2 text-xs text-gray-500 dark:text-slate-400">
                               {ratingScore ? `${ratingScore} / 5` : '尚未選擇'}
                             </span>
                           </div>
@@ -228,10 +230,10 @@ function ParticipantView() {
                             onChange={e => setRatingComment(e.target.value)}
                             placeholder="留言（選填）"
                             rows={2}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           {ratingError && (
-                            <div className="text-xs text-red-600">{ratingError}</div>
+                            <div className="text-xs text-red-600 dark:text-red-400">{ratingError}</div>
                           )}
                           <div className="flex gap-2">
                             <button
@@ -240,7 +242,7 @@ function ParticipantView() {
                               disabled={ratingState === 'submitting'}
                               className={`px-4 py-2 rounded-lg text-sm font-medium ${
                                 ratingState === 'submitting'
-                                  ? 'bg-blue-300 text-white cursor-not-allowed'
+                                  ? 'bg-blue-300 dark:bg-blue-800 text-white cursor-not-allowed'
                                   : 'bg-blue-500 text-white hover:bg-blue-600'
                               }`}
                             >
@@ -249,7 +251,7 @@ function ParticipantView() {
                             <button
                               type="button"
                               onClick={closeRating}
-                              className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
+                              className="px-3 py-2 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200"
                             >
                               取消
                             </button>
@@ -266,9 +268,9 @@ function ParticipantView() {
       )}
 
       {showBookings && bookings.length === 0 && participantName && !loading && (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <p className="text-gray-500">您還沒有任何預約記錄</p>
-          <p className="text-sm text-gray-400 mt-2">前往「探索」分頁挑選想報名的場次</p>
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-8 text-center">
+          <p className="text-gray-500 dark:text-slate-400">您還沒有任何預約記錄</p>
+          <p className="text-sm text-gray-400 dark:text-slate-500 mt-2">前往「探索」分頁挑選想報名的場次</p>
         </div>
       )}
     </div>

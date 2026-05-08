@@ -13,6 +13,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/styles.css">
+    <script>
+        // 早於 body 渲染套用主題，避免閃白
+        (function () {
+            try {
+                var saved = localStorage.getItem('theme');
+                if (saved === 'dark' || saved === 'light') {
+                    document.documentElement.setAttribute('data-theme', saved);
+                }
+            } catch (_) {}
+        })();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body>
@@ -29,7 +40,7 @@
                 <input type="password" id="login-password" placeholder="輸入密碼" onkeydown="if(event.key==='Enter')doLogin()">
             </div>
             <button class="btn btn-primary" style="width:100%" onclick="doLogin()">登入</button>
-            <p id="login-error" style="color:red;display:none;margin-top:10px;"></p>
+            <p id="login-error" class="login-error-msg" style="display:none;"></p>
         </div>
     </div>
 
@@ -38,7 +49,7 @@
         <header class="header">
             <h1>館方管理系統</h1>
             <div class="install-section">
-                <span id="header-username-legacy" style="color:#fff;margin-right:10px;font-size:14px;"></span>
+                <span id="header-username-legacy" class="header-username-legacy"></span>
                 <button id="logout-btn-legacy" class="btn btn-secondary" style="display:none;margin-right:8px;" onclick="doLogout()">登出</button>
                 <button class="btn btn-install" onclick="showInstallQR()">手機安裝</button>
             </div>
@@ -94,6 +105,7 @@
                 <div class="admin-topbar-title" id="admin-topbar-title">場館總覽</div>
                 <div class="admin-topbar-actions">
                     <span id="header-username" class="admin-topbar-username"></span>
+                    <button id="theme-toggle" class="theme-toggle-btn" type="button" onclick="toggleTheme()" aria-label="切換夜間模式" title="切換夜間模式">🌙</button>
                     <button id="logout-btn" class="btn btn-secondary" style="display:none;" onclick="doLogout()">登出</button>
                     <button class="btn btn-install" onclick="showInstallQR()">手機安裝</button>
                 </div>
@@ -399,6 +411,27 @@
         </div>
     </div>
 
+    <script>
+        // 夜間模式切換 + icon 同步
+        (function () {
+            function applyIcon() {
+                var btn = document.getElementById('theme-toggle');
+                if (!btn) return;
+                var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+                btn.textContent = dark ? '☀️' : '🌙';
+                btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+                btn.title = dark ? '切換到日間模式' : '切換到夜間模式';
+            }
+            window.toggleTheme = function () {
+                var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try { localStorage.setItem('theme', next); } catch (_) {}
+                applyIcon();
+            };
+            document.addEventListener('DOMContentLoaded', applyIcon);
+        })();
+    </script>
     <script src="/app.js"></script>
 </body>
 </html>

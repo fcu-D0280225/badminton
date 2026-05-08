@@ -119,7 +119,7 @@ function EventList() {
     return (
       <div className="text-center py-12">
         <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        <p className="mt-4 text-gray-600">加载中...</p>
+        <p className="mt-4 text-gray-600 dark:text-slate-300">加载中...</p>
       </div>
     );
   }
@@ -131,7 +131,7 @@ function EventList() {
       onTouchEnd={handleTouchEnd}
     >
       <div
-        className="flex items-center justify-center text-sm text-gray-500 overflow-hidden transition-[height] duration-150"
+        className="flex items-center justify-center text-sm text-gray-500 dark:text-slate-400 overflow-hidden transition-[height] duration-150"
         style={{ height: refreshing ? PULL_THRESHOLD : pull }}
       >
         {refreshing
@@ -145,7 +145,7 @@ function EventList() {
       </div>
 
       <div className="mb-6 flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">所有活动</h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-slate-100">所有活动</h2>
         <button
           onClick={loadEvents}
           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -155,8 +155,8 @@ function EventList() {
       </div>
 
       {events.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <p className="text-gray-500 text-lg">暂无活动</p>
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-8 text-center">
+          <p className="text-gray-500 dark:text-slate-400 text-lg">暂无活动</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -168,13 +168,15 @@ function EventList() {
                 key={event.id}
                 type="button"
                 onClick={() => setSelectedId(event.id)}
-                className="text-left bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="text-left bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-xl font-bold text-gray-800">{event.title}</h3>
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">{event.title}</h3>
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      isFull ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                      isFull
+                        ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
+                        : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
                     }`}
                     title={`已 ${event.current_participants} / 上限 ${event.max_participants}`}
                   >
@@ -183,10 +185,10 @@ function EventList() {
                 </div>
 
                 {event.description && (
-                  <p className="text-gray-600 mb-3 line-clamp-2">{event.description}</p>
+                  <p className="text-gray-600 dark:text-slate-300 mb-3 line-clamp-2">{event.description}</p>
                 )}
 
-                <div className="space-y-2 text-sm text-gray-600">
+                <div className="space-y-2 text-sm text-gray-600 dark:text-slate-300">
                   <div className="flex items-center">
                     <span className="font-medium w-20">开团者：</span>
                     <span>{event.organizer_name}</span>
@@ -208,25 +210,25 @@ function EventList() {
 
       {selected && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 dark:bg-black/60"
           onClick={() => setSelectedId(null)}
         >
           <div
-            className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md sm:mx-4 max-h-[85vh] overflow-y-auto p-6 shadow-xl"
+            className="bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md sm:mx-4 max-h-[85vh] overflow-y-auto p-6 shadow-xl"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-xl font-bold text-gray-800">{selected.title}</h3>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">{selected.title}</h3>
               <button
                 onClick={() => setSelectedId(null)}
-                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+                className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 text-2xl leading-none"
                 aria-label="關閉"
               >×</button>
             </div>
 
             {/* 步驟一：場次資訊 */}
-            <div className="space-y-3 text-sm text-gray-700 mb-5">
-              <div className="text-xs font-semibold text-blue-600 uppercase tracking-wide">步驟 1 · 確認場次資訊</div>
+            <div className="space-y-3 text-sm text-gray-700 dark:text-slate-200 mb-5">
+              <div className="text-xs font-semibold text-blue-600 dark:text-blue-300 uppercase tracking-wide">步驟 1 · 確認場次資訊</div>
               <div><span className="font-semibold">場館 / 地點：</span>{selected.location}</div>
               <div><span className="font-semibold">日期時間：</span>{formatDateTime(selected.date, selected.time)}</div>
               <div><span className="font-semibold">開團者：</span>{selected.organizer_name}</div>
@@ -234,8 +236,8 @@ function EventList() {
                 <span className="font-semibold">名額：</span>
                 {selected.current_participants} / {selected.max_participants}
                 {selectedFull
-                  ? <span className="ml-2 px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs">已額滿</span>
-                  : <span className="ml-2 px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs">尚有名額</span>}
+                  ? <span className="ml-2 px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs">已額滿</span>
+                  : <span className="ml-2 px-2 py-0.5 rounded bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 text-xs">尚有名額</span>}
               </div>
               {selected.description && (
                 <div>
@@ -246,13 +248,13 @@ function EventList() {
             </div>
 
             {/* 步驟二：報名表單 */}
-            <div className="border-t border-gray-200 pt-4">
-              <div className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-3">步驟 2 · 送出報名</div>
+            <div className="border-t border-gray-200 dark:border-slate-700 pt-4">
+              <div className="text-xs font-semibold text-blue-600 dark:text-blue-300 uppercase tracking-wide mb-3">步驟 2 · 送出報名</div>
 
               {bookingState === 'success' ? (
                 <div
                   role="status"
-                  className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-green-700 text-sm flex items-center"
+                  className="rounded-lg bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 px-4 py-3 text-green-700 dark:text-green-300 text-sm flex items-center"
                 >
                   <span className="mr-2">✓</span>
                   <span>報名成功！</span>
@@ -260,28 +262,28 @@ function EventList() {
               ) : (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">您的姓名 *</label>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-slate-200 mb-1">您的姓名 *</label>
                     <input
                       type="text"
                       value={participantName}
                       onChange={(e) => handleNameChange(e.target.value)}
                       placeholder="請輸入您的姓名"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">聯絡電話（選填）</label>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-slate-200 mb-1">聯絡電話（選填）</label>
                     <input
                       type="tel"
                       value={phone}
                       onChange={(e) => handlePhoneChange(e.target.value)}
                       placeholder="請輸入聯絡電話"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
 
                   {bookingError && (
-                    <div className="text-sm text-red-600">{bookingError}</div>
+                    <div className="text-sm text-red-600 dark:text-red-400">{bookingError}</div>
                   )}
 
                   <button
@@ -294,9 +296,9 @@ function EventList() {
                     }
                     className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       selectedFull
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        ? 'bg-gray-300 dark:bg-slate-600 text-gray-500 dark:text-slate-400 cursor-not-allowed'
                         : !participantName.trim() || bookingState === 'submitting'
-                        ? 'bg-blue-300 text-white cursor-not-allowed'
+                        ? 'bg-blue-300 dark:bg-blue-800 text-white cursor-not-allowed'
                         : 'bg-blue-500 text-white hover:bg-blue-600'
                     }`}
                   >

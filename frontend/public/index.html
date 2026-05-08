@@ -21,6 +21,15 @@
                 // 若瀏覽器阻擋 localStorage（極少數情況），仍讓後續 app.js 進行檢查/導向
             }
         })();
+        // 早於 body 渲染套用主題，避免閃白
+        (function () {
+            try {
+                var saved = localStorage.getItem('theme');
+                if (saved === 'dark' || saved === 'light') {
+                    document.documentElement.setAttribute('data-theme', saved);
+                }
+            } catch (_) {}
+        })();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
@@ -30,6 +39,7 @@
             <h1>🏸 羽毛球預約系統</h1>
             <div class="header-actions">
                 <span class="user-info" id="user-info"></span>
+                <button id="theme-toggle" class="theme-toggle-btn" type="button" onclick="toggleTheme()" aria-label="切換夜間模式" title="切換夜間模式">🌙</button>
                 <button id="btn-notif" class="btn btn-secondary" onclick="toggleNotifications()" style="display:none">🔔 開啟通知</button>
                 <button class="btn btn-secondary btn-logout" onclick="logout()">登出</button>
                 <button class="btn btn-install" onclick="showInstallQR()">📱 手機安裝</button>
@@ -194,7 +204,7 @@
                     <!-- 信用分數 -->
                     <div class="section">
                         <h3>信用分數</h3>
-                        <div id="plv-credit-score" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:14px;"></div>
+                        <div id="plv-credit-score" class="credit-score-box"></div>
                     </div>
 
                     <!-- 可用場次（可報名的場地） -->
@@ -287,7 +297,7 @@
                             <h3 style="margin:0;">我參與的場次</h3>
                         </div>
                         <!-- 信用分數 -->
-                        <div id="player-credit-score" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:14px;margin-bottom:12px;"></div>
+                        <div id="player-credit-score" class="credit-score-box" style="margin-bottom:12px;"></div>
                         <div id="player-booking-history"></div>
                     </div>
 
@@ -307,6 +317,27 @@
         </main>
     </div>
 
+    <script>
+        // 夜間模式切換 + icon 同步
+        (function () {
+            function applyIcon() {
+                var btn = document.getElementById('theme-toggle');
+                if (!btn) return;
+                var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+                btn.textContent = dark ? '☀️' : '🌙';
+                btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+                btn.title = dark ? '切換到日間模式' : '切換到夜間模式';
+            }
+            window.toggleTheme = function () {
+                var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try { localStorage.setItem('theme', next); } catch (_) {}
+                applyIcon();
+            };
+            document.addEventListener('DOMContentLoaded', applyIcon);
+        })();
+    </script>
     <script src="/app.js"></script>
 </body>
 </html>

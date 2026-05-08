@@ -1625,3 +1625,253 @@ body.admin-shell-active #tab-analytics {
     .today-card { flex-direction: column; align-items: flex-start; gap: 4px; }
     .today-card-time { min-width: 0; }
 }
+
+/* ========================================================================== */
+/* 🌙 夜間模式：[data-theme="dark"] 套用                                        */
+/* ========================================================================== */
+
+/* Toggle 按鈕（topbar / legacy header 共用） */
+.theme-toggle-btn {
+    background: transparent;
+    border: 1px solid var(--admin-border, var(--color-border));
+    color: var(--color-text);
+    padding: 6px 10px;
+    border-radius: var(--radius-btn);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    min-width: 36px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.theme-toggle-btn:hover {
+    background: var(--admin-active-bg, rgba(0,0,0,0.04));
+}
+
+[data-theme="dark"] {
+    /* 主題變數覆寫 */
+    --color-primary: #34d399;
+    --color-primary-dark: #10b981;
+    --color-danger: #f87171;
+    --color-warning: #fbbf24;
+    --color-text: #e5e7eb;
+    --color-text-secondary: #9ca3af;
+    --color-border: #334155;
+    --color-border-variant: #475569;
+    --color-surface: #1e293b;
+    --color-bg: #0f172a;
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04);
+
+    /* 付款狀態語意色（暗色背景對應） */
+    --status-paid-bg: #064e3b;       --status-paid-text: #6ee7b7;     --status-paid-border: #10b981;
+    --status-unpaid-bg: #7f1d1d;     --status-unpaid-text: #fca5a5;   --status-unpaid-border: #ef4444;
+    --status-transfer-bg: #78350f;   --status-transfer-text: #fcd34d; --status-transfer-border: #f59e0b;
+
+    /* admin shell 變數覆寫 */
+    --admin-bg:           #0f172a;
+    --admin-surface:      #1e293b;
+    --admin-sidebar-bg:   #1e293b;
+    --admin-sidebar-text: #e5e7eb;
+    --admin-sidebar-muted:#94a3b8;
+    --admin-active-bg:    #312e81;
+    --admin-active-text:  #a5b4fc;
+    --admin-border:       #334155;
+    --admin-topbar-bg:    #1e293b;
+    --admin-topbar-text:  #e5e7eb;
+    --admin-shadow:       0 1px 2px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04);
+
+    color-scheme: dark;
+}
+
+/* 寫死成 white 的元素覆寫（CSS 變數無法觸及之處） */
+[data-theme="dark"] .header,
+[data-theme="dark"] .calendar-container,
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .login-box,
+[data-theme="dark"] .tab-nav {
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+[data-theme="dark"] .modal-content {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+[data-theme="dark"] .modal {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="dark"] .calendar-day:hover {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+[data-theme="dark"] .calendar-day.other-month {
+    color: #475569;
+}
+
+[data-theme="dark"] .calendar-day.has-booking {
+    background: #1f2937;
+}
+
+[data-theme="dark"] .bookings-table tbody tr:hover {
+    background: #273449;
+}
+
+[data-theme="dark"] .booking-status-badge.badge-pending   { background: #78350f; color: #fcd34d; }
+[data-theme="dark"] .booking-status-badge.badge-confirmed { background: #064e3b; color: #6ee7b7; }
+[data-theme="dark"] .booking-status-badge.badge-cancelled { background: #334155; color: #94a3b8; }
+
+/* badge 暗色版 */
+[data-theme="dark"] .badge-success { background: #064e3b; color: #6ee7b7; }
+[data-theme="dark"] .badge-warning { background: #78350f; color: #fcd34d; }
+[data-theme="dark"] .badge-danger  { background: #7f1d1d; color: #fca5a5; }
+
+/* tab-btn hover/active 微調 */
+[data-theme="dark"] .tab-btn:hover,
+[data-theme="dark"] .tab-btn.active {
+    background: rgba(16, 185, 129, 0.12);
+}
+
+/* 表單聚焦邊框 */
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-group select:focus,
+[data-theme="dark"] .form-group textarea:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25);
+}
+
+/* qr-url input bg fix */
+[data-theme="dark"] .qr-url input { background: var(--color-bg); color: var(--color-text); }
+
+/* close 按鈕 */
+[data-theme="dark"] .close { color: #94a3b8; }
+[data-theme="dark"] .close:hover { color: #e5e7eb; }
+
+/* FEAT-016 inbox card：覆寫淡黃色漸層底 */
+[data-theme="dark"] .bookings-inbox-section {
+    background: linear-gradient(0deg, rgba(245,158,11,0.08) 0%, var(--admin-surface) 100%);
+}
+[data-theme="dark"] .inbox-card {
+    background: var(--admin-surface);
+    border-color: #78350f;
+}
+[data-theme="dark"] .inbox-card-when { color: var(--color-text); }
+[data-theme="dark"] .inbox-card-meta { color: var(--color-text-secondary); }
+
+/* today-card */
+[data-theme="dark"] .today-card { background: var(--admin-surface); }
+[data-theme="dark"] .today-card-time,
+[data-theme="dark"] .today-card-name { color: var(--color-text); }
+
+/* 場館設定 status 提示 */
+[data-theme="dark"] .venue-settings-status.is-info {
+    background: #1e3a8a;
+    color: #bfdbfe;
+    border-color: #3b82f6;
+}
+[data-theme="dark"] .venue-settings-status.is-error {
+    background: #7f1d1d;
+    color: #fca5a5;
+    border-color: #ef4444;
+}
+
+/* 文字顏色寫死的散點修正 */
+[data-theme="dark"] .qr-instructions li,
+[data-theme="dark"] .install-tips li { color: var(--color-text-secondary); }
+
+[data-theme="dark"] .bookings-today-date,
+[data-theme="dark"] .inbox-card-meta { color: var(--color-text-secondary); }
+
+/* HTML 內取代 inline 樣式的 helper class */
+.login-error-msg { color: var(--color-danger); margin-top: 10px; font-size: 14px; }
+.header-username-legacy { color: var(--color-text); margin-right: 10px; font-size: 14px; }
+[data-theme="dark"] .header-username-legacy { color: var(--color-text); }
+
+/* ========================================================================== */
+/* dark mode：覆寫 app.js innerHTML 注入的 inline 顏色字串                     */
+/* （用屬性選擇器，不動 app.js）                                              */
+/* ========================================================================== */
+[data-theme="dark"] [style*="color:#999"],
+[data-theme="dark"] [style*="color: #999"],
+[data-theme="dark"] [style*="color:#9ca3af"],
+[data-theme="dark"] [style*="color:#94a3b8"] {
+    color: var(--color-text-secondary) !important;
+}
+[data-theme="dark"] [style*="color:#666"],
+[data-theme="dark"] [style*="color: #666"],
+[data-theme="dark"] [style*="color:#555"],
+[data-theme="dark"] [style*="color:#6b7280"] {
+    color: #cbd5e1 !important;
+}
+[data-theme="dark"] [style*="color:#333"],
+[data-theme="dark"] [style*="color: #333"] {
+    color: var(--color-text) !important;
+}
+[data-theme="dark"] [style*="color:#dc2626"],
+[data-theme="dark"] [style*="color:#b91c1c"],
+[data-theme="dark"] [style*="color:#991b1b"] {
+    color: #fca5a5 !important;
+}
+[data-theme="dark"] [style*="color:#28a745"],
+[data-theme="dark"] [style*="color: #28a745"],
+[data-theme="dark"] [style*="color:#065f46"] {
+    color: #6ee7b7 !important;
+}
+[data-theme="dark"] [style*="color:#0369a1"],
+[data-theme="dark"] [style*="color:#3730a3"],
+[data-theme="dark"] [style*="color:#2563eb"] {
+    color: #93c5fd !important;
+}
+[data-theme="dark"] [style*="color:#92400e"],
+[data-theme="dark"] [style*="color:#f59e0b"],
+[data-theme="dark"] [style*="color:#ffc107"] {
+    color: #fcd34d !important;
+}
+
+/* 背景 / border：使用屬性選擇器無法區分多重宣告，但常見的「白底卡」與「淺灰底」需翻轉 */
+[data-theme="dark"] [style*="background:#fff"],
+[data-theme="dark"] [style*="background: #fff"],
+[data-theme="dark"] [style*="background:#ffffff"],
+[data-theme="dark"] [style*="background:#f9fafb"],
+[data-theme="dark"] [style*="background:#f3f4f6"] {
+    background: var(--color-surface) !important;
+}
+[data-theme="dark"] [style*="background:#f0f9ff"],
+[data-theme="dark"] [style*="background:#eff6ff"] {
+    background: #1e3a8a !important;
+}
+[data-theme="dark"] [style*="background:#fee2e2"] {
+    background: #7f1d1d !important;
+}
+[data-theme="dark"] [style*="background:#d1fae5"] {
+    background: #064e3b !important;
+}
+[data-theme="dark"] [style*="background:#e5e7eb"] {
+    background: #334155 !important;
+}
+
+/* 補完：.view（admin-shell 啟用前的初始閃白避免）、tab-nav border、週曆選中態 */
+[data-theme="dark"] .view {
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+[data-theme="dark"] .tab-nav {
+    border-bottom-color: var(--admin-border);
+}
+[data-theme="dark"] .cal-week-header-day.selected {
+    background: rgba(16, 185, 129, 0.18);
+}
+[data-theme="dark"] .cal-week-time-label,
+[data-theme="dark"] .cal-week-day-name {
+    color: var(--color-text-secondary);
+}
+/* 收費日曆 slot bar 預設灰底太亮 */
+[data-theme="dark"] .cal-slot-bar {
+    background: #334155;
+}
+/* admin-panel-placeholder 文字 */
+[data-theme="dark"] .admin-panel-placeholder { color: var(--admin-sidebar-muted); }
+[data-theme="dark"] .admin-panel-placeholder .ph-title { color: var(--admin-sidebar-text); }

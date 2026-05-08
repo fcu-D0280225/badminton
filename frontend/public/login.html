@@ -13,6 +13,15 @@
                 if (token) window.location.replace('/app');
             } catch (_) {}
         })();
+        // 早於 body 渲染套用主題，避免閃白
+        (function () {
+            try {
+                var saved = localStorage.getItem('theme');
+                if (saved === 'dark' || saved === 'light') {
+                    document.documentElement.setAttribute('data-theme', saved);
+                }
+            } catch (_) {}
+        })();
     </script>
 </head>
 <body>
