@@ -463,6 +463,7 @@ function inboxCardHtml(b) {
             <div class="inbox-card-actions">
                 <button class="btn btn-primary btn-sm" onclick="updateBookingStatus(${b.id}, 'confirmed')">確認</button>
                 <button class="btn btn-danger btn-sm" onclick="updateBookingStatus(${b.id}, 'cancelled')">取消</button>
+                ${paymentStatus !== 'paid' && b.payment?.id ? `<button class="btn btn-success btn-sm" onclick="markBookingPaidOnsite(${b.payment.id}, 'cash')">現金</button><button class="btn btn-success btn-sm" onclick="markBookingPaidOnsite(${b.payment.id}, 'transfer')">轉帳</button>` : ''}
             </div>
         </div>
     `;
@@ -501,6 +502,7 @@ function todayCardHtml(b) {
     const status = b.status || 'pending';
     const paymentStatus = b.payment?.status || 'unpaid';
     const paymentAmount = b.payment?.amount || 0;
+    const payMethodLabel = b.payment?.paymentMethod === 'cash' ? '現金' : b.payment?.paymentMethod === 'transfer' ? '轉帳' : '';
     return `
         <div class="today-card ${STATUS_CLASS[status] || ''}">
             <div class="today-card-time">${escapeHtml(b.timeSlot)}</div>
@@ -508,7 +510,10 @@ function todayCardHtml(b) {
                 <div class="today-card-name">${escapeHtml(participant)}</div>
                 <div class="today-card-meta">
                     <span class="booking-status-badge badge-${status}">${STATUS_LABEL[status] || status}</span>
-                    ${paymentStatus === 'paid' ? `<span class="paid-badge">已付 NT$${paymentAmount}</span>` : '<span class="unpaid">未付款</span>'}
+                    ${paymentStatus === 'paid'
+                        ? `<span class="paid-badge">已付 NT$${paymentAmount}${payMethodLabel ? `（${payMethodLabel}）` : ''}</span>`
+                        : `<span class="unpaid">未付款</span>${b.payment?.id ? `<button class="btn btn-success btn-sm" style="margin-left:6px;" onclick="markBookingPaidOnsite(${b.payment.id}, 'cash')">現金</button><button class="btn btn-success btn-sm" onclick="markBookingPaidOnsite(${b.payment.id}, 'transfer')">轉帳</button>` : ''}`
+                    }
                 </div>
             </div>
         </div>
@@ -618,9 +623,14 @@ function gotoBookingsPage(p) {
 
 function bookingActionsHtml(b) {
     const status = b.status || 'pending';
+    const paymentStatus = b.payment?.status || 'unpaid';
     const btns = [];
     if (status !== 'confirmed') btns.push(`<button class="btn btn-primary btn-sm" onclick="updateBookingStatus(${b.id}, 'confirmed')">確認</button>`);
     if (status !== 'cancelled') btns.push(`<button class="btn btn-danger btn-sm"  onclick="updateBookingStatus(${b.id}, 'cancelled')">取消</button>`);
+    if (paymentStatus !== 'paid' && b.payment?.id) {
+        btns.push(`<button class="btn btn-success btn-sm" onclick="markBookingPaidOnsite(${b.payment.id}, 'cash')">現金</button>`);
+        btns.push(`<button class="btn btn-success btn-sm" onclick="markBookingPaidOnsite(${b.payment.id}, 'transfer')">轉帳</button>`);
+    }
     return btns.join(' ');
 }
 
@@ -1111,6 +1121,30 @@ async function deleteVenueNote(noteId) {
         await loadVenueNotes();
     } catch (error) {
         alert('刪除失敗：' + error.message);
+    }
+}
+
+async function markBookingPaidOnsite(paymentId, method) {
+    const label = method === 'cash' ? '現金' : '轉帳';
+    if (!confirm(`確定標記為現場${label}付款嗎？`)) return;
+    try {
+        await authFetch(`${API_BASE}/payments/${paymentId}/mark-paid`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentMethod: method }),
+        });
+        // 同步更新 cache 中的付款狀態（避免整頁重載）
+        const cached = _venueBookingsCache.find(b => b.payment?.id === paymentId);
+        if (cached?.payment) {
+            cached.payment.status = 'paid';
+            cached.payment.paymentMethod = method;
+        }
+        renderVenueBookings();
+        if (typeof loadPendingInbox === 'function') loadPendingInbox();
+        if (typeof loadTodayBookings === 'function') loadTodayBookings();
+        if (typeof loadOverviewKpis === 'function') loadOverviewKpis();
+    } catch (e) {
+        alert('標記失敗：' + (e.message || e));
     }
 }
 

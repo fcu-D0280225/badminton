@@ -119,6 +119,10 @@ export class BookingService {
   // ── 更新預約 ─────────────────────────────────────────────────────
   async updateBooking(id: number, data: Partial<Booking>): Promise<Booking> {
     const before = await this.findOne(id);
+    // 館方手動確認時清除保留到期時間，避免 cron 自動取消
+    if (data.status === 'confirmed') {
+      data = { ...data, holdExpiresAt: null };
+    }
     await this.bookingRepository.update(id, data);
     const after = await this.findOne(id);
 
