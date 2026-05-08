@@ -16,7 +16,7 @@ import { Booker } from '../entities/booker.entity';
     TypeOrmModule.forFeature([Account, Venue, Organizer, Player, Booker]),
     PassportModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'badminton-booking-secret-key',
+      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '7d' },
     }),
   ],

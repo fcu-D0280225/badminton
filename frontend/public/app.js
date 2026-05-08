@@ -345,9 +345,9 @@ async function filterVenueBookings() {
                 <p><strong>預約者：</strong>${participant}</p>
                 <p><strong>狀態：</strong><span class="badge badge-${paymentStatus === 'paid' ? 'success' : 'warning'}">${paymentStatus === 'paid' ? '已付款' : '未付款'}</span></p>
                 <p><strong>金額：</strong>$${paymentAmount}</p>
-                ${booking.notes ? `<p><strong>備註：</strong>${booking.notes}</p>` : ''}
+                ${booking.notes ? `<p><strong>備註：</strong>${escapeHtml(booking.notes)}</p>` : ''}
             `;
-            
+
             list.appendChild(card);
         });
     } catch (error) {
@@ -701,7 +701,7 @@ async function loadVenueNotes() {
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <p>${note.content}</p>
+                <p>${escapeHtml(note.content)}</p>
                 <small>可見性：${note.visibility === 'public' ? '公開' : note.visibility === 'organizer' ? '只給團主看' : '只給臨打看'}</small>
                 <button class="btn btn-danger" style="margin-top: 10px;" onclick="deleteVenueNote(${note.id})">刪除</button>
             `;
@@ -1455,7 +1455,7 @@ async function loadOrganizerNotes() {
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <p>${note.content}</p>
+                <p>${escapeHtml(note.content)}</p>
                 <small>可見性：${note.visibility === 'public' ? '公開' : '只給臨打看'}</small>
                 <button class="btn btn-danger" style="margin-top: 10px;" onclick="deleteOrganizerNote(${note.id})">刪除</button>
             `;
@@ -1761,10 +1761,10 @@ async function loadPlayerVenueBookings() {
             const notesHtml = item.notes.length > 0 
                 ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
                     <strong>館方備註：</strong>
-                    ${item.notes.map(n => `<p style="margin: 5px 0;">${n.content}</p>`).join('')}
+                    ${item.notes.map(n => `<p style="margin: 5px 0;">${escapeHtml(n.content)}</p>`).join('')}
                    </div>`
                 : '<p style="color: #999;">無備註</p>';
-            
+
             card.innerHTML = `
                 <h4>${item.booking.date} ${item.booking.timeSlot}</h4>
                 <p><strong>館方：</strong>${item.booking.venue?.name || '未知'}</p>
@@ -1800,10 +1800,10 @@ async function loadPlayerOrganizerBookings() {
             const notesHtml = item.notes.length > 0 
                 ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
                     <strong>團主備註：</strong>
-                    ${item.notes.map(n => `<p style="margin: 5px 0;">${n.content}</p>`).join('')}
+                    ${item.notes.map(n => `<p style="margin: 5px 0;">${escapeHtml(n.content)}</p>`).join('')}
                    </div>`
                 : '<p style="color: #999;">無備註</p>';
-            
+
             card.innerHTML = `
                 <h4>${item.booking.date} ${item.booking.timeSlot}</h4>
                 <p><strong>團主：</strong>${item.booking.organizer?.name || '未知'}</p>

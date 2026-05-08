@@ -125,10 +125,10 @@
 MYSQL_HOST=localhost
 MYSQL_PORT=3306
 MYSQL_USER=app_user
-MYSQL_PASSWORD=AppUser@2026!
+MYSQL_PASSWORD=<your_mysql_password>
 MYSQL_DATABASE=badminton
 
-JWT_SECRET=badminton-booking-secret-key
+JWT_SECRET=<generate_with: openssl rand -hex 64>
 JWT_EXPIRES_IN=7d
 
 # Web Push（選用）

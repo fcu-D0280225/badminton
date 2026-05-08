@@ -22,7 +22,7 @@ import { BookerModule } from './booker/booker.module';
       host: process.env.MYSQL_HOST || 'localhost',
       port: parseInt(process.env.MYSQL_PORT || '3306', 10),
       username: process.env.MYSQL_USER || 'app_user',
-      password: process.env.MYSQL_PASSWORD || 'AppUser@2026!',
+      password: process.env.MYSQL_PASSWORD,
       database: process.env.MYSQL_DATABASE || 'badminton',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,

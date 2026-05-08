@@ -1036,7 +1036,7 @@ async function showDateBookings(dateStr) {
                                 </span>
                             </p>
                             <p><strong>金額：</strong>$${paymentAmount}</p>
-                            ${booking.notes ? `<p><strong>備註：</strong>${booking.notes}</p>` : ''}
+                            ${booking.notes ? `<p><strong>備註：</strong>${escapeHtml(booking.notes)}</p>` : ''}
                             ${canMarkPaid ? `
                                 <button 
                                     class="btn btn-primary" 
@@ -1077,7 +1077,7 @@ async function loadVenueNotes() {
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                <p>${note.content}</p>
+                <p>${escapeHtml(note.content)}</p>
                 <small>可見性：${note.visibility === 'public' ? '公開' : note.visibility === 'organizer' ? '只給團主看' : '只給臨打看'}</small>
                 <button class="btn btn-danger" style="margin-top: 10px;" onclick="deleteVenueNote(${note.id})">刪除</button>
             `;

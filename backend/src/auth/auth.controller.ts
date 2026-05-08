@@ -27,6 +27,7 @@ export class AuthController {
   }
 
   @Post('link-account')
+  @UseGuards(JwtAuthGuard)
   async linkAccount(
     @Body()
     body: {
