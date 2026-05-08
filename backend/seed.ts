@@ -7,12 +7,11 @@ async function seed() {
   const authService = app.get(AuthService);
 
   try {
-    await authService.register({
-      role: 'venue',
-      username: 'admin',
-      password: '0000',
+    await authService.createVenueAccount({
       name: '管理館方',
       contact: 'admin',
+      username: 'admin',
+      password: '0000',
     });
     console.log('✓ 館方帳號建立成功：admin / 0000');
   } catch (e: any) {

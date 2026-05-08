@@ -2,11 +2,13 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { IsIn, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { Account, AccountRole } from '../entities/account.entity';
 import { Venue } from '../entities/venue.entity';
 import { Organizer } from '../entities/organizer.entity';
@@ -21,11 +23,35 @@ export interface LoginResult {
   name: string;
 }
 
-export interface RegisterDto {
-  role: AccountRole;
+export type SelfRegisterRole = Exclude<AccountRole, 'venue'>;
+
+export const SELF_REGISTER_ROLES: SelfRegisterRole[] = [
+  'member',
+  'player',
+  'organizer',
+  'booker',
+];
+
+export class RegisterDto {
+  @IsIn(SELF_REGISTER_ROLES, {
+    message: 'venue 帳號需由後台建立，無法自行註冊',
+  })
+  role: SelfRegisterRole;
+
+  @IsString()
+  @IsNotEmpty()
   username: string;
+
+  @IsString()
+  @MinLength(1)
   password: string;
+
+  @IsString()
+  @IsNotEmpty()
   name: string;
+
+  @IsString()
+  @IsNotEmpty()
   contact: string;
 }
 
@@ -78,6 +104,10 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto): Promise<LoginResult> {
+    if (!SELF_REGISTER_ROLES.includes(dto.role as SelfRegisterRole)) {
+      throw new ForbiddenException('venue 帳號需由後台建立，無法自行註冊');
+    }
+
     const existing = await this.accountRepository.findOne({
       where: { username: dto.username },
     });
@@ -88,12 +118,7 @@ export class AuthService {
     let entityId: number;
     let linkedEntityId: number | undefined;
 
-    if (dto.role === 'venue') {
-      const venue = await this.venueRepository.save(
-        this.venueRepository.create({ name: dto.name, contact: dto.contact }),
-      );
-      entityId = venue.id;
-    } else if (dto.role === 'member') {
+    if (dto.role === 'member') {
       // member 同時建立 organizer + player 兩筆記錄
       const organizer = await this.organizerRepository.save(
         this.organizerRepository.create({
@@ -172,6 +197,35 @@ export class AuthService {
       passwordHash,
       role,
       entityId,
+    });
+  }
+
+  // venue 帳號專用建立流程（後台 / seed 用）— 公開 /register 端點不可走此路徑
+  async createVenueAccount(input: {
+    name: string;
+    contact: string;
+    username: string;
+    password: string;
+  }): Promise<void> {
+    const existing = await this.accountRepository.findOne({
+      where: { username: input.username },
+    });
+    if (existing) {
+      throw new ConflictException('此帳號已被使用');
+    }
+
+    const venue = await this.venueRepository.save(
+      this.venueRepository.create({
+        name: input.name,
+        contact: input.contact,
+      }),
+    );
+    const passwordHash = await bcrypt.hash(input.password, 10);
+    await this.accountRepository.save({
+      username: input.username,
+      passwordHash,
+      role: 'venue',
+      entityId: venue.id,
     });
   }
 
