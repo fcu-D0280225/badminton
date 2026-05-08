@@ -227,6 +227,11 @@
                     <input type="hidden" id="venue-contact">
 
                     <div id="venue-content" class="venue-content">
+                        <!-- ➕ 新增預約 -->
+                        <div class="section" style="padding-bottom:8px;">
+                            <button class="btn btn-primary" onclick="openCreateBookingModal()">＋ 新增預約</button>
+                        </div>
+
                         <!-- 🔔 待確認預約 inbox -->
                         <div class="section bookings-inbox-section">
                             <h3 class="bookings-inbox-title">
@@ -380,6 +385,45 @@
                 </button>
             </div>
         </nav>
+    </div>
+
+    <!-- 新增預約彈窗 -->
+    <div id="create-booking-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <button class="close" onclick="closeCreateBookingModal()" aria-label="關閉">&times;</button>
+            <h2>新增預約</h2>
+            <div id="create-booking-error" style="display:none;color:#dc2626;margin-bottom:8px;"></div>
+            <div class="form-group">
+                <label>日期</label>
+                <input type="date" id="cb-date" onchange="loadAvailableSlotsForCreate()">
+            </div>
+            <div class="form-group">
+                <label>時段</label>
+                <select id="cb-timeslot">
+                    <option value="">— 請先選擇日期 —</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>預約者姓名</label>
+                <input type="text" id="cb-name" placeholder="例：王小明">
+            </div>
+            <div class="form-group">
+                <label>聯絡方式（選填）</label>
+                <input type="text" id="cb-contact" placeholder="電話 / Line">
+            </div>
+            <div class="form-group">
+                <label>金額（元）</label>
+                <input type="number" id="cb-amount" placeholder="0" min="0" value="0">
+            </div>
+            <div class="form-group">
+                <label>備註（選填）</label>
+                <textarea id="cb-notes" rows="2" placeholder="電話預約、現場來訪..."></textarea>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+                <button class="btn btn-primary" onclick="submitCreateBooking()">建立預約</button>
+                <button class="btn btn-secondary" onclick="closeCreateBookingModal()">取消</button>
+            </div>
+        </div>
     </div>
 
     <!-- 編輯收費記錄彈窗 -->

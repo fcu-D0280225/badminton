@@ -1675,6 +1675,95 @@ async function loadVenueSettings() {
     }
 }
 
+// ========== 館方新增預約 ==========
+
+const ALL_TIME_SLOTS = [
+    '09:00-10:00','10:00-11:00','11:00-12:00',
+    '13:00-14:00','14:00-15:00','15:00-16:00',
+    '16:00-17:00','17:00-18:00','18:00-19:00',
+    '19:00-20:00','20:00-21:00','21:00-22:00',
+];
+
+function openCreateBookingModal() {
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('cb-date').value = today;
+    document.getElementById('cb-name').value = '';
+    document.getElementById('cb-contact').value = '';
+    document.getElementById('cb-amount').value = '0';
+    document.getElementById('cb-notes').value = '';
+    document.getElementById('create-booking-error').style.display = 'none';
+    document.getElementById('create-booking-modal').style.display = 'flex';
+    loadAvailableSlotsForCreate();
+}
+
+function closeCreateBookingModal() {
+    document.getElementById('create-booking-modal').style.display = 'none';
+}
+
+async function loadAvailableSlotsForCreate() {
+    const venueId = document.getElementById('venue-select').value;
+    const date = document.getElementById('cb-date').value;
+    const sel = document.getElementById('cb-timeslot');
+    sel.innerHTML = '<option value="">載入中…</option>';
+    if (!venueId || !date) {
+        sel.innerHTML = '<option value="">— 請先選擇日期 —</option>';
+        return;
+    }
+    try {
+        const res = await authFetch(`${API_BASE}/venues/${venueId}/available-time-slots?date=${date}`);
+        const available = await res.json();
+        if (!available.length) {
+            sel.innerHTML = '<option value="">當日無可用時段</option>';
+            return;
+        }
+        sel.innerHTML = available.map(s => `<option value="${s}">${s}</option>`).join('');
+    } catch {
+        sel.innerHTML = ALL_TIME_SLOTS.map(s => `<option value="${s}">${s}</option>`).join('');
+    }
+}
+
+async function submitCreateBooking() {
+    const venueId = document.getElementById('venue-select').value;
+    const date = document.getElementById('cb-date').value;
+    const timeSlot = document.getElementById('cb-timeslot').value;
+    const name = document.getElementById('cb-name').value.trim();
+    const contact = document.getElementById('cb-contact').value.trim();
+    const amount = parseInt(document.getElementById('cb-amount').value || '0', 10);
+    const notes = document.getElementById('cb-notes').value.trim();
+    const errEl = document.getElementById('create-booking-error');
+
+    errEl.style.display = 'none';
+    if (!date || !timeSlot) { errEl.textContent = '請選擇日期與時段'; errEl.style.display = 'block'; return; }
+    if (!name) { errEl.textContent = '請填寫預約者姓名'; errEl.style.display = 'block'; return; }
+
+    try {
+        const res = await authFetch(`${API_BASE}/bookings`, {
+            method: 'POST',
+            body: JSON.stringify({ venueId: +venueId, date, timeSlot, status: 'confirmed', notes, amount }),
+        });
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            errEl.textContent = body.message || `建立失敗（${res.status}）`;
+            errEl.style.display = 'block';
+            return;
+        }
+        const booking = await res.json();
+
+        // 將預約者加為參與者
+        await authFetch(`${API_BASE}/bookings/${booking.id}/participants`, {
+            method: 'POST',
+            body: JSON.stringify({ name, phone: contact || undefined }),
+        });
+
+        closeCreateBookingModal();
+        await Promise.all([loadPendingInbox(), loadTodayBookings(), loadVenueCalendar()]);
+        if (typeof loadOverviewKpis === 'function') loadOverviewKpis();
+    } catch (err) {
+        errEl.textContent = '網路錯誤，請稍後重試';
+        errEl.style.display = 'block';
+    }
+}
+
 async function saveVenueSettings() {
     const venueId = getCurrentVenueIdForSettings();
     if (!venueId) {
