@@ -91,6 +91,7 @@ export class AuthService {
       username,
       role: account.role,
       entityId: account.entityId,
+      linkedEntityId: account.linkedEntityId || undefined,
     };
     const access_token = this.jwtService.sign(payload);
 

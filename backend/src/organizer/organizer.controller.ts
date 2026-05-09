@@ -10,6 +10,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { AuthUser } from '../auth/types';
 import { OrganizerService } from './organizer.service';
 import { Organizer } from '../entities/organizer.entity';
 import { OrganizerNote } from '../entities/organizer-note.entity';
@@ -20,37 +22,53 @@ export class OrganizerController {
   constructor(private readonly organizerService: OrganizerService) {}
 
   @Post()
-  async createOrganizer(@Body() data: Partial<Organizer>): Promise<Organizer> {
-    return await this.organizerService.createOrganizer(data);
+  async createOrganizer(
+    @CurrentUser() user: AuthUser,
+    @Body() data: Partial<Organizer>,
+  ): Promise<Organizer> {
+    return await this.organizerService.createOrganizer(data, user);
   }
 
   @Get()
-  async findAll(): Promise<Organizer[]> {
-    return await this.organizerService.findAll();
+  async findAll(@CurrentUser() user: AuthUser): Promise<Organizer[]> {
+    return await this.organizerService.findAll(user);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Organizer> {
-    return await this.organizerService.findOne(+id);
+  async findOne(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+  ): Promise<Organizer> {
+    return await this.organizerService.findOne(+id, user);
   }
 
   @Get(':id/bookings')
-  async getBookings(@Param('id') id: string) {
-    return await this.organizerService.getBookings(+id);
+  async getBookings(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+  ) {
+    return await this.organizerService.getBookings(+id, user);
   }
 
   @Get(':id/players')
-  async getPlayers(@Param('id') id: string) {
-    return await this.organizerService.getPlayers(+id);
+  async getPlayers(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+  ) {
+    return await this.organizerService.getPlayers(+id, user);
   }
 
   @Get(':id/player-bookings')
-  async getPlayerBookings(@Param('id') id: string) {
-    return await this.organizerService.getPlayerBookings(+id);
+  async getPlayerBookings(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+  ) {
+    return await this.organizerService.getPlayerBookings(+id, user);
   }
 
   @Post(':id/notes')
   async createNote(
+    @CurrentUser() user: AuthUser,
     @Param('id') id: string,
     @Body() data: { content: string; visibility?: string },
   ): Promise<OrganizerNote> {
@@ -58,27 +76,33 @@ export class OrganizerController {
       +id,
       data.content,
       data.visibility || 'public',
+      user,
     );
   }
 
   @Get(':id/notes')
   async getNotes(
+    @CurrentUser() user: AuthUser,
     @Param('id') id: string,
     @Query('visibility') visibility?: string,
   ): Promise<OrganizerNote[]> {
-    return await this.organizerService.getNotes(+id, visibility);
+    return await this.organizerService.getNotes(+id, visibility, user);
   }
 
   @Put('notes/:noteId')
   async updateNote(
+    @CurrentUser() user: AuthUser,
     @Param('noteId') noteId: string,
     @Body() data: Partial<OrganizerNote>,
   ): Promise<OrganizerNote> {
-    return await this.organizerService.updateNote(+noteId, data);
+    return await this.organizerService.updateNote(+noteId, data, user);
   }
 
   @Delete('notes/:noteId')
-  async deleteNote(@Param('noteId') noteId: string): Promise<void> {
-    return await this.organizerService.deleteNote(+noteId);
+  async deleteNote(
+    @CurrentUser() user: AuthUser,
+    @Param('noteId') noteId: string,
+  ): Promise<void> {
+    return await this.organizerService.deleteNote(+noteId, user);
   }
 }

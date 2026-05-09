@@ -8,6 +8,7 @@ interface JwtPayload {
   username: string;
   role: AccountRole;
   entityId: number;
+  linkedEntityId?: number;
 }
 
 @Injectable()
@@ -26,6 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       username: payload.username,
       role: payload.role,
       entityId: payload.entityId,
+      linkedEntityId: payload.linkedEntityId,
     };
   }
 }

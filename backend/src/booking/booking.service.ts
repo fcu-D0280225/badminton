@@ -1,4 +1,9 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, LessThan } from 'typeorm';
 import { randomUUID } from 'crypto';
@@ -8,6 +13,11 @@ import { Account } from '../entities/account.entity';
 import { BookingParticipant } from '../entities/booking-participant.entity';
 import { WaitlistService } from '../waitlist/waitlist.service';
 import { PushService } from '../push/push.service';
+import { AuthUser } from '../auth/types';
+import {
+  bookingOwnerWhereClauses,
+  isBookingOwnedBy,
+} from '../auth/ownership.helper';
 
 /** 預約保留時間（分鐘）：pending 狀態下未付款超過此時間自動取消 */
 const HOLD_MINUTES = 15;
@@ -30,8 +40,11 @@ export class BookingService {
   // ── 建立單筆預約（內部共用）──────────────────────────────────────
   async createBooking(
     data: Partial<Booking> & { amount?: number },
+    user?: AuthUser,
   ): Promise<Booking> {
     const { amount, ...bookingData } = data;
+
+    if (user) this.assertCreateAllowed(bookingData, user);
 
     // 重複預約檢查：同一成員不可重複預約同場次
     await this.assertNoDuplicate(bookingData);
@@ -64,6 +77,7 @@ export class BookingService {
       recurringWeeks: number;
       recurringType?: string;
     },
+    user?: AuthUser,
   ): Promise<Booking[]> {
     const {
       recurringWeeks,
@@ -80,45 +94,64 @@ export class BookingService {
       base.setDate(base.getDate() + i * interval);
       const dateStr = base.toISOString().split('T')[0];
 
-      const booking = await this.createBooking({
-        ...baseData,
-        date: dateStr,
-        recurringGroupId: groupId,
-        recurringType,
-        amount,
-      });
+      const booking = await this.createBooking(
+        {
+          ...baseData,
+          date: dateStr,
+          recurringGroupId: groupId,
+          recurringType,
+          amount,
+        },
+        user,
+      );
       bookings.push(booking);
     }
     return bookings;
   }
 
-  // ── 取得所有預約 ─────────────────────────────────────────────────
-  async findAll(): Promise<Booking[]> {
+  // ── 取得所有預約（依 user 角色過濾）─────────────────────────────
+  async findAll(user?: AuthUser): Promise<Booking[]> {
+    const where = user ? bookingOwnerWhereClauses(user) : undefined;
     return await this.bookingRepository.find({
+      where,
       relations: ['venue', 'organizer', 'player', 'booker', 'payment', 'participants'],
     });
   }
 
   // ── 取得單一預約 ─────────────────────────────────────────────────
-  async findOne(id: number): Promise<Booking> {
-    return await this.bookingRepository.findOne({
+  async findOne(id: number, user?: AuthUser): Promise<Booking> {
+    const booking = await this.bookingRepository.findOne({
       where: { id },
       relations: ['venue', 'organizer', 'player', 'booker', 'payment', 'participants'],
     });
+    if (user && booking && !isBookingOwnedBy(user, booking)) {
+      throw new NotFoundException(`預約 #${id} 不存在`);
+    }
+    return booking;
   }
 
   // ── 取得同一重複預約群組 ─────────────────────────────────────────
-  async findRecurringGroup(groupId: string): Promise<Booking[]> {
-    return await this.bookingRepository.find({
+  async findRecurringGroup(
+    groupId: string,
+    user?: AuthUser,
+  ): Promise<Booking[]> {
+    const rows = await this.bookingRepository.find({
       where: { recurringGroupId: groupId },
-      relations: ['venue', 'payment'],
+      relations: ['venue', 'organizer', 'player', 'booker', 'payment'],
       order: { date: 'ASC' },
     });
+    if (!user) return rows;
+    return rows.filter((b) => isBookingOwnedBy(user, b));
   }
 
   // ── 更新預約 ─────────────────────────────────────────────────────
-  async updateBooking(id: number, data: Partial<Booking>): Promise<Booking> {
-    const before = await this.findOne(id);
+  async updateBooking(
+    id: number,
+    data: Partial<Booking>,
+    user?: AuthUser,
+  ): Promise<Booking> {
+    const before = await this.findOne(id, user); // 觸發歸屬檢查
+    if (!before) throw new NotFoundException(`預約 #${id} 不存在`);
     // 館方手動確認時清除保留到期時間，避免 cron 自動取消
     if (data.status === 'confirmed') {
       data = { ...data, holdExpiresAt: null };
@@ -136,7 +169,10 @@ export class BookingService {
   }
 
   // ── 取消重複預約群組（只取消今天以後的）────────────────────────
-  async cancelRecurringGroup(groupId: string): Promise<{ cancelled: number }> {
+  async cancelRecurringGroup(
+    groupId: string,
+    user?: AuthUser,
+  ): Promise<{ cancelled: number }> {
     const today = new Date().toISOString().split('T')[0];
     const bookings = await this.bookingRepository.find({
       where: { recurringGroupId: groupId },
@@ -144,6 +180,7 @@ export class BookingService {
 
     let cancelled = 0;
     for (const b of bookings) {
+      if (user && !isBookingOwnedBy(user, b)) continue;
       if (b.date >= today && b.status !== 'cancelled') {
         await this.updateBooking(b.id, { status: 'cancelled' });
         cancelled++;
@@ -153,8 +190,9 @@ export class BookingService {
   }
 
   // ── 刪除預約（含付款記錄）──────────────────────────────────────
-  async deleteBooking(id: number): Promise<void> {
-    const booking = await this.findOne(id);
+  async deleteBooking(id: number, user?: AuthUser): Promise<void> {
+    const booking = await this.findOne(id, user); // 觸發歸屬檢查
+    if (!booking) throw new NotFoundException(`預約 #${id} 不存在`);
     if (booking?.status !== 'cancelled') {
       await this.triggerWaitlistNotification(booking);
     }
@@ -288,7 +326,11 @@ export class BookingService {
   }
 
   // ── 參與者管理 ─────────────────────────────────────────────────
-  async getParticipants(bookingId: number): Promise<BookingParticipant[]> {
+  async getParticipants(
+    bookingId: number,
+    user?: AuthUser,
+  ): Promise<BookingParticipant[]> {
+    if (user) await this.assertParticipantBookingOwned(bookingId, user);
     return await this.participantRepository.find({
       where: { bookingId },
       order: { addedAt: 'ASC' },
@@ -298,7 +340,9 @@ export class BookingService {
   async addParticipant(
     bookingId: number,
     data: { name: string; phone?: string },
+    user?: AuthUser,
   ): Promise<BookingParticipant> {
+    if (user) await this.assertParticipantBookingOwned(bookingId, user);
     return await this.participantRepository.save(
       this.participantRepository.create({
         bookingId,
@@ -308,13 +352,16 @@ export class BookingService {
     );
   }
 
-  async removeParticipant(participantId: number): Promise<void> {
+  async removeParticipant(participantId: number, user?: AuthUser): Promise<void> {
+    if (user) await this.assertParticipantOwned(participantId, user);
     await this.participantRepository.delete(participantId);
   }
 
   async toggleParticipantCheckin(
     participantId: number,
+    user?: AuthUser,
   ): Promise<BookingParticipant> {
+    if (user) await this.assertParticipantOwned(participantId, user);
     const p = await this.participantRepository.findOne({
       where: { id: participantId },
     });
@@ -325,7 +372,9 @@ export class BookingService {
   async updateParticipantPayment(
     participantId: number,
     data: { paymentStatus?: string; amount?: number },
+    user?: AuthUser,
   ): Promise<BookingParticipant> {
+    if (user) await this.assertParticipantOwned(participantId, user);
     const p = await this.participantRepository.findOne({
       where: { id: participantId },
     });
@@ -340,6 +389,69 @@ export class BookingService {
       p.amount = data.amount;
     }
     return await this.participantRepository.save(p);
+  }
+
+  // ── 私有：建立預約時禁止偽造他人身分 ───────────────────────────
+  private assertCreateAllowed(
+    data: Partial<Booking>,
+    user: AuthUser,
+  ): void {
+    switch (user.role) {
+      case 'venue':
+        if (data.venueId !== user.entityId) {
+          throw new ForbiddenException('只能在自己的場地建立預約');
+        }
+        return;
+      case 'organizer':
+        if (data.organizerId !== user.entityId) {
+          throw new ForbiddenException('organizer 只能以自己的身分建立預約');
+        }
+        return;
+      case 'player':
+        if (data.playerId !== user.entityId) {
+          throw new ForbiddenException('player 只能以自己的身分建立預約');
+        }
+        return;
+      case 'member': {
+        const okOrg = data.organizerId === user.entityId;
+        const okPlayer =
+          user.linkedEntityId != null && data.playerId === user.linkedEntityId;
+        if (!okOrg && !okPlayer) {
+          throw new ForbiddenException('member 只能以自己的身分建立預約');
+        }
+        return;
+      }
+      case 'booker':
+        if (data.bookerId !== user.entityId) {
+          throw new ForbiddenException('booker 只能以自己的身分建立預約');
+        }
+        return;
+      default:
+        throw new ForbiddenException('未知的角色');
+    }
+  }
+
+  private async assertParticipantBookingOwned(
+    bookingId: number,
+    user: AuthUser,
+  ): Promise<void> {
+    const booking = await this.bookingRepository.findOne({
+      where: { id: bookingId },
+    });
+    if (!booking || !isBookingOwnedBy(user, booking)) {
+      throw new NotFoundException(`預約 #${bookingId} 不存在`);
+    }
+  }
+
+  private async assertParticipantOwned(
+    participantId: number,
+    user: AuthUser,
+  ): Promise<void> {
+    const p = await this.participantRepository.findOne({
+      where: { id: participantId },
+    });
+    if (!p) throw new NotFoundException(`參與者 #${participantId} 不存在`);
+    await this.assertParticipantBookingOwned(p.bookingId, user);
   }
 
   // ── 私有：從 playerId/organizerId 找 accountId ─────────────────
