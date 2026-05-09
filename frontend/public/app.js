@@ -876,7 +876,6 @@ async function loadMemberData() {
     await loadMemberCalendar();
     await loadOrganizerBookings();
     await loadPlayerBookingHistory();
-    await loadPlayerCreditScore();
     await loadOrganizerNotes();
 }
 
@@ -2112,45 +2111,6 @@ async function memberBookWithOptions(venueId, date, timeSlot) {
 window.memberBookWithOptions = memberBookWithOptions;
 
 // ═══════════════════════════════════════════════════════════════
-// 臨打信用分數
-// ═══════════════════════════════════════════════════════════════
-
-async function loadPlayerCreditScore() {
-    const playerId = getPlayerId();
-    if (!playerId) return;
-
-    const container = document.getElementById('player-credit-score');
-    if (!container) return;
-
-    try {
-        const res = await authFetch(`${API_BASE}/players/${playerId}/credit-score`);
-        if (!res.ok) return;
-        const { score, grade, totalBookings, noShowCount, cancelCount, checkinRate, detail } = await res.json();
-
-        const gradeColor = { A: '#16a34a', B: '#2563eb', C: '#d97706', D: '#dc2626' }[grade] || '#555';
-        const gradeEmoji = { A: '🌟', B: '👍', C: '⚠️', D: '🚨' }[grade] || '';
-
-        container.innerHTML = `
-            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-                <div style="text-align:center;min-width:64px;">
-                    <div style="font-size:2rem;font-weight:800;color:${gradeColor};">${gradeEmoji} ${grade}</div>
-                    <div style="font-size:1.1rem;font-weight:700;color:${gradeColor};">${score} 分</div>
-                </div>
-                <div style="flex:1;min-width:180px;">
-                    <div style="background:#f3f4f6;border-radius:8px;height:8px;margin-bottom:6px;overflow:hidden;">
-                        <div style="width:${score}%;height:100%;background:${gradeColor};border-radius:8px;transition:width .4s;"></div>
-                    </div>
-                    <p style="font-size:13px;color:#555;margin:0 0 2px;">${detail}</p>
-                    <p style="font-size:12px;color:#9ca3af;margin:0;">
-                        共 ${totalBookings} 次預約・報到率 ${checkinRate}%
-                    </p>
-                </div>
-            </div>
-        `;
-    } catch { /* 靜默失敗 */ }
-}
-
-// ═══════════════════════════════════════════════════════════════
 // Web Push 訂閱
 // ═══════════════════════════════════════════════════════════════
 
@@ -2634,7 +2594,6 @@ function escapeHtml(str) {
 
 async function loadPlayerViewData() {
     await loadPlayerVenueOptions();
-    await loadPlayerCreditScoreCard();
     await loadPlayerBookingHistoryList();
     await loadPlayerVenueNotes();
     await loadPlayerOrganizerNotes();
@@ -2718,34 +2677,6 @@ async function signUpAsPlayer(bookingId) {
     }
 }
 window.signUpAsPlayer = signUpAsPlayer;
-
-async function loadPlayerCreditScoreCard() {
-    const container = document.getElementById('plv-credit-score');
-    if (!container) return;
-    const playerId = getPlayerId();
-    if (!playerId) {
-        container.innerHTML = '<p>無法取得臨打身份</p>';
-        return;
-    }
-    try {
-        const res = await authFetch(`${API_BASE}/players/${playerId}/credit-score`);
-        if (!res.ok) throw new Error('載入失敗');
-        const data = await res.json();
-        const score = data?.score ?? data?.creditScore ?? 0;
-        const total = data?.totalBookings ?? data?.total ?? 0;
-        const attended = data?.attendedBookings ?? data?.attended ?? 0;
-        container.innerHTML = `
-            <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
-                <div><strong>分數：</strong><span style="font-size:20px;color:#2563eb;">${score}</span></div>
-                <div><strong>總預約：</strong>${total}</div>
-                <div><strong>已報到：</strong>${attended}</div>
-            </div>
-        `;
-    } catch (err) {
-        console.error('載入信用分數失敗:', err);
-        container.innerHTML = '<p style="color:#b91c1c;">載入信用分數失敗</p>';
-    }
-}
 
 async function loadPlayerBookingHistoryList() {
     const container = document.getElementById('plv-booking-history');

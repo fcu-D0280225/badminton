@@ -797,19 +797,6 @@ button:focus-visible {
     color: #0f172a;
 }
 
-/* HTML 中取代 inline 樣式的 helper class */
-.credit-score-box {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 14px;
-}
-[data-theme="dark"] .credit-score-box {
-    background: #0f172a;
-    border-color: #334155;
-    color: #e5e7eb;
-}
-
 /* ========================================================================== */
 /* dark mode：覆寫 app.js innerHTML 注入的 inline 顏色字串                    */
 /* ========================================================================== */
