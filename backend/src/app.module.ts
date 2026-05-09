@@ -25,7 +25,11 @@ import { BookerModule } from './booker/booker.module';
       password: process.env.MYSQL_PASSWORD,
       database: process.env.MYSQL_DATABASE || 'badminton',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
+      migrations: [__dirname + '/migrations/*{.ts,.js}'],
+      // 預設 OFF — 防 production 自動 DROP 欄位。dev 用 TYPEORM_SYNC=true 開啟。
+      synchronize: process.env.TYPEORM_SYNC === 'true',
+      // production 啟動時自動 apply pending migrations
+      migrationsRun: process.env.TYPEORM_MIGRATIONS_RUN !== 'false',
       autoLoadEntities: true,
       charset: 'utf8mb4',
     }),

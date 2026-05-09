@@ -24,6 +24,54 @@
 - 前端：Node.js + Express + PWA
 - 資料庫：MySQL 8（連線資訊由 backend/.env 提供，參考 backend/.env.example）
 
+## 資料庫 Schema 變更（migration）流程
+
+**重要：production 預設不會自動同步 schema。** entity 改動必須走 migration。
+
+`backend/src/app.module.ts` 中 `synchronize` 預設為 `false`（受 `TYPEORM_SYNC` env 控制），啟動時不會自動 ALTER/DROP 欄位；`migrationsRun` 預設為 `true`，會自動 apply `src/migrations/` 下未執行的 migration。
+
+### 改 entity 的標準流程
+
+```bash
+cd backend
+
+# 1. 在 dev 環境調整 entity（src/entities/*.entity.ts）
+
+# 2. 比對 entity 與本機 dev DB 差異 → 生成 migration
+npm run migration:generate -- src/migrations/AddSomething
+# 檔名要描述這次改動，例如 src/migrations/AddPhoneToOrganizer
+
+# 3. 檢視生成的 SQL，確認沒有非預期的 DROP / 改型
+cat src/migrations/<timestamp>-AddSomething.ts
+
+# 4. 在 dev 環境跑一次驗證
+npm run migration:run
+
+# 5. commit migration 檔
+git add src/migrations/<timestamp>-AddSomething.ts
+git commit -m "feat(db): add ..."
+
+# 6. 部署：production 啟動會自動 apply（migrationsRun=true）
+```
+
+### 其他 migration 命令
+
+```bash
+npm run migration:show       # 顯示已執行 / 待執行的 migration
+npm run migration:revert     # 回滾最後一筆 migration（謹慎）
+npm run migration:create -- src/migrations/Foo   # 手動建立空 migration
+```
+
+### dev 偷懶用 synchronize
+
+純粹 dev / 拋棄式 DB 想直接 entity-DB 同步而不寫 migration，可：
+
+```bash
+TYPEORM_SYNC=true npm run start:dev
+```
+
+**production 千萬不要設這個。** 過去有 schema 漂移過 → migration 是唯一安全路徑。
+
 ## 安裝和運行
 
 1. 安裝依賴：
