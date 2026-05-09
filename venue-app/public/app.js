@@ -26,10 +26,15 @@ async function fetchAndSetVenueId() {
         const me = await res.json();
         if (me.role === 'venue' && me.entityId) {
             _venues = me.venues || [{ venueId: me.entityId, name: me.name, isPrimary: true }];
-            // 偏好順序：localStorage 上次選擇 > primary > entityId fallback
-            const saved = parseInt(localStorage.getItem('active_venue_id') || '', 10);
-            const valid = _venues.some(v => v.venueId === saved);
-            _currentVenueId = valid ? saved : (_venues.find(v => v.isPrimary)?.venueId || me.entityId);
+            // 偏好順序：localStorage 上次選擇（支援 'all' 跨館彙整）> primary > entityId fallback
+            const savedRaw = localStorage.getItem('active_venue_id') || '';
+            if (savedRaw === 'all' && _venues.length > 1) {
+                _currentVenueId = 'all';
+            } else {
+                const saved = parseInt(savedRaw, 10);
+                const valid = _venues.some(v => v.venueId === saved);
+                _currentVenueId = valid ? saved : (_venues.find(v => v.isPrimary)?.venueId || me.entityId);
+            }
             renderVenueSwitcher();
             // 同步到舊 venue-select（保持舊功能相容）
             const sel = document.getElementById('venue-select');
@@ -47,7 +52,8 @@ function renderVenueSwitcher() {
         sw.style.display = 'none';
         return;
     }
-    sw.innerHTML = _venues.map(v =>
+    const allOpt = `<option value="all"${_currentVenueId === 'all' ? ' selected' : ''}>📊 全部場館（彙整）</option>`;
+    sw.innerHTML = allOpt + _venues.map(v =>
         `<option value="${v.venueId}"${v.venueId === _currentVenueId ? ' selected' : ''}>${escapeHtml(v.name)}${v.isPrimary ? ' ⭐' : ''}</option>`
     ).join('');
     sw.style.display = '';
@@ -60,18 +66,18 @@ function escapeHtml(s) {
 async function onVenueSwitcherChange() {
     const sw = document.getElementById('venue-switcher');
     if (!sw) return;
-    const newId = parseInt(sw.value, 10);
-    if (!_venues.some(v => v.venueId === newId)) return;
-    _currentVenueId = newId;
-    localStorage.setItem('active_venue_id', String(newId));
-    // 同步舊 venue-select 並重載資料
+    const raw = sw.value;
+    if (raw !== 'all' && !_venues.some(v => String(v.venueId) === raw)) return;
+    _currentVenueId = raw === 'all' ? 'all' : parseInt(raw, 10);
+    localStorage.setItem('active_venue_id', String(_currentVenueId));
+    // 同步舊 venue-select 並重載資料（venue-select 不支援 'all'，傳第一個 venue）
     const sel = document.getElementById('venue-select');
-    if (sel) sel.value = String(newId);
+    if (sel) sel.value = String(_currentVenueId === 'all' ? _venues[0]?.venueId || '' : _currentVenueId);
     if (typeof loadInitialData === 'function') await loadInitialData();
 }
 window.onVenueSwitcherChange = onVenueSwitcherChange;
 
-// FEAT-007: billing/pricing 端點需 ?venueId（多場館明確指定操作對象）
+// FEAT-007 / BADM-T11: billing/pricing 端點需 ?venueId（多場館 + all 彙整）
 function shouldAppendVenueId(url) {
     return /\/api\/(billing|pricing)\b/.test(url);
 }

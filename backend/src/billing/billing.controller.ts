@@ -45,6 +45,12 @@ export class BillingController {
     return venueId;
   }
 
+  // BADM-T11 跨館彙整：?venueId=all → 回所有綁定 venueIds、否則同 resolveVenueId
+  private resolveVenueScope(user: AuthUser, raw?: string): number | number[] {
+    if (raw === 'all') return getVenueIdsForUser(user);
+    return this.resolveVenueId(user, raw);
+  }
+
   // POST /api/billing/records
   @Post('records')
   async create(
@@ -68,7 +74,7 @@ export class BillingController {
     @Query('venueId') venueIdRaw?: string,
   ) {
     this.assertVenueRole(user);
-    return this.billingService.findAll(this.resolveVenueId(user, venueIdRaw), {
+    return this.billingService.findAll(this.resolveVenueScope(user, venueIdRaw), {
       unpaidOnly: unpaidOnly === 'true',
       date,
     });
@@ -102,7 +108,7 @@ export class BillingController {
   ) {
     this.assertVenueRole(user);
     const targetMonth = month ?? new Date().toISOString().slice(0, 7);
-    return this.billingService.getAnalytics(this.resolveVenueId(user, venueIdRaw), targetMonth);
+    return this.billingService.getAnalytics(this.resolveVenueScope(user, venueIdRaw), targetMonth);
   }
 
   // GET /api/billing/records/:id

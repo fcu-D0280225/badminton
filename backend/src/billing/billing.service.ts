@@ -77,14 +77,15 @@ export class BillingService {
     });
   }
 
-  // ─── 查詢列表 ─────────────────────────────────────────────────────────────────
+  // ─── 查詢列表（支援單一 venueId 或 array 跨館彙整 BADM-T11）─────────────────
   async findAll(
-    venueId: number,
+    venueId: number | number[],
     opts: { unpaidOnly?: boolean; date?: string } = {},
   ): Promise<PaymentRecord[]> {
+    const ids = Array.isArray(venueId) ? venueId : [venueId];
     const qb = this.repo
       .createQueryBuilder('r')
-      .where('r.venueId = :venueId', { venueId })
+      .where('r.venueId IN (:...ids)', { ids })
       .orderBy('r.date', 'DESC')
       .addOrderBy('r.startTime', 'ASC');
 
@@ -177,16 +178,17 @@ export class BillingService {
     return [header, ...rows].join('\n');
   }
 
-  // ─── 場地利用率分析 ───────────────────────────────────────────────────────────
-  async getAnalytics(venueId: number, month: string) {
+  // ─── 場地利用率分析（支援單一 venueId 或 array 跨館彙整 BADM-T11）──────────
+  async getAnalytics(venueId: number | number[], month: string) {
     const [year, mon] = month.split('-').map(Number);
     const startDate = `${year}-${String(mon).padStart(2, '0')}-01`;
     const lastDay = new Date(year, mon, 0).getDate();
     const endDate = `${year}-${String(mon).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
+    const ids = Array.isArray(venueId) ? venueId : [venueId];
     const baseWhere =
-      'r.venueId = :venueId AND r.date >= :start AND r.date <= :end';
-    const params = { venueId, start: startDate, end: endDate };
+      'r.venueId IN (:...ids) AND r.date >= :start AND r.date <= :end';
+    const params = { ids, start: startDate, end: endDate };
 
     // 月收費總覽
     const summary = await this.repo
