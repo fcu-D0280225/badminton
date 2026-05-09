@@ -17,6 +17,7 @@ function removeToken() { localStorage.removeItem('jwt_token'); }
 
 // 登入後從 JWT 自動取得 venueId（不需要手動選館方 dropdown）
 let _currentVenueId = null;
+let _venues = []; // FEAT-007: 帳號可管理的全部 venue 清單
 
 async function fetchAndSetVenueId() {
     try {
@@ -24,21 +25,66 @@ async function fetchAndSetVenueId() {
         if (!res.ok) return;
         const me = await res.json();
         if (me.role === 'venue' && me.entityId) {
-            _currentVenueId = me.entityId;
-            // 同步到 venue-select（保持舊功能相容）
+            _venues = me.venues || [{ venueId: me.entityId, name: me.name, isPrimary: true }];
+            // 偏好順序：localStorage 上次選擇 > primary > entityId fallback
+            const saved = parseInt(localStorage.getItem('active_venue_id') || '', 10);
+            const valid = _venues.some(v => v.venueId === saved);
+            _currentVenueId = valid ? saved : (_venues.find(v => v.isPrimary)?.venueId || me.entityId);
+            renderVenueSwitcher();
+            // 同步到舊 venue-select（保持舊功能相容）
             const sel = document.getElementById('venue-select');
             if (sel) sel.value = _currentVenueId;
         }
     } catch (e) {
-        // 非阻塞：取不到就繼續，loadBillingRecords 會顯示提示
+        // 非阻塞：取不到就繼續
     }
+}
+
+function renderVenueSwitcher() {
+    const sw = document.getElementById('venue-switcher');
+    if (!sw) return;
+    if (_venues.length <= 1) {
+        sw.style.display = 'none';
+        return;
+    }
+    sw.innerHTML = _venues.map(v =>
+        `<option value="${v.venueId}"${v.venueId === _currentVenueId ? ' selected' : ''}>${escapeHtml(v.name)}${v.isPrimary ? ' ⭐' : ''}</option>`
+    ).join('');
+    sw.style.display = '';
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+async function onVenueSwitcherChange() {
+    const sw = document.getElementById('venue-switcher');
+    if (!sw) return;
+    const newId = parseInt(sw.value, 10);
+    if (!_venues.some(v => v.venueId === newId)) return;
+    _currentVenueId = newId;
+    localStorage.setItem('active_venue_id', String(newId));
+    // 同步舊 venue-select 並重載資料
+    const sel = document.getElementById('venue-select');
+    if (sel) sel.value = String(newId);
+    if (typeof loadInitialData === 'function') await loadInitialData();
+}
+window.onVenueSwitcherChange = onVenueSwitcherChange;
+
+// FEAT-007: billing/pricing 端點需 ?venueId（多場館明確指定操作對象）
+function shouldAppendVenueId(url) {
+    return /\/api\/(billing|pricing)\b/.test(url);
 }
 
 async function authFetch(url, opts = {}) {
     const token = getToken();
     const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    const res = await fetch(url, { ...opts, headers });
+    let finalUrl = url;
+    if (_currentVenueId && shouldAppendVenueId(url) && !/[?&]venueId=/.test(url)) {
+        finalUrl = url + (url.includes('?') ? '&' : '?') + 'venueId=' + _currentVenueId;
+    }
+    const res = await fetch(finalUrl, { ...opts, headers });
     if (res.status === 401) {
         removeToken();
         showLoginScreen();

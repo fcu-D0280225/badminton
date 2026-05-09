@@ -1141,6 +1141,17 @@ body.admin-shell-active .main-content {
     font-size: 13px;
 }
 
+.venue-switcher {
+    padding: 6px 10px;
+    font-size: 13px;
+    border: 1px solid var(--admin-border);
+    border-radius: 6px;
+    background: var(--admin-topbar-bg);
+    color: var(--admin-topbar-text);
+    cursor: pointer;
+    max-width: 180px;
+}
+
 .admin-topbar-username {
     color: var(--admin-sidebar-muted);
     font-size: 13px;

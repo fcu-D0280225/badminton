@@ -104,6 +104,8 @@
             <header class="admin-topbar">
                 <div class="admin-topbar-title" id="admin-topbar-title">場館總覽</div>
                 <div class="admin-topbar-actions">
+                    <!-- FEAT-007: 場館切換器（單一場館時隱藏） -->
+                    <select id="venue-switcher" class="venue-switcher" style="display:none;" onchange="onVenueSwitcherChange()" aria-label="切換場館"></select>
                     <span id="header-username" class="admin-topbar-username"></span>
                     <button id="theme-toggle" class="theme-toggle-btn" type="button" onclick="toggleTheme()" aria-label="切換夜間模式" title="切換夜間模式">🌙</button>
                     <button id="logout-btn" class="btn btn-secondary" style="display:none;" onclick="doLogout()">登出</button>
