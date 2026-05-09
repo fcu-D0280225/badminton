@@ -196,14 +196,20 @@
                         <!-- 備註管理：給館方寫公告給用戶（公開/團主/臨打三種可見性） -->
                         <div class="section">
                             <h3>備註管理</h3>
-                            <textarea id="venue-note-content" placeholder="輸入備註內容"></textarea>
-                            <select id="venue-note-visibility">
-                                <option value="public">公開（給所有人看）</option>
-                                <option value="organizer">只給團主看</option>
-                                <option value="player">只給臨打看</option>
-                            </select>
+                            <div class="form-group">
+                                <label>備註內容</label>
+                                <textarea id="venue-note-content" placeholder="輸入備註內容"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>可見性</label>
+                                <select id="venue-note-visibility">
+                                    <option value="public">公開（給所有人看）</option>
+                                    <option value="organizer">只給團主看</option>
+                                    <option value="player">只給臨打看</option>
+                                </select>
+                            </div>
                             <button class="btn btn-primary" onclick="createVenueNote()">新增備註</button>
-                            <div id="venue-notes-list"></div>
+                            <div id="venue-notes-list" style="margin-top:12px;"></div>
                         </div>
                     </div>
                 </div>
