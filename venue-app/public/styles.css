@@ -985,8 +985,8 @@ body {
     --admin-sidebar-bg:   #ffffff;
     --admin-sidebar-text: #191c1e;
     --admin-sidebar-muted:#6c7a71;
-    --admin-active-bg:    #eef2ff;
-    --admin-active-text:  #4f46e5;
+    --admin-active-bg:    #d1fae5;
+    --admin-active-text:  #059669;
     --admin-border:       #e2e8f0;
     --admin-topbar-bg:    #ffffff;
     --admin-topbar-text:  #191c1e;
@@ -1690,8 +1690,8 @@ body.admin-shell-active #tab-analytics {
     --admin-sidebar-bg:   #1e293b;
     --admin-sidebar-text: #e5e7eb;
     --admin-sidebar-muted:#94a3b8;
-    --admin-active-bg:    #312e81;
-    --admin-active-text:  #a5b4fc;
+    --admin-active-bg:    #064e3b;
+    --admin-active-text:  #34d399;
     --admin-border:       #334155;
     --admin-topbar-bg:    #1e293b;
     --admin-topbar-text:  #e5e7eb;
