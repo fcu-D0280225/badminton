@@ -185,6 +185,7 @@ function showAdminGroup(group) {
     if (group === 'settings') {
         loadVenueSettings();
         if (typeof loadVenueNotes === 'function') loadVenueNotes();
+        if (typeof loadPricingPanel === 'function') loadPricingPanel();
     }
 
     // FEAT-016: 進入「預約管理」時要把 tab-bookings 顯示回來
@@ -1849,3 +1850,132 @@ async function saveVenueSettings() {
         showVenueSettingsStatus('儲存失敗，請稍後重試', 'error');
     }
 }
+
+// ========== 動態定價（BADM-T10）==========
+
+const DOW_LABELS = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
+
+async function loadPricingPanel() {
+    await Promise.all([loadPricingDefault(), loadPricingRules()]);
+    // 預覽日期預設今天
+    const d = document.getElementById('pricing-quote-date');
+    if (d && !d.value) d.value = new Date().toISOString().slice(0, 10);
+}
+window.loadPricingPanel = loadPricingPanel;
+
+async function loadPricingDefault() {
+    try {
+        const res = await authFetch(`${API_BASE}/pricing/default`);
+        const body = await res.json();
+        const el = document.getElementById('pricing-default');
+        if (el) el.value = body.defaultPricePerHour ?? 0;
+    } catch (e) { console.error('載入預設單價失敗', e); }
+}
+
+async function savePricingDefault() {
+    const val = parseFloat(document.getElementById('pricing-default')?.value || '0');
+    if (!Number.isFinite(val) || val < 0) { alert('預設單價必須為非負數'); return; }
+    try {
+        const res = await authFetch(`${API_BASE}/pricing/default`, {
+            method: 'PATCH',
+            body: JSON.stringify({ defaultPricePerHour: val }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        alert('預設單價已儲存');
+    } catch (e) { alert('儲存失敗：' + e.message); }
+}
+window.savePricingDefault = savePricingDefault;
+
+async function loadPricingRules() {
+    const container = document.getElementById('pricing-rules-list');
+    if (!container) return;
+    try {
+        const res = await authFetch(`${API_BASE}/pricing/rules`);
+        const rules = await res.json();
+        if (!Array.isArray(rules) || rules.length === 0) {
+            container.innerHTML = '<p class="text-muted">尚無規則，將使用預設單價。</p>';
+            return;
+        }
+        container.innerHTML = `
+            <table class="table" style="font-size:13px;">
+                <thead><tr>
+                    <th>星期</th><th>時段</th><th>單價/小時</th><th>Priority</th><th>啟用</th><th></th>
+                </tr></thead>
+                <tbody>
+                    ${rules.map(r => `
+                        <tr>
+                            <td>${r.dayOfWeek === -1 ? '每天' : DOW_LABELS[r.dayOfWeek] || '?'}</td>
+                            <td>${escapeHtml(r.startTime)}-${escapeHtml(r.endTime)}</td>
+                            <td>$${r.pricePerHour}</td>
+                            <td>${r.priority}</td>
+                            <td>
+                                <label style="cursor:pointer;">
+                                    <input type="checkbox" ${r.active ? 'checked' : ''}
+                                        onchange="togglePricingRule(${r.id}, this.checked)">
+                                </label>
+                            </td>
+                            <td><button class="btn btn-secondary" style="font-size:12px;padding:2px 8px;"
+                                onclick="deletePricingRule(${r.id})">刪除</button></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    } catch (e) {
+        container.innerHTML = '<p style="color:red;">載入失敗</p>';
+    }
+}
+
+async function addPricingRule() {
+    const data = {
+        dayOfWeek: parseInt(document.getElementById('pricing-dow').value, 10),
+        startTime: document.getElementById('pricing-start').value,
+        endTime: document.getElementById('pricing-end').value,
+        pricePerHour: parseFloat(document.getElementById('pricing-pph').value || '0'),
+        priority: parseInt(document.getElementById('pricing-priority').value || '0', 10),
+    };
+    if (!data.startTime || !data.endTime) { alert('請填寫起點/終點時間'); return; }
+    if (data.startTime >= data.endTime) { alert('起點必須早於終點'); return; }
+    try {
+        const res = await authFetch(`${API_BASE}/pricing/rules`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) throw new Error((await res.json()).message || '失敗');
+        await loadPricingRules();
+    } catch (e) { alert('新增失敗：' + e.message); }
+}
+window.addPricingRule = addPricingRule;
+
+async function togglePricingRule(id, active) {
+    try {
+        await authFetch(`${API_BASE}/pricing/rules/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ active }),
+        });
+    } catch (e) { alert('切換失敗：' + e.message); await loadPricingRules(); }
+}
+window.togglePricingRule = togglePricingRule;
+
+async function deletePricingRule(id) {
+    if (!confirm('確定刪除此規則？')) return;
+    try {
+        await authFetch(`${API_BASE}/pricing/rules/${id}`, { method: 'DELETE' });
+        await loadPricingRules();
+    } catch (e) { alert('刪除失敗：' + e.message); }
+}
+window.deletePricingRule = deletePricingRule;
+
+async function quotePricing() {
+    const date = document.getElementById('pricing-quote-date').value;
+    const timeSlot = document.getElementById('pricing-quote-slot').value.trim();
+    const out = document.getElementById('pricing-quote-result');
+    if (!date || !timeSlot) { out.textContent = '請填寫日期與時段'; return; }
+    try {
+        const res = await authFetch(`${API_BASE}/pricing/quote?date=${encodeURIComponent(date)}&timeSlot=${encodeURIComponent(timeSlot)}`);
+        const q = await res.json();
+        const sourceLabel = { rule: '規則匹配', venue_default: '預設單價', zero: '無設定' }[q.source] || q.source;
+        out.innerHTML = `預計 <strong>$${q.amount}</strong>（${sourceLabel}，每小時 $${q.pricePerHour}${q.ruleId ? `，規則 #${q.ruleId}` : ''}）`;
+    } catch (e) { out.textContent = '查詢失敗：' + e.message; }
+}
+window.quotePricing = quotePricing;

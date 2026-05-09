@@ -195,6 +195,76 @@
                             </div>
                         </div>
 
+                        <!-- 動態定價（BADM-T10） -->
+                        <div class="section">
+                            <h3>動態定價</h3>
+
+                            <!-- 預設單價 -->
+                            <div class="form-group">
+                                <label>預設單價（元/小時）— 沒有任何規則匹配時的 fallback</label>
+                                <div style="display:flex;gap:8px;align-items:center;">
+                                    <input type="number" id="pricing-default" min="0" step="1" style="flex:1;">
+                                    <button class="btn btn-primary" onclick="savePricingDefault()">儲存</button>
+                                </div>
+                            </div>
+
+                            <!-- 規則列表 -->
+                            <h4 style="margin-top:16px;">規則列表（priority 由高到低，匹配時越上面越優先）</h4>
+                            <div id="pricing-rules-list">
+                                <p class="text-muted">載入中⋯</p>
+                            </div>
+
+                            <!-- 新增規則 -->
+                            <h4 style="margin-top:16px;">新增規則</h4>
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;align-items:end;">
+                                <div class="form-group" style="margin:0;">
+                                    <label>星期</label>
+                                    <select id="pricing-dow">
+                                        <option value="-1">每天（任意）</option>
+                                        <option value="0">週日</option>
+                                        <option value="1">週一</option>
+                                        <option value="2">週二</option>
+                                        <option value="3">週三</option>
+                                        <option value="4">週四</option>
+                                        <option value="5">週五</option>
+                                        <option value="6">週六</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>起點 (HH:MM)</label>
+                                    <input type="time" id="pricing-start" value="18:00">
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>終點 (HH:MM)</label>
+                                    <input type="time" id="pricing-end" value="22:00">
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>單價（元/小時）</label>
+                                    <input type="number" id="pricing-pph" min="0" step="1" value="0">
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Priority</label>
+                                    <input type="number" id="pricing-priority" step="1" value="10">
+                                </div>
+                                <button class="btn btn-primary" onclick="addPricingRule()">新增</button>
+                            </div>
+
+                            <!-- 預覽 -->
+                            <h4 style="margin-top:16px;">預覽</h4>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;">
+                                <div class="form-group" style="margin:0;flex:1;min-width:140px;">
+                                    <label>日期</label>
+                                    <input type="date" id="pricing-quote-date">
+                                </div>
+                                <div class="form-group" style="margin:0;flex:1;min-width:160px;">
+                                    <label>時段（HH:MM-HH:MM）</label>
+                                    <input type="text" id="pricing-quote-slot" placeholder="例：19:00-21:00">
+                                </div>
+                                <button class="btn btn-secondary" onclick="quotePricing()">查詢金額</button>
+                            </div>
+                            <div id="pricing-quote-result" style="margin-top:8px;font-size:14px;"></div>
+                        </div>
+
                         <!-- 備註管理：給館方寫公告給用戶（公開/團主/臨打三種可見性） -->
                         <div class="section">
                             <h3>備註管理</h3>
