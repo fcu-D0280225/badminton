@@ -14,6 +14,7 @@ import { PushModule } from './push/push.module';
 import { BillingModule } from './billing/billing.module';
 import { BookerModule } from './booker/booker.module';
 import { PricingModule } from './pricing/pricing.module';
+import { CoachModule } from './coach/coach.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { PricingModule } from './pricing/pricing.module';
     BillingModule,
     BookerModule,
     PricingModule,
+    CoachModule,
   ],
   controllers: [AppController],
   providers: [AppService],
