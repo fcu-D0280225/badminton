@@ -137,6 +137,12 @@ body {
     transition: all 0.3s;
 }
 
+.btn:focus-visible,
+button:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
 .btn-primary {
     background: #667eea;
     color: white;
@@ -643,6 +649,7 @@ body {
 .header-actions .btn-logout {
     padding: 6px 14px;
     font-size: 14px;
+    min-height: 44px;
 }
 
 /* ========================================================================== */
@@ -658,8 +665,8 @@ body {
     cursor: pointer;
     font-size: 16px;
     line-height: 1;
-    height: 36px;
-    min-width: 40px;
+    height: 44px;
+    min-width: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
