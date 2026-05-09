@@ -15,11 +15,16 @@ function getAuth() {
   };
 }
 
-function authFetch(url, options = {}) {
+async function authFetch(url, options = {}) {
   const { token } = getAuth();
   const headers = { ...(options.headers || {}) };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  return fetch(url, { ...options, headers: { 'Content-Type': 'application/json', ...headers } });
+  const res = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json', ...headers } });
+  if (res.status === 401) {
+    logout();
+    throw new Error('請重新登入');
+  }
+  return res;
 }
 
 function logout() {
