@@ -182,6 +182,10 @@ function initTabs() {
     const visibleTabs = document.querySelectorAll('.tab-btn:not(.hidden)');
     const views = document.querySelectorAll('.view');
 
+    // 只有一個 tab 時隱藏整個 nav（單視圖不需要導航列）
+    const navTabs = document.querySelector('.nav-tabs');
+    if (navTabs) navTabs.style.display = visibleTabs.length <= 1 ? 'none' : '';
+
     tabButtons.forEach(b => b.classList.remove('active'));
     if (visibleTabs.length > 0) visibleTabs[0].classList.add('active');
 
