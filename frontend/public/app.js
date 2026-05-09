@@ -345,12 +345,12 @@ async function filterVenueBookings() {
             const card = document.createElement('div');
             card.className = 'card';
             
-            const participant = booking.organizer?.name || booking.player?.name || '未知';
+            const participant = escapeHtml(booking.organizer?.name || booking.player?.name || '未知');
             const paymentStatus = booking.payment?.status || 'unpaid';
             const paymentAmount = booking.payment?.amount || 0;
-            
+
             card.innerHTML = `
-                <h4>${booking.date} ${booking.timeSlot}</h4>
+                <h4>${escapeHtml(booking.date)} ${escapeHtml(booking.timeSlot)}</h4>
                 <p><strong>預約者：</strong>${participant}</p>
                 <p><strong>狀態：</strong><span class="badge badge-${paymentStatus === 'paid' ? 'success' : 'warning'}">${paymentStatus === 'paid' ? '已付款' : '未付款'}</span></p>
                 <p><strong>金額：</strong>$${paymentAmount}</p>
@@ -1273,10 +1273,10 @@ function showOrganizerDateBookings(dateStr) {
             <div style="max-height: 400px; overflow-y: auto;">
                 ${bookings.map(booking => `
                     <div class="card" style="margin-bottom: 15px;">
-                        <h4>${booking.timeSlot}</h4>
-                        <p><strong>館方：</strong>${booking.venue?.name || '未知'}</p>
-                        <p><strong>聯絡方式：</strong>${booking.venue?.contact || '未知'}</p>
-                        <p><strong>狀態：</strong><span class="badge badge-${booking.status === 'confirmed' ? 'success' : 'warning'}">${booking.status}</span></p>
+                        <h4>${escapeHtml(booking.timeSlot)}</h4>
+                        <p><strong>館方：</strong>${escapeHtml(booking.venue?.name || '未知')}</p>
+                        <p><strong>聯絡方式：</strong>${escapeHtml(booking.venue?.contact || '未知')}</p>
+                        <p><strong>狀態：</strong><span class="badge badge-${booking.status === 'confirmed' ? 'success' : 'warning'}">${escapeHtml(booking.status)}</span></p>
                     </div>
                 `).join('')}
             </div>
@@ -1364,9 +1364,9 @@ async function loadOrganizerBookings() {
             card.innerHTML = `
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                     <div>
-                        <h4 style="margin:0 0 8px;">${booking.date} ${booking.timeSlot}</h4>
-                        <p style="margin:2px 0;"><strong>場地：</strong>${booking.venue?.name || '未知'}</p>
-                        <p style="margin:2px 0;"><strong>聯絡：</strong>${booking.venue?.contact || '未知'}</p>
+                        <h4 style="margin:0 0 8px;">${escapeHtml(booking.date)} ${escapeHtml(booking.timeSlot)}</h4>
+                        <p style="margin:2px 0;"><strong>場地：</strong>${escapeHtml(booking.venue?.name || '未知')}</p>
+                        <p style="margin:2px 0;"><strong>聯絡：</strong>${escapeHtml(booking.venue?.contact || '未知')}</p>
                         <p style="margin:2px 0;"><strong>付款：</strong>
                             <span class="badge badge-${paymentStatus === 'paid' ? 'success' : 'warning'}">
                                 ${paymentStatus === 'paid' ? '已付款' : '未付款'}
@@ -1437,9 +1437,9 @@ async function loadOrganizerPlayers() {
             ).join(', ');
             
             card.innerHTML = `
-                <h4>${data.player.name}</h4>
-                <p><strong>聯絡方式：</strong>${data.player.contact}</p>
-                <p><strong>預約時段：</strong>${bookingList}</p>
+                <h4>${escapeHtml(data.player.name)}</h4>
+                <p><strong>聯絡方式：</strong>${escapeHtml(data.player.contact)}</p>
+                <p><strong>預約時段：</strong>${escapeHtml(bookingList)}</p>
             `;
             list.appendChild(card);
         });
@@ -1641,10 +1641,10 @@ function showPlayerDateBookings(dateStr) {
             <div style="max-height: 400px; overflow-y: auto;">
                 ${bookings.map(booking => `
                     <div class="card" style="margin-bottom: 15px;">
-                        <h4>${booking.timeSlot}</h4>
-                        <p><strong>館方：</strong>${booking.venue?.name || '未知'}</p>
-                        <p><strong>團主：</strong>${booking.organizer?.name || '無'}</p>
-                        <p><strong>狀態：</strong><span class="badge badge-${booking.status === 'confirmed' ? 'success' : 'warning'}">${booking.status}</span></p>
+                        <h4>${escapeHtml(booking.timeSlot)}</h4>
+                        <p><strong>館方：</strong>${escapeHtml(booking.venue?.name || '未知')}</p>
+                        <p><strong>團主：</strong>${escapeHtml(booking.organizer?.name || '無')}</p>
+                        <p><strong>狀態：</strong><span class="badge badge-${booking.status === 'confirmed' ? 'success' : 'warning'}">${escapeHtml(booking.status)}</span></p>
                     </div>
                 `).join('')}
             </div>
@@ -1730,14 +1730,14 @@ async function loadPlayerBookingHistory() {
             const card = document.createElement('div');
             card.className = 'card';
             
-            const venueName = booking.venue?.name || '未知';
-            const organizerName = booking.organizer?.name || '無';
-            
+            const venueName = escapeHtml(booking.venue?.name || '未知');
+            const organizerName = escapeHtml(booking.organizer?.name || '無');
+
             card.innerHTML = `
-                <h4>${booking.date} ${booking.timeSlot}</h4>
+                <h4>${escapeHtml(booking.date)} ${escapeHtml(booking.timeSlot)}</h4>
                 <p><strong>館方：</strong>${venueName}</p>
                 <p><strong>團主：</strong>${organizerName}</p>
-                <p><strong>狀態：</strong><span class="badge badge-${booking.status === 'confirmed' ? 'success' : 'warning'}">${booking.status}</span></p>
+                <p><strong>狀態：</strong><span class="badge badge-${booking.status === 'confirmed' ? 'success' : 'warning'}">${escapeHtml(booking.status)}</span></p>
             `;
             container.appendChild(card);
         });
@@ -1774,8 +1774,8 @@ async function loadPlayerVenueBookings() {
                 : '<p style="color: #999;">無備註</p>';
 
             card.innerHTML = `
-                <h4>${item.booking.date} ${item.booking.timeSlot}</h4>
-                <p><strong>館方：</strong>${item.booking.venue?.name || '未知'}</p>
+                <h4>${escapeHtml(item.booking.date)} ${escapeHtml(item.booking.timeSlot)}</h4>
+                <p><strong>館方：</strong>${escapeHtml(item.booking.venue?.name || '未知')}</p>
                 ${notesHtml}
             `;
             container.appendChild(card);
@@ -1813,8 +1813,8 @@ async function loadPlayerOrganizerBookings() {
                 : '<p style="color: #999;">無備註</p>';
 
             card.innerHTML = `
-                <h4>${item.booking.date} ${item.booking.timeSlot}</h4>
-                <p><strong>團主：</strong>${item.booking.organizer?.name || '未知'}</p>
+                <h4>${escapeHtml(item.booking.date)} ${escapeHtml(item.booking.timeSlot)}</h4>
+                <p><strong>團主：</strong>${escapeHtml(item.booking.organizer?.name || '未知')}</p>
                 ${notesHtml}
             `;
             container.appendChild(card);
@@ -1842,13 +1842,13 @@ async function loadPlayerRatings() {
                 const card = document.createElement('div');
                 card.className = 'card';
                 
-                const target = rating.venue ? `館方：${rating.venue.name}` : `團主：${rating.organizer?.name || '未知'}`;
+                const target = rating.venue ? `館方：${escapeHtml(rating.venue.name)}` : `團主：${escapeHtml(rating.organizer?.name || '未知')}`;
                 const stars = '★'.repeat(rating.score) + '☆'.repeat(5 - rating.score);
-                
+
                 card.innerHTML = `
                     <h4>${target}</h4>
                     <p><strong>評分：</strong><span style="color: #ffc107; font-size: 20px;">${stars}</span> (${rating.score}/5)</p>
-                    ${rating.comment ? `<p><strong>評論：</strong>${rating.comment}</p>` : ''}
+                    ${rating.comment ? `<p><strong>評論：</strong>${escapeHtml(rating.comment)}</p>` : ''}
                     <button class="btn btn-danger" style="margin-top: 10px;" onclick="deleteRating(${rating.id})">刪除評分</button>
                 `;
                 container.appendChild(card);
@@ -2391,8 +2391,8 @@ async function loadBookerBookings() {
                     <div style="flex:1;padding:10px 12px;">
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                             <div>
-                                <div style="font-size:14px;font-weight:600;">${b.venue?.name || '場地'}</div>
-                                <div style="font-size:12px;color:#6b7280;margin-top:2px;">${b.date} ${b.timeSlot}</div>
+                                <div style="font-size:14px;font-weight:600;">${escapeHtml(b.venue?.name || '場地')}</div>
+                                <div style="font-size:12px;color:#6b7280;margin-top:2px;">${escapeHtml(b.date)} ${escapeHtml(b.timeSlot)}</div>
                                 <div style="font-size:12px;color:#6b7280;margin-top:2px;">
                                     人員：${participantCount} 人${checkedInCount > 0 ? `（${checkedInCount} 已報到）` : ''}
                                 </div>
@@ -2401,7 +2401,11 @@ async function loadBookerBookings() {
                                 ${statusBadge}
                                 ${!isCancelled ? `
                                     <button class="btn btn-primary" style="font-size:12px;padding:4px 10px;"
-                                        onclick="openRosterModal(${b.id}, '${b.venue?.name || '場地'}', '${b.date}', '${b.timeSlot}')">
+                                        data-booking-id="${b.id}"
+                                        data-venue-name="${escapeHtml(b.venue?.name || '場地')}"
+                                        data-date="${escapeHtml(b.date)}"
+                                        data-time-slot="${escapeHtml(b.timeSlot)}"
+                                        onclick="openRosterModal(+this.dataset.bookingId, this.dataset.venueName, this.dataset.date, this.dataset.timeSlot)">
                                         管理名單
                                     </button>
                                 ` : ''}

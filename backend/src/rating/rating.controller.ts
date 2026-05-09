@@ -7,8 +7,11 @@ import {
   Body,
   Param,
   UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { AuthUser } from '../auth/types';
 import { RatingService } from './rating.service';
 import { Rating } from '../entities/rating.entity';
 
@@ -17,11 +20,23 @@ import { Rating } from '../entities/rating.entity';
 export class RatingController {
   constructor(private readonly ratingService: RatingService) {}
 
+  private assertCanWrite(user: AuthUser): void {
+    if (user.role !== 'venue' && user.role !== 'organizer') {
+      throw new ForbiddenException('僅館方或團主帳號可新增/修改評分');
+    }
+  }
+
+  // 建立評分：僅館方或團主
   @Post()
-  async createRating(@Body() data: Partial<Rating>): Promise<Rating> {
+  async createRating(
+    @CurrentUser() user: AuthUser,
+    @Body() data: Partial<Rating>,
+  ): Promise<Rating> {
+    this.assertCanWrite(user);
     return await this.ratingService.createRating(data);
   }
 
+  // 取得所有評分：任何已登入使用者
   @Get()
   async findAll(): Promise<Rating[]> {
     return await this.ratingService.findAll();
@@ -65,16 +80,24 @@ export class RatingController {
     return await this.ratingService.getAverageRating(null, +organizerId);
   }
 
+  // 更新評分：僅館方或團主
   @Put(':id')
   async updateRating(
+    @CurrentUser() user: AuthUser,
     @Param('id') id: string,
     @Body() data: Partial<Rating>,
   ): Promise<Rating> {
+    this.assertCanWrite(user);
     return await this.ratingService.updateRating(+id, data);
   }
 
+  // 刪除評分：僅館方或團主
   @Delete(':id')
-  async deleteRating(@Param('id') id: string): Promise<void> {
+  async deleteRating(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+  ): Promise<void> {
+    this.assertCanWrite(user);
     return await this.ratingService.deleteRating(+id);
   }
 }

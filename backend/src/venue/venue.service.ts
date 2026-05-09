@@ -162,6 +162,11 @@ export class VenueService {
     return await this.venueNoteRepository.findOne({ where: { id } });
   }
 
+  // 取得單一備註（供 controller 驗 ownership 用）
+  async getNoteById(id: number): Promise<VenueNote> {
+    return await this.venueNoteRepository.findOne({ where: { id } });
+  }
+
   // 刪除備註
   async deleteNote(id: number): Promise<void> {
     await this.venueNoteRepository.delete(id);

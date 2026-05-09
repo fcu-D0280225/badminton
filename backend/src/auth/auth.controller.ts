@@ -8,6 +8,7 @@ import {
   UseGuards,
   ForbiddenException,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService, LoginResult, RegisterDto } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from './current-user.decorator';
@@ -17,6 +18,8 @@ import { AuthUser } from './types';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  // 登入限流：5 次/分鐘，防暴力破解
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @Post('login')
   async login(
     @Body() body: { username: string; password: string },
@@ -66,30 +69,8 @@ export class AuthController {
     return await this.authService.listAccountVenues(user.id);
   }
 
-  // 把另一個 venue 加到當前帳號（venue 角色 self-grant — 後台可改成 admin-only）
-  @Post('venues/:venueId')
-  @UseGuards(JwtAuthGuard)
-  async grantVenue(
-    @CurrentUser() user: AuthUser,
-    @Param('venueId') venueId: string,
-  ) {
-    if (user.role !== 'venue') {
-      throw new ForbiddenException('僅 venue 角色可使用');
-    }
-    await this.authService.grantVenueToAccount(user.id, +venueId);
-    return { success: true };
-  }
-
-  @Delete('venues/:venueId')
-  @UseGuards(JwtAuthGuard)
-  async revokeVenue(
-    @CurrentUser() user: AuthUser,
-    @Param('venueId') venueId: string,
-  ) {
-    if (user.role !== 'venue') {
-      throw new ForbiddenException('僅 venue 角色可使用');
-    }
-    await this.authService.revokeVenueFromAccount(user.id, +venueId);
-    return { success: true };
-  }
+  // 多場館授權已停用：venue 自我授權存在橫向越權風險。
+  // 需要多場館管理，請由後台人工操作 account_venues 資料表。
+  // @Post('venues/:venueId') — DISABLED (D4 security fix)
+  // @Delete('venues/:venueId') — DISABLED (D4 security fix)
 }
