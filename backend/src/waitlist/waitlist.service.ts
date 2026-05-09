@@ -7,7 +7,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Waitlist } from '../entities/waitlist.entity';
 import { AuthUser } from '../auth/types';
-import { ownsOrganizer, ownsPlayer } from '../auth/ownership.helper';
+import {
+  ownsOrganizer,
+  ownsPlayer,
+  venueOwnsVenue,
+} from '../auth/ownership.helper';
 
 @Injectable()
 export class WaitlistService {
@@ -54,8 +58,8 @@ export class WaitlistService {
     user?: AuthUser,
   ): Promise<Waitlist[]> {
     if (user) {
-      // 只有 venue 看得到該場次完整候補名單
-      if (user.role !== 'venue' || user.entityId !== venueId) {
+      // 只有 venue 看得到該場次完整候補名單（多場館：venueId 必須在綁定清單內）
+      if (!venueOwnsVenue(user, venueId)) {
         throw new NotFoundException('找不到候補名單');
       }
     }
@@ -94,7 +98,7 @@ export class WaitlistService {
       if (!entry) throw new NotFoundException(`候補 #${id} 不存在`);
       const okPlayer = entry.playerId != null && ownsPlayer(user, entry.playerId);
       const okOrg = entry.organizerId != null && ownsOrganizer(user, entry.organizerId);
-      const okVenue = user.role === 'venue' && user.entityId === entry.venueId;
+      const okVenue = venueOwnsVenue(user, entry.venueId);
       if (!okPlayer && !okOrg && !okVenue) {
         throw new NotFoundException(`候補 #${id} 不存在`);
       }

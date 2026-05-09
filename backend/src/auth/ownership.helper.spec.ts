@@ -1,8 +1,11 @@
+import { In } from 'typeorm';
 import {
   bookingOwnerWhereClauses,
   isBookingOwnedBy,
   ownsOrganizer,
   ownsPlayer,
+  getVenueIdsForUser,
+  venueOwnsVenue,
 } from './ownership.helper';
 import { AuthUser } from './types';
 
@@ -10,19 +13,27 @@ const mkUser = (
   role: AuthUser['role'],
   entityId: number,
   linkedEntityId?: number,
+  venueIds?: number[],
 ): AuthUser => ({
   id: 1,
   username: 'u',
   role,
   entityId,
   linkedEntityId,
+  venueIds,
 });
 
 describe('bookingOwnerWhereClauses', () => {
-  it('venue → venueId', () => {
+  it('venue without venueIds → fallback to entityId via In([entityId])', () => {
     expect(bookingOwnerWhereClauses(mkUser('venue', 7))).toEqual([
-      { venueId: 7 },
+      { venueId: In([7]) },
     ]);
+  });
+
+  it('venue with multiple venueIds → In([list])', () => {
+    expect(
+      bookingOwnerWhereClauses(mkUser('venue', 7, undefined, [7, 12])),
+    ).toEqual([{ venueId: In([7, 12]) }]);
   });
 
   it('organizer → organizerId', () => {
@@ -58,7 +69,13 @@ describe('bookingOwnerWhereClauses', () => {
 });
 
 describe('isBookingOwnedBy', () => {
-  it('venue matches its own venueId', () => {
+  it('venue matches venueId from venueIds list (multi-venue)', () => {
+    expect(isBookingOwnedBy(mkUser('venue', 7, undefined, [7, 12]), { venueId: 7 })).toBe(true);
+    expect(isBookingOwnedBy(mkUser('venue', 7, undefined, [7, 12]), { venueId: 12 })).toBe(true);
+    expect(isBookingOwnedBy(mkUser('venue', 7, undefined, [7, 12]), { venueId: 99 })).toBe(false);
+  });
+
+  it('venue without venueIds falls back to entityId', () => {
     expect(isBookingOwnedBy(mkUser('venue', 7), { venueId: 7 })).toBe(true);
     expect(isBookingOwnedBy(mkUser('venue', 7), { venueId: 8 })).toBe(false);
   });
@@ -95,6 +112,30 @@ describe('ownsOrganizer', () => {
     expect(ownsOrganizer(mkUser('venue', 3), 3)).toBe(false);
     expect(ownsOrganizer(mkUser('player', 3), 3)).toBe(false);
     expect(ownsOrganizer(mkUser('booker', 3), 3)).toBe(false);
+  });
+});
+
+describe('getVenueIdsForUser', () => {
+  it('returns venueIds list when present', () => {
+    expect(getVenueIdsForUser(mkUser('venue', 7, undefined, [7, 12, 33]))).toEqual([7, 12, 33]);
+  });
+  it('falls back to [entityId] when venueIds empty', () => {
+    expect(getVenueIdsForUser(mkUser('venue', 7))).toEqual([7]);
+  });
+  it('non-venue role returns empty array', () => {
+    expect(getVenueIdsForUser(mkUser('player', 5))).toEqual([]);
+    expect(getVenueIdsForUser(mkUser('organizer', 3))).toEqual([]);
+  });
+});
+
+describe('venueOwnsVenue', () => {
+  it('venue owns any venueId in their list', () => {
+    expect(venueOwnsVenue(mkUser('venue', 7, undefined, [7, 12]), 12)).toBe(true);
+    expect(venueOwnsVenue(mkUser('venue', 7, undefined, [7, 12]), 99)).toBe(false);
+  });
+  it('non-venue never owns', () => {
+    expect(venueOwnsVenue(mkUser('player', 7), 7)).toBe(false);
+    expect(venueOwnsVenue(mkUser('organizer', 7), 7)).toBe(false);
   });
 });
 

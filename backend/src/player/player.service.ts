@@ -6,8 +6,9 @@ import { Booking } from '../entities/booking.entity';
 import { Rating } from '../entities/rating.entity';
 import { VenueNote } from '../entities/venue-note.entity';
 import { OrganizerNote } from '../entities/organizer-note.entity';
+import { In } from 'typeorm';
 import { AuthUser } from '../auth/types';
-import { ownsPlayer } from '../auth/ownership.helper';
+import { ownsPlayer, getVenueIdsForUser } from '../auth/ownership.helper';
 
 @Injectable()
 export class PlayerService {
@@ -188,9 +189,9 @@ export class PlayerService {
   // ── 私有：是否可讀取此 playerId ─────────────────────────────────
   private async assertReadable(playerId: number, user: AuthUser): Promise<void> {
     if (user.role === 'venue') {
-      // venue 只能讀取「曾在自己場地預約過」的 player
+      // venue 只能讀取「曾在自己（任一綁定）場地預約過」的 player
       const booked = await this.bookingRepository.findOne({
-        where: { playerId, venueId: user.entityId },
+        where: { playerId, venueId: In(getVenueIdsForUser(user)) },
       });
       if (!booked) throw new NotFoundException(`臨打 #${playerId} 不存在`);
       return;

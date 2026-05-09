@@ -17,6 +17,7 @@ import { AuthUser } from '../auth/types';
 import {
   bookingOwnerWhereClauses,
   isBookingOwnedBy,
+  getVenueIdsForUser,
 } from '../auth/ownership.helper';
 
 /** 預約保留時間（分鐘）：pending 狀態下未付款超過此時間自動取消 */
@@ -398,8 +399,8 @@ export class BookingService {
   ): void {
     switch (user.role) {
       case 'venue':
-        if (data.venueId !== user.entityId) {
-          throw new ForbiddenException('只能在自己的場地建立預約');
+        if (!getVenueIdsForUser(user).includes(data.venueId)) {
+          throw new ForbiddenException('只能在自己（任一綁定）的場地建立預約');
         }
         return;
       case 'organizer':

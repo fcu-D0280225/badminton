@@ -10,6 +10,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { IsIn, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { Account, AccountRole } from '../entities/account.entity';
+import { AccountVenue } from '../entities/account-venue.entity';
 import { Venue } from '../entities/venue.entity';
 import { Organizer } from '../entities/organizer.entity';
 import { Player } from '../entities/player.entity';
@@ -20,6 +21,7 @@ export interface LoginResult {
   role: AccountRole;
   entityId: number;
   linkedEntityId?: number;
+  venueIds?: number[];
   name: string;
 }
 
@@ -60,6 +62,8 @@ export class AuthService {
   constructor(
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
+    @InjectRepository(AccountVenue)
+    private accountVenueRepository: Repository<AccountVenue>,
     @InjectRepository(Venue)
     private venueRepository: Repository<Venue>,
     @InjectRepository(Organizer)
@@ -70,6 +74,17 @@ export class AuthService {
     private bookerRepository: Repository<Booker>,
     private jwtService: JwtService,
   ) {}
+
+  // venue 角色：列出帳號可管理的所有 venueId（pivot 為主，fallback 至 accounts.entityId）
+  async getVenueIdsForAccount(account: Account): Promise<number[]> {
+    if (account.role !== 'venue') return undefined;
+    const rows = await this.accountVenueRepository.find({
+      where: { accountId: account.id },
+      select: ['venueId'],
+    });
+    if (rows.length === 0) return [account.entityId];
+    return rows.map((r) => r.venueId);
+  }
 
   async login(username: string, password: string): Promise<LoginResult> {
     const account = await this.accountRepository.findOne({
@@ -86,12 +101,14 @@ export class AuthService {
     }
 
     const name = await this.getEntityName(account.role, account.entityId);
+    const venueIds = await this.getVenueIdsForAccount(account);
     const payload = {
       sub: account.id,
       username,
       role: account.role,
       entityId: account.entityId,
       linkedEntityId: account.linkedEntityId || undefined,
+      venueIds,
     };
     const access_token = this.jwtService.sign(payload);
 
@@ -100,6 +117,7 @@ export class AuthService {
       role: account.role,
       entityId: account.entityId,
       linkedEntityId: account.linkedEntityId || undefined,
+      venueIds,
       name,
     };
   }
@@ -168,15 +186,21 @@ export class AuthService {
   }
 
   async getMe(payload: {
+    id?: number;
     role: AccountRole;
     entityId: number;
-  }): Promise<{ role: AccountRole; entityId: number; name: string }> {
+  }): Promise<{
+    role: AccountRole;
+    entityId: number;
+    name: string;
+    venues?: { venueId: number; name: string; isPrimary: boolean }[];
+  }> {
     const name = await this.getEntityName(payload.role, payload.entityId);
-    return {
-      role: payload.role,
-      entityId: payload.entityId,
-      name,
-    };
+    const out: any = { role: payload.role, entityId: payload.entityId, name };
+    if (payload.role === 'venue' && payload.id) {
+      out.venues = await this.listAccountVenues(payload.id);
+    }
+    return out;
   }
 
   async createAccountForEntity(
@@ -222,12 +246,60 @@ export class AuthService {
       }),
     );
     const passwordHash = await bcrypt.hash(input.password, 10);
-    await this.accountRepository.save({
+    const account = await this.accountRepository.save({
       username: input.username,
       passwordHash,
       role: 'venue',
       entityId: venue.id,
     });
+    // 同步寫 account_venues pivot：新建 venue 帳號的 primary 場館
+    await this.accountVenueRepository.save({
+      accountId: account.id,
+      venueId: venue.id,
+      isPrimary: true,
+    });
+  }
+
+  // 把另一個 venue 加到既有 venue 帳號的可管理清單（管理員/後台用）
+  async grantVenueToAccount(accountId: number, venueId: number): Promise<void> {
+    const account = await this.accountRepository.findOne({ where: { id: accountId } });
+    if (!account) throw new ConflictException('帳號不存在');
+    if (account.role !== 'venue') {
+      throw new ForbiddenException('僅 venue 角色帳號可綁定多場館');
+    }
+    const venue = await this.venueRepository.findOne({ where: { id: venueId } });
+    if (!venue) throw new ConflictException('場館不存在');
+    const existing = await this.accountVenueRepository.findOne({
+      where: { accountId, venueId },
+    });
+    if (existing) return; // idempotent
+    await this.accountVenueRepository.save({ accountId, venueId, isPrimary: false });
+  }
+
+  async revokeVenueFromAccount(accountId: number, venueId: number): Promise<void> {
+    const row = await this.accountVenueRepository.findOne({
+      where: { accountId, venueId },
+    });
+    if (!row) return;
+    if (row.isPrimary) {
+      throw new ForbiddenException('不可移除 primary 場館，請改設定其他 primary 後再試');
+    }
+    await this.accountVenueRepository.delete({ accountId, venueId });
+  }
+
+  async listAccountVenues(accountId: number): Promise<
+    { venueId: number; name: string; isPrimary: boolean }[]
+  > {
+    const rows = await this.accountVenueRepository.find({
+      where: { accountId },
+      relations: ['venue'],
+      order: { isPrimary: 'DESC', createdAt: 'ASC' },
+    });
+    return rows.map((r) => ({
+      venueId: r.venueId,
+      name: r.venue?.name || '',
+      isPrimary: r.isPrimary,
+    }));
   }
 
   private async getEntityName(

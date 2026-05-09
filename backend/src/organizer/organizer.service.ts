@@ -6,8 +6,9 @@ import { Booking } from '../entities/booking.entity';
 import { Venue } from '../entities/venue.entity';
 import { Player } from '../entities/player.entity';
 import { OrganizerNote } from '../entities/organizer-note.entity';
+import { In } from 'typeorm';
 import { AuthUser } from '../auth/types';
-import { ownsOrganizer } from '../auth/ownership.helper';
+import { ownsOrganizer, getVenueIdsForUser } from '../auth/ownership.helper';
 
 @Injectable()
 export class OrganizerService {
@@ -62,7 +63,7 @@ export class OrganizerService {
       order: { date: 'DESC', timeSlot: 'ASC' },
     });
     // venue 角色：只回該場地的預約
-    if (user?.role === 'venue') return rows.filter((b) => b.venueId === user.entityId);
+    if (user?.role === 'venue') return rows.filter((b) => getVenueIdsForUser(user).includes(b.venueId));
     return rows;
   }
 
@@ -75,7 +76,7 @@ export class OrganizerService {
     });
 
     const playerIds = bookings
-      .filter((b) => user?.role !== 'venue' || b.venueId === user.entityId)
+      .filter((b) => user?.role !== 'venue' || getVenueIdsForUser(user).includes(b.venueId))
       .map((b) => b.playerId)
       .filter((id) => id !== null);
 
@@ -97,7 +98,7 @@ export class OrganizerService {
       relations: ['player', 'venue'],
       order: { date: 'DESC', timeSlot: 'ASC' },
     });
-    if (user?.role === 'venue') return rows.filter((b) => b.venueId === user.entityId);
+    if (user?.role === 'venue') return rows.filter((b) => getVenueIdsForUser(user).includes(b.venueId));
     return rows;
   }
 
@@ -155,9 +156,9 @@ export class OrganizerService {
   // ── 私有：是否可讀取此 organizerId 的資料 ──────────────────────
   private async assertReadable(organizerId: number, user: AuthUser): Promise<void> {
     if (user.role === 'venue') {
-      // venue 只能讀取「曾在自己場地預約過」的 organizer
+      // venue 只能讀取「曾在自己（任一綁定）場地預約過」的 organizer
       const booked = await this.bookingRepository.findOne({
-        where: { organizerId, venueId: user.entityId },
+        where: { organizerId, venueId: In(getVenueIdsForUser(user)) },
       });
       if (!booked) throw new NotFoundException(`團主 #${organizerId} 不存在`);
       return;

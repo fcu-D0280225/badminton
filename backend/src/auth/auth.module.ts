@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { Account } from '../entities/account.entity';
+import { AccountVenue } from '../entities/account-venue.entity';
 import { Venue } from '../entities/venue.entity';
 import { Organizer } from '../entities/organizer.entity';
 import { Player } from '../entities/player.entity';
@@ -13,7 +14,7 @@ import { Booker } from '../entities/booker.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Account, Venue, Organizer, Player, Booker]),
+    TypeOrmModule.forFeature([Account, AccountVenue, Venue, Organizer, Player, Booker]),
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,

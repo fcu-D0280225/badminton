@@ -1,9 +1,17 @@
 import { ForbiddenException } from '@nestjs/common';
+import { In } from 'typeorm';
 import { AuthUser } from './types';
+
+/** venue 角色：可管理的所有 venueId（pivot 為主，fallback entityId） */
+export function getVenueIdsForUser(user: AuthUser): number[] {
+  if (user.role !== 'venue') return [];
+  if (user.venueIds && user.venueIds.length > 0) return user.venueIds;
+  return [user.entityId];
+}
 
 /**
  * 給 booking 查詢用：依 user.role 回傳一組 OR-clauses，符合任一即可看見。
- * venue 使用者：只能看見自己場地的預約
+ * venue 使用者：可看見自己所有綁定場館的預約（多場館支援，FEAT-007）
  * organizer：只能看見自己當團主的預約
  * player：只能看見自己當臨打的預約
  * member：organizer + player 兩種身分皆可
@@ -11,8 +19,10 @@ import { AuthUser } from './types';
  */
 export function bookingOwnerWhereClauses(user: AuthUser): object[] {
   switch (user.role) {
-    case 'venue':
-      return [{ venueId: user.entityId }];
+    case 'venue': {
+      const venueIds = getVenueIdsForUser(user);
+      return [{ venueId: In(venueIds) }];
+    }
     case 'organizer':
       return [{ organizerId: user.entityId }];
     case 'player':
@@ -44,7 +54,7 @@ export function isBookingOwnedBy(
   if (!booking) return false;
   switch (user.role) {
     case 'venue':
-      return booking.venueId === user.entityId;
+      return getVenueIdsForUser(user).includes(booking.venueId);
     case 'organizer':
       return booking.organizerId === user.entityId;
     case 'player':
@@ -59,6 +69,11 @@ export function isBookingOwnedBy(
     default:
       return false;
   }
+}
+
+/** venue 角色是否可管理此 venueId */
+export function venueOwnsVenue(user: AuthUser, venueId: number): boolean {
+  return user.role === 'venue' && getVenueIdsForUser(user).includes(venueId);
 }
 
 /**

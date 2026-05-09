@@ -1,8 +1,17 @@
-import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  ForbiddenException,
+} from '@nestjs/common';
 import { AuthService, LoginResult, RegisterDto } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { CurrentUser } from './current-user.decorator';
-import { AccountRole } from '../entities/account.entity';
+import { AuthUser } from './types';
 
 @Controller('api/auth')
 export class AuthController {
@@ -22,7 +31,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getMe(@CurrentUser() user: { role: AccountRole; entityId: number }) {
+  async getMe(@CurrentUser() user: AuthUser) {
     return await this.authService.getMe(user);
   }
 
@@ -43,6 +52,44 @@ export class AuthController {
       body.username,
       body.password,
     );
+    return { success: true };
+  }
+
+  // ── 多場館 (FEAT-007) ──────────────────────────────────────────
+  // 列出當前 venue 帳號可管理的所有 venue
+  @Get('venues')
+  @UseGuards(JwtAuthGuard)
+  async listMyVenues(@CurrentUser() user: AuthUser) {
+    if (user.role !== 'venue') {
+      throw new ForbiddenException('僅 venue 角色可使用');
+    }
+    return await this.authService.listAccountVenues(user.id);
+  }
+
+  // 把另一個 venue 加到當前帳號（venue 角色 self-grant — 後台可改成 admin-only）
+  @Post('venues/:venueId')
+  @UseGuards(JwtAuthGuard)
+  async grantVenue(
+    @CurrentUser() user: AuthUser,
+    @Param('venueId') venueId: string,
+  ) {
+    if (user.role !== 'venue') {
+      throw new ForbiddenException('僅 venue 角色可使用');
+    }
+    await this.authService.grantVenueToAccount(user.id, +venueId);
+    return { success: true };
+  }
+
+  @Delete('venues/:venueId')
+  @UseGuards(JwtAuthGuard)
+  async revokeVenue(
+    @CurrentUser() user: AuthUser,
+    @Param('venueId') venueId: string,
+  ) {
+    if (user.role !== 'venue') {
+      throw new ForbiddenException('僅 venue 角色可使用');
+    }
+    await this.authService.revokeVenueFromAccount(user.id, +venueId);
     return { success: true };
   }
 }

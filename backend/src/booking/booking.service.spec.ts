@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { In } from 'typeorm';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { Booking } from '../entities/booking.entity';
@@ -53,11 +54,11 @@ describe('BookingService (SEC-001 ownership filter)', () => {
   });
 
   describe('findAll', () => {
-    it('venue user sees only own venue bookings', async () => {
+    it('venue user sees only own venue bookings (uses In([entityId]) fallback)', async () => {
       bookingRepo.find.mockResolvedValue([{ id: 1, venueId: 7 }]);
       const out = await service.findAll(mkUser('venue', 7));
       expect(bookingRepo.find).toHaveBeenCalledWith(
-        expect.objectContaining({ where: [{ venueId: 7 }] }),
+        expect.objectContaining({ where: [{ venueId: In([7]) }] }),
       );
       expect(out).toEqual([{ id: 1, venueId: 7 }]);
     });
@@ -78,6 +79,13 @@ describe('BookingService (SEC-001 ownership filter)', () => {
       bookingRepo.findOne.mockResolvedValue({ id: 1, venueId: 7 });
       const out = await service.findOne(1, mkUser('venue', 7));
       expect(out).toEqual({ id: 1, venueId: 7 });
+    });
+
+    it('multi-venue: returns booking from any owned venue', async () => {
+      bookingRepo.findOne.mockResolvedValue({ id: 1, venueId: 12 });
+      const user: any = { ...mkUser('venue', 7), venueIds: [7, 12] };
+      const out = await service.findOne(1, user);
+      expect(out).toEqual({ id: 1, venueId: 12 });
     });
 
     it('throws NotFoundException on cross-venue access (IDOR)', async () => {

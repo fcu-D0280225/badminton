@@ -15,16 +15,11 @@ import {
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { AuthUser } from '../auth/types';
+import { getVenueIdsForUser } from '../auth/ownership.helper';
 import { BillingService } from './billing.service';
 import { CreatePaymentRecordDto } from './dto/create-payment-record.dto';
 import { UpdatePaymentRecordDto } from './dto/update-payment-record.dto';
-
-interface AuthUser {
-  id: number;
-  username: string;
-  role: string;
-  entityId: number;
-}
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/billing')
@@ -37,17 +32,31 @@ export class BillingController {
     }
   }
 
+  // 多場館：從 ?venueId 解析操作對象（必須在使用者綁定清單內），未指定則用 entityId
+  private resolveVenueId(user: AuthUser, raw?: string): number {
+    if (!raw) return user.entityId;
+    const venueId = parseInt(raw, 10);
+    if (Number.isNaN(venueId)) {
+      throw new ForbiddenException('venueId 格式錯誤');
+    }
+    if (!getVenueIdsForUser(user).includes(venueId)) {
+      throw new ForbiddenException('無權限存取此場館');
+    }
+    return venueId;
+  }
+
   // POST /api/billing/records
   @Post('records')
   async create(
     @CurrentUser() user: AuthUser,
     @Body() dto: CreatePaymentRecordDto,
+    @Query('venueId') venueIdRaw?: string,
   ) {
     this.assertVenueRole(user);
     if (dto.recurring) {
-      return this.billingService.createRecurringSeries(dto, user.entityId);
+      return this.billingService.createRecurringSeries(dto, this.resolveVenueId(user, venueIdRaw));
     }
-    return this.billingService.create(dto, user.entityId);
+    return this.billingService.create(dto, this.resolveVenueId(user, venueIdRaw));
   }
 
   // GET /api/billing/records
@@ -56,9 +65,10 @@ export class BillingController {
     @CurrentUser() user: AuthUser,
     @Query('unpaidOnly') unpaidOnly?: string,
     @Query('date') date?: string,
+    @Query('venueId') venueIdRaw?: string,
   ) {
     this.assertVenueRole(user);
-    return this.billingService.findAll(user.entityId, {
+    return this.billingService.findAll(this.resolveVenueId(user, venueIdRaw), {
       unpaidOnly: unpaidOnly === 'true',
       date,
     });
@@ -70,10 +80,11 @@ export class BillingController {
     @CurrentUser() user: AuthUser,
     @Query('month') month: string,
     @Res() res: Response,
+    @Query('venueId') venueIdRaw?: string,
   ) {
     this.assertVenueRole(user);
     const targetMonth = month ?? new Date().toISOString().slice(0, 7); // 預設當月
-    const csv = await this.billingService.exportCsv(user.entityId, targetMonth);
+    const csv = await this.billingService.exportCsv(this.resolveVenueId(user, venueIdRaw), targetMonth);
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader(
       'Content-Disposition',
@@ -87,10 +98,11 @@ export class BillingController {
   async getAnalytics(
     @CurrentUser() user: AuthUser,
     @Query('month') month?: string,
+    @Query('venueId') venueIdRaw?: string,
   ) {
     this.assertVenueRole(user);
     const targetMonth = month ?? new Date().toISOString().slice(0, 7);
-    return this.billingService.getAnalytics(user.entityId, targetMonth);
+    return this.billingService.getAnalytics(this.resolveVenueId(user, venueIdRaw), targetMonth);
   }
 
   // GET /api/billing/records/:id
@@ -98,9 +110,10 @@ export class BillingController {
   async findOne(
     @CurrentUser() user: AuthUser,
     @Param('id', ParseIntPipe) id: number,
+    @Query('venueId') venueIdRaw?: string,
   ) {
     this.assertVenueRole(user);
-    return this.billingService.findOne(id, user.entityId);
+    return this.billingService.findOne(id, this.resolveVenueId(user, venueIdRaw));
   }
 
   // PATCH /api/billing/records/:id
@@ -109,9 +122,10 @@ export class BillingController {
     @CurrentUser() user: AuthUser,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdatePaymentRecordDto,
+    @Query('venueId') venueIdRaw?: string,
   ) {
     this.assertVenueRole(user);
-    return this.billingService.update(id, user.entityId, dto);
+    return this.billingService.update(id, this.resolveVenueId(user, venueIdRaw), dto);
   }
 
   // DELETE /api/billing/records/recurring/:groupId — 刪除整個系列
@@ -119,9 +133,10 @@ export class BillingController {
   async deleteRecurringSeries(
     @CurrentUser() user: AuthUser,
     @Param('groupId') groupId: string,
+    @Query('venueId') venueIdRaw?: string,
   ) {
     this.assertVenueRole(user);
-    await this.billingService.deleteRecurringSeries(groupId, user.entityId);
+    await this.billingService.deleteRecurringSeries(groupId, this.resolveVenueId(user, venueIdRaw));
     return { success: true };
   }
 
@@ -130,9 +145,10 @@ export class BillingController {
   async delete(
     @CurrentUser() user: AuthUser,
     @Param('id', ParseIntPipe) id: number,
+    @Query('venueId') venueIdRaw?: string,
   ) {
     this.assertVenueRole(user);
-    await this.billingService.delete(id, user.entityId);
+    await this.billingService.delete(id, this.resolveVenueId(user, venueIdRaw));
     return { success: true };
   }
 }
