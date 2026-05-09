@@ -13,6 +13,7 @@ import { WaitlistModule } from './waitlist/waitlist.module';
 import { PushModule } from './push/push.module';
 import { BillingModule } from './billing/billing.module';
 import { BookerModule } from './booker/booker.module';
+import { PricingModule } from './pricing/pricing.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { BookerModule } from './booker/booker.module';
     PushModule,
     BillingModule,
     BookerModule,
+    PricingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

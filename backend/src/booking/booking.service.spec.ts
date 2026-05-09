@@ -9,6 +9,7 @@ import { Account } from '../entities/account.entity';
 import { BookingParticipant } from '../entities/booking-participant.entity';
 import { WaitlistService } from '../waitlist/waitlist.service';
 import { PushService } from '../push/push.service';
+import { PricingService } from '../pricing/pricing.service';
 import { AuthUser } from '../auth/types';
 
 const mockRepo = () => ({
@@ -45,6 +46,7 @@ describe('BookingService (SEC-001 ownership filter)', () => {
         },
         { provide: WaitlistService, useValue: { getFirstWaiting: jest.fn(), markNotified: jest.fn() } },
         { provide: PushService, useValue: { notifyAccount: jest.fn() } },
+        { provide: PricingService, useValue: { resolveAmount: jest.fn().mockResolvedValue({ amount: 0, pricePerHour: 0, ruleId: null, source: 'zero' }) } },
       ],
     }).compile();
 

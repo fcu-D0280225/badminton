@@ -14,6 +14,7 @@ import { Booker } from '../entities/booker.entity';
 import { BookingParticipant } from '../entities/booking-participant.entity';
 import { WaitlistModule } from '../waitlist/waitlist.module';
 import { PushModule } from '../push/push.module';
+import { PricingModule } from '../pricing/pricing.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { PushModule } from '../push/push.module';
     ]),
     WaitlistModule,
     PushModule,
+    PricingModule,
   ],
   controllers: [BookingController],
   providers: [BookingService, HoldExpiryService],

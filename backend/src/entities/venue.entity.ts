@@ -25,6 +25,10 @@ export class Venue {
   @Column({ type: 'text', nullable: true })
   feeInfo: string;
 
+  /** 動態定價的 fallback：所有 pricing_rules 都不匹配時的每小時預設價格 */
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  defaultPricePerHour: number;
+
   @OneToMany(() => Booking, (booking) => booking.venue)
   bookings: Booking[];
 

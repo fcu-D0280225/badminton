@@ -13,6 +13,7 @@ import { Account } from '../entities/account.entity';
 import { BookingParticipant } from '../entities/booking-participant.entity';
 import { WaitlistService } from '../waitlist/waitlist.service';
 import { PushService } from '../push/push.service';
+import { PricingService } from '../pricing/pricing.service';
 import { AuthUser } from '../auth/types';
 import {
   bookingOwnerWhereClauses,
@@ -36,6 +37,7 @@ export class BookingService {
     private participantRepository: Repository<BookingParticipant>,
     private waitlistService: WaitlistService,
     private pushService: PushService,
+    private pricingService: PricingService,
   ) {}
 
   // ── 建立單筆預約（內部共用）──────────────────────────────────────
@@ -50,6 +52,21 @@ export class BookingService {
     // 重複預約檢查：同一成員不可重複預約同場次
     await this.assertNoDuplicate(bookingData);
 
+    // 動態定價：未指定 amount 時自動套用規則 + venue 預設價格
+    let resolvedAmount = amount;
+    if (resolvedAmount == null && bookingData.venueId && bookingData.date && bookingData.timeSlot) {
+      try {
+        const quote = await this.pricingService.resolveAmount(
+          bookingData.venueId,
+          bookingData.date,
+          bookingData.timeSlot,
+        );
+        resolvedAmount = quote.amount;
+      } catch {
+        resolvedAmount = 0; // pricing 失敗不擋預約建立
+      }
+    }
+
     // 設定保留到期時間（僅 pending 狀態）
     const holdExpiresAt = new Date();
     holdExpiresAt.setMinutes(holdExpiresAt.getMinutes() + HOLD_MINUTES);
@@ -60,7 +77,7 @@ export class BookingService {
 
     const payment = this.paymentRepository.create({
       bookingId: booking.id,
-      amount: amount ?? 0,
+      amount: resolvedAmount ?? 0,
       status: 'unpaid',
     });
     await this.paymentRepository.save(payment);
