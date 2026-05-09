@@ -11,7 +11,7 @@
     --color-border-variant: #bbcabf;
     --color-surface: #ffffff;
     --color-bg: #f7f9fb;
-    --radius-card: 16px;
+    --radius-card: 10px;
     --radius-btn: 8px;
     --shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04);
     /* 付款狀態語意色 */
