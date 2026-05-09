@@ -1137,6 +1137,7 @@ body.admin-shell-active .main-content {
 .admin-topbar-actions .btn {
     padding: 6px 12px;
     font-size: 13px;
+    min-height: 36px;
 }
 
 .venue-switcher {
@@ -1655,7 +1656,7 @@ body.admin-shell-active #tab-analytics {
     font-size: 16px;
     line-height: 1;
     min-width: 36px;
-    height: 32px;
+    min-height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
