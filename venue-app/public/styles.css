@@ -138,7 +138,9 @@ body {
 
 .form-group input,
 .form-group select,
-.form-group textarea {
+.form-group textarea,
+.filter-group input,
+.filter-group select {
     width: 100%;
     padding: 10px 12px;
     border: 1px solid var(--color-border);
@@ -153,7 +155,9 @@ body {
 
 .form-group input:focus,
 .form-group select:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.filter-group input:focus,
+.filter-group select:focus {
     outline: none;
     border-color: #10b981;
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
@@ -202,7 +206,8 @@ body {
     align-items: center;
 }
 
-.filter-group input {
+.filter-group input,
+.filter-group select {
     flex: 1;
     min-width: 150px;
 }
