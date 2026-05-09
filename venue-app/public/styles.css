@@ -621,8 +621,6 @@ body {
 }
 .cal-week-body {
     display: flex;
-    overflow-y: auto;
-    max-height: 380px;
 }
 .cal-week-time-col {
     width: 28px;

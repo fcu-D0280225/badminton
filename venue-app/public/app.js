@@ -917,7 +917,7 @@ function showMonthView() {
     renderMonthView();
 }
 
-// 週視圖：08:00-20:00 時段格
+// 週視圖：00:00-24:00 時段格（每格 2 小時）
 function renderWeekView() {
     const container = document.getElementById('venue-calendar');
     if (!container) return;
@@ -944,7 +944,7 @@ function renderWeekView() {
         monthYearEl.textContent = `${d0.getMonth()+1}/${d0.getDate()} — ${d6.getMonth()+1}/${d6.getDate()}`;
     }
 
-    const HOUR_START = 8, HOUR_END = 20, ROW_H = 36;
+    const HOUR_START = 0, HOUR_END = 24, HOUR_STEP = 2, ROW_H = 36;
     const dayNames = ['日','一','二','三','四','五','六'];
 
     // header
@@ -957,14 +957,15 @@ function renderWeekView() {
         </div>`;
     });
 
-    // time labels
+    // time labels（每 2 小時一格）
     let timeColHtml = '';
-    for (let h = HOUR_START; h <= HOUR_END; h++) {
+    for (let h = HOUR_START; h < HOUR_END; h += HOUR_STEP) {
         timeColHtml += `<div class="cal-week-time-label" style="height:${ROW_H}px">${String(h).padStart(2,'0')}</div>`;
     }
 
     // day columns
-    const colHeight = (HOUR_END - HOUR_START) * ROW_H;
+    const cellMin = HOUR_STEP * 60;
+    const colHeight = ((HOUR_END - HOUR_START) / HOUR_STEP) * ROW_H;
     const dayColsHtml = days.map(({ dStr }) => {
         const bookings = venueBookingsData[dStr] || [];
         let blocks = '';
@@ -977,8 +978,8 @@ function renderWeekView() {
             const startMin = sh * 60 + sm - HOUR_START * 60;
             const endMin   = eh * 60 + em - HOUR_START * 60;
             if (endMin <= 0 || startMin >= (HOUR_END - HOUR_START) * 60) return;
-            const top    = Math.max(0, startMin / 60 * ROW_H);
-            const height = Math.max(14, (endMin - startMin) / 60 * ROW_H - 2);
+            const top    = Math.max(0, startMin / cellMin * ROW_H);
+            const height = Math.max(14, (endMin - startMin) / cellMin * ROW_H - 2);
             const payStatus = b.payment?.status || 'unpaid';
             const sCls = payStatus === 'paid' ? 'status-paid' : payStatus === 'transfer' ? 'status-transfer' : 'status-unpaid';
             const name = b.organizer?.name || b.player?.name || '預約';
