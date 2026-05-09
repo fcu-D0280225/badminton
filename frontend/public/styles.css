@@ -5,24 +5,27 @@
 }
 
 body {
-    font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Lexend', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fcf9f4;
     min-height: 100vh;
     padding: 20px;
+    padding-bottom: 80px;
+    color: #1c1c19;
 }
 
 .header {
-    background: white;
-    border-radius: 12px;
+    background: #ffffff;
+    border-radius: 0 0 12px 12px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #dec0b3;
 }
 
 .header h1 {
     text-align: center;
-    color: #333;
+    color: #1c1c19;
     margin-bottom: 20px;
+    font-weight: 700;
 }
 
 .nav-tabs {
@@ -33,22 +36,23 @@ body {
 
 .tab-btn {
     padding: 10px 20px;
-    border: 2px solid #667eea;
+    border: 2px solid #9f4200;
     background: white;
-    color: #667eea;
-    border-radius: 8px;
+    color: #9f4200;
+    border-radius: 50px;
     cursor: pointer;
     font-size: 16px;
     font-weight: 600;
     transition: all 0.3s;
+    font-family: 'Lexend', 'Noto Sans TC', sans-serif;
 }
 
 .tab-btn:hover {
-    background: #f0f0f0;
+    background: #f6f3ee;
 }
 
 .tab-btn.active {
-    background: #667eea;
+    background: #9f4200;
     color: white;
 }
 
@@ -59,10 +63,10 @@ body {
 
 .view {
     display: none;
-    background: white;
+    background: #ffffff;
     border-radius: 12px;
     padding: 30px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
 }
 
 .view.active {
@@ -72,7 +76,7 @@ body {
 .section {
     margin-bottom: 30px;
     padding-bottom: 30px;
-    border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid #dec0b3;
 }
 
 .section:last-child {
@@ -80,15 +84,17 @@ body {
 }
 
 .section h2 {
-    color: #333;
+    color: #1c1c19;
     margin-bottom: 20px;
     font-size: 24px;
+    font-weight: 700;
 }
 
 .section h3 {
-    color: #555;
+    color: #1c1c19;
     margin-bottom: 15px;
     font-size: 20px;
+    font-weight: 700;
 }
 
 .form-group {
@@ -98,7 +104,7 @@ body {
 .form-group label {
     display: block;
     margin-bottom: 5px;
-    color: #555;
+    color: #574238;
     font-weight: 500;
 }
 
@@ -107,17 +113,20 @@ body {
 .form-group textarea {
     width: 100%;
     padding: 10px;
-    border: 2px solid #e0e0e0;
+    border: 1.5px solid #dec0b3;
     border-radius: 8px;
     font-size: 16px;
+    font-family: 'Lexend', 'Noto Sans TC', sans-serif;
     transition: border-color 0.3s;
+    background: #ffffff;
+    color: #1c1c19;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #9f4200;
 }
 
 .form-group textarea {
@@ -128,38 +137,50 @@ body {
 .btn {
     padding: 12px 24px;
     border: none;
-    border-radius: 8px;
+    border-radius: 50px;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.3s;
+    font-family: 'Lexend', 'Noto Sans TC', sans-serif;
 }
 
 .btn:focus-visible,
 button:focus-visible {
-    outline: 2px solid #667eea;
+    outline: 2px solid #9f4200;
     outline-offset: 2px;
 }
 
 .btn-primary {
-    background: #667eea;
-    color: white;
+    background: #9f4200;
+    color: #ffffff;
+    border-radius: 50px;
 }
 
 .btn-primary:hover {
-    background: #5568d3;
+    background: #7a3200;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 8px rgba(159, 66, 0, 0.25);
 }
 
 .btn-secondary {
-    background: #6c757d;
-    color: white;
+    background: #f0ede9;
+    color: #574238;
+    border-radius: 50px;
+}
+
+.btn-secondary:hover {
+    background: #e5e0d9;
 }
 
 .btn-danger {
-    background: #dc3545;
+    background: #ba1a1a;
     color: white;
+    border-radius: 50px;
+}
+
+.btn-danger:hover {
+    background: #991414;
 }
 
 .filter-group {
@@ -181,20 +202,22 @@ button:focus-visible {
 }
 
 .card {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 15px;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px;
     margin-bottom: 15px;
-    border-left: 4px solid #667eea;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    border: 1px solid #f0ede9;
 }
 
 .card h4 {
-    color: #333;
+    color: #1c1c19;
     margin-bottom: 10px;
+    font-weight: 700;
 }
 
 .card p {
-    color: #666;
+    color: #574238;
     margin-bottom: 5px;
 }
 
@@ -208,18 +231,18 @@ button:focus-visible {
 }
 
 .badge-success {
-    background: #d4edda;
-    color: #155724;
+    background: #d1fae5;
+    color: #065f46;
 }
 
 .badge-warning {
-    background: #fff3cd;
-    color: #856404;
+    background: #fef3c7;
+    color: #92400e;
 }
 
 .badge-danger {
-    background: #f8d7da;
-    color: #721c24;
+    background: #fee2e2;
+    color: #991b1b;
 }
 
 .rating-stars {
@@ -244,7 +267,7 @@ button:focus-visible {
 }
 
 .list-item {
-    background: #f8f9fa;
+    background: #f6f3ee;
     border-radius: 8px;
     padding: 15px;
     margin-bottom: 10px;
@@ -268,21 +291,22 @@ button:focus-visible {
 }
 
 .btn-install {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #9f4200;
     color: white;
     padding: 10px 20px;
     border: none;
-    border-radius: 8px;
+    border-radius: 50px;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+    font-family: 'Lexend', 'Noto Sans TC', sans-serif;
 }
 
 .btn-install:hover {
+    background: #7a3200;
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 8px rgba(159, 66, 0, 0.25);
 }
 
 /* Modal 樣式 */
@@ -305,7 +329,7 @@ button:focus-visible {
     border-radius: 12px;
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     position: relative;
     animation: modalSlideIn 0.3s ease-out;
 }
@@ -322,7 +346,7 @@ button:focus-visible {
 }
 
 .close {
-    color: #aaa;
+    color: #8b7267;
     float: right;
     font-size: 28px;
     font-weight: bold;
@@ -334,7 +358,7 @@ button:focus-visible {
 
 .close:hover,
 .close:focus {
-    color: #000;
+    color: #1c1c19;
 }
 
 .qrcode-container {
@@ -342,7 +366,7 @@ button:focus-visible {
     justify-content: center;
     margin: 20px 0;
     padding: 20px;
-    background: #f8f9fa;
+    background: #f6f3ee;
     border-radius: 8px;
 }
 
@@ -358,35 +382,35 @@ button:focus-visible {
 
 .qr-instructions li {
     margin-bottom: 8px;
-    color: #555;
+    color: #574238;
 }
 
 .qr-url {
     margin-top: 20px;
     padding-top: 20px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid #dec0b3;
 }
 
 .qr-url input {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
-    border: 2px solid #e0e0e0;
+    border: 1.5px solid #dec0b3;
     border-radius: 8px;
     font-size: 14px;
-    background: #f8f9fa;
+    background: #f6f3ee;
     cursor: pointer;
 }
 
 .qr-url input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #9f4200;
 }
 
 .install-tips {
     margin-top: 20px;
     padding-top: 20px;
-    border-top: 1px solid #e0e0e0;
+    border-top: 1px solid #dec0b3;
     text-align: left;
 }
 
@@ -397,7 +421,7 @@ button:focus-visible {
 
 .install-tips li {
     margin-bottom: 8px;
-    color: #555;
+    color: #574238;
     font-size: 14px;
 }
 
@@ -408,21 +432,22 @@ button:focus-visible {
     align-items: center;
     margin-bottom: 20px;
     padding: 10px;
-    background: #f8f9fa;
+    background: #f6f3ee;
     border-radius: 8px;
 }
 
 .calendar-controls h4 {
     margin: 0;
-    color: #333;
+    color: #1c1c19;
     font-size: 18px;
+    font-weight: 700;
 }
 
 .calendar-container {
     background: white;
     border-radius: 8px;
     padding: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
 .calendar-header {
@@ -435,7 +460,7 @@ button:focus-visible {
 .calendar-header-day {
     text-align: center;
     font-weight: 600;
-    color: #667eea;
+    color: #9f4200;
     padding: 10px;
     font-size: 14px;
 }
@@ -461,7 +486,7 @@ button:focus-visible {
 }
 
 .calendar-day:hover {
-    background: #f0f0f0;
+    background: #f0ede9;
     transform: scale(1.05);
 }
 
@@ -471,7 +496,7 @@ button:focus-visible {
 }
 
 .calendar-day.today {
-    border-color: #667eea;
+    border-color: #9f4200;
     font-weight: bold;
 }
 
@@ -485,18 +510,18 @@ button:focus-visible {
 }
 
 .calendar-day.available {
-    background: #d4edda;
+    background: #d1fae5;
     border-color: #28a745;
 }
 
 .calendar-day.available:hover {
-    background: #c3e6cb;
+    background: #bbf7d0;
 }
 
 .calendar-day.selected {
-    background: #667eea;
+    background: #9f4200;
     color: white;
-    border-color: #5568d3;
+    border-color: #7a3200;
 }
 
 .calendar-day-number {
@@ -515,6 +540,7 @@ button:focus-visible {
 @media (max-width: 768px) {
     body {
         padding: 10px;
+        padding-bottom: 80px;
     }
 
     .header {
@@ -586,22 +612,24 @@ button:focus-visible {
 
 .login-card {
     background: white;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 40px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 24px rgba(159, 66, 0, 0.08), 0 1px 4px rgba(0,0,0,0.06);
     max-width: 400px;
     width: 100%;
+    border: 1px solid #f0ede9;
 }
 
 .login-card h1 {
     text-align: center;
-    color: #333;
+    color: #1c1c19;
     margin-bottom: 8px;
+    font-weight: 700;
 }
 
 .login-subtitle {
     text-align: center;
-    color: #666;
+    color: #574238;
     margin-bottom: 24px;
 }
 
@@ -617,12 +645,13 @@ button:focus-visible {
 .login-switch {
     text-align: center;
     margin-top: 20px;
-    color: #666;
+    color: #574238;
 }
 
 .login-switch a {
-    color: #667eea;
+    color: #9f4200;
     text-decoration: none;
+    font-weight: 600;
 }
 
 .login-switch a:hover {
@@ -641,7 +670,7 @@ button:focus-visible {
 
 .header-actions .user-info {
     font-size: 14px;
-    color: #666;
+    color: #574238;
 }
 
 .header-actions .btn-logout {
@@ -650,14 +679,58 @@ button:focus-visible {
     min-height: 44px;
 }
 
+/* 底部導覽列 */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: #ffffff;
+    border-top: 1px solid #dec0b3;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    color: #8b7267;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.2s;
+    text-decoration: none;
+    background: none;
+    border: none;
+    font-family: 'Lexend', 'Noto Sans TC', sans-serif;
+}
+
+.bottom-nav-item.active {
+    color: #9f4200;
+    background: #fff3ec;
+}
+
+.bottom-nav-item svg {
+    width: 24px;
+    height: 24px;
+}
+
 /* ========================================================================== */
 /* 🌙 夜間模式                                                                  */
 /* ========================================================================== */
 
 .theme-toggle-btn {
     background: transparent;
-    border: 2px solid #667eea;
-    color: #667eea;
+    border: 2px solid #9f4200;
+    color: #9f4200;
     padding: 6px 12px;
     border-radius: 8px;
     cursor: pointer;
@@ -671,7 +744,7 @@ button:focus-visible {
     transition: background 0.2s, color 0.2s;
 }
 .theme-toggle-btn:hover {
-    background: #667eea;
+    background: #9f4200;
     color: white;
 }
 
@@ -680,8 +753,8 @@ button:focus-visible {
 }
 
 [data-theme="dark"] body {
-    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-    color: #e5e7eb;
+    background: #1c1a17;
+    color: #ede0d4;
 }
 
 [data-theme="dark"] .header,
@@ -689,9 +762,10 @@ button:focus-visible {
 [data-theme="dark"] .login-card,
 [data-theme="dark"] .modal-content,
 [data-theme="dark"] .calendar-container {
-    background: #1e293b;
-    color: #e5e7eb;
+    background: #28251f;
+    color: #ede0d4;
     box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+    border-color: #3d3028;
 }
 
 [data-theme="dark"] .header h1,
@@ -700,7 +774,7 @@ button:focus-visible {
 [data-theme="dark"] .section h3,
 [data-theme="dark"] .calendar-controls h4,
 [data-theme="dark"] .card h4 {
-    color: #e5e7eb;
+    color: #ede0d4;
 }
 
 [data-theme="dark"] .login-subtitle,
@@ -710,44 +784,44 @@ button:focus-visible {
 [data-theme="dark"] .qr-instructions li,
 [data-theme="dark"] .install-tips li,
 [data-theme="dark"] .header-actions .user-info {
-    color: #cbd5e1;
+    color: #c9b5a8;
 }
 
 [data-theme="dark"] .section {
-    border-bottom-color: #334155;
+    border-bottom-color: #3d3028;
 }
 
 [data-theme="dark"] .form-group input,
 [data-theme="dark"] .form-group select,
 [data-theme="dark"] .form-group textarea {
-    background: #0f172a;
-    border-color: #334155;
-    color: #e5e7eb;
+    background: #1c1a17;
+    border-color: #3d3028;
+    color: #ede0d4;
 }
 [data-theme="dark"] .form-group input::placeholder,
-[data-theme="dark"] .form-group textarea::placeholder { color: #64748b; }
+[data-theme="dark"] .form-group textarea::placeholder { color: #7a6358; }
 
 [data-theme="dark"] .form-group input:focus,
 [data-theme="dark"] .form-group select:focus,
 [data-theme="dark"] .form-group textarea:focus {
-    border-color: #818cf8;
+    border-color: #ffb692;
 }
 
 [data-theme="dark"] .tab-btn {
-    background: #1e293b;
-    color: #a5b4fc;
-    border-color: #6366f1;
+    background: #28251f;
+    color: #ffb692;
+    border-color: #ff823c;
 }
-[data-theme="dark"] .tab-btn:hover { background: #312e81; }
+[data-theme="dark"] .tab-btn:hover { background: #342f26; }
 [data-theme="dark"] .tab-btn.active {
-    background: #6366f1;
-    color: white;
+    background: #ff823c;
+    color: #1c1a17;
 }
 
 [data-theme="dark"] .card,
 [data-theme="dark"] .list-item {
-    background: #0f172a;
-    border-left-color: #818cf8;
+    background: #342f26;
+    border-color: #3d3028;
 }
 
 [data-theme="dark"] .modal { background-color: rgba(0,0,0,0.7); }
@@ -755,19 +829,19 @@ button:focus-visible {
 [data-theme="dark"] .qrcode-container,
 [data-theme="dark"] .qr-url input,
 [data-theme="dark"] .calendar-controls {
-    background: #0f172a;
-    color: #e5e7eb;
+    background: #342f26;
+    color: #ede0d4;
 }
-[data-theme="dark"] .qr-url input { border-color: #334155; }
+[data-theme="dark"] .qr-url input { border-color: #3d3028; }
 
 [data-theme="dark"] .qr-url,
 [data-theme="dark"] .install-tips {
-    border-top-color: #334155;
+    border-top-color: #3d3028;
 }
 
-[data-theme="dark"] .calendar-header-day { color: #a5b4fc; }
-[data-theme="dark"] .calendar-day:hover { background: #334155; }
-[data-theme="dark"] .calendar-day.other-month { color: #475569; }
+[data-theme="dark"] .calendar-header-day { color: #ffb692; }
+[data-theme="dark"] .calendar-day:hover { background: #342f26; }
+[data-theme="dark"] .calendar-day.other-month { color: #5a4a40; }
 [data-theme="dark"] .calendar-day.has-booking {
     background: #422006;
     border-color: #b45309;
@@ -783,18 +857,30 @@ button:focus-visible {
 [data-theme="dark"] .badge-warning { background: #78350f; color: #fcd34d; }
 [data-theme="dark"] .badge-danger  { background: #7f1d1d; color: #fca5a5; }
 
-[data-theme="dark"] .login-switch a { color: #a5b4fc; }
+[data-theme="dark"] .login-switch a { color: #ffb692; }
 
-[data-theme="dark"] .close { color: #64748b; }
-[data-theme="dark"] .close:hover { color: #e5e7eb; }
+[data-theme="dark"] .close { color: #7a6358; }
+[data-theme="dark"] .close:hover { color: #ede0d4; }
 
 [data-theme="dark"] .theme-toggle-btn {
-    border-color: #818cf8;
-    color: #c7d2fe;
+    border-color: #ffb692;
+    color: #ffb692;
 }
 [data-theme="dark"] .theme-toggle-btn:hover {
-    background: #818cf8;
-    color: #0f172a;
+    background: #ffb692;
+    color: #1c1a17;
+}
+
+[data-theme="dark"] .bottom-nav {
+    background: #28251f;
+    border-top-color: #3d3028;
+}
+[data-theme="dark"] .bottom-nav-item {
+    color: #7a6358;
+}
+[data-theme="dark"] .bottom-nav-item.active {
+    color: #ffb692;
+    background: #342f26;
 }
 
 /* ========================================================================== */
@@ -804,17 +890,17 @@ button:focus-visible {
 [data-theme="dark"] [style*="color: #999"],
 [data-theme="dark"] [style*="color:#9ca3af"],
 [data-theme="dark"] [style*="color:#94a3b8"] {
-    color: #94a3b8 !important;
+    color: #7a6358 !important;
 }
 [data-theme="dark"] [style*="color:#666"],
 [data-theme="dark"] [style*="color: #666"],
 [data-theme="dark"] [style*="color:#555"],
 [data-theme="dark"] [style*="color:#6b7280"] {
-    color: #cbd5e1 !important;
+    color: #c9b5a8 !important;
 }
 [data-theme="dark"] [style*="color:#333"],
 [data-theme="dark"] [style*="color: #333"] {
-    color: #e5e7eb !important;
+    color: #ede0d4 !important;
 }
 [data-theme="dark"] [style*="color:#dc2626"],
 [data-theme="dark"] [style*="color:#b91c1c"],
@@ -842,11 +928,11 @@ button:focus-visible {
 [data-theme="dark"] [style*="background:#ffffff"],
 [data-theme="dark"] [style*="background:#f9fafb"],
 [data-theme="dark"] [style*="background:#f3f4f6"] {
-    background: #1e293b !important;
+    background: #28251f !important;
 }
 [data-theme="dark"] [style*="background:#f0f9ff"],
 [data-theme="dark"] [style*="background:#eff6ff"] {
-    background: #1e3a8a !important;
+    background: #1c1a17 !important;
 }
 [data-theme="dark"] [style*="background:#fee2e2"] {
     background: #7f1d1d !important;
@@ -855,12 +941,12 @@ button:focus-visible {
     background: #064e3b !important;
 }
 [data-theme="dark"] [style*="background:#e5e7eb"] {
-    background: #334155 !important;
+    background: #3d3028 !important;
 }
 
 /* inline border 顏色 */
 [data-theme="dark"] [style*="border:1px solid #e5e7eb"],
 [data-theme="dark"] [style*="border: 1px solid #e5e7eb"],
 [data-theme="dark"] [style*="border:1px solid #bae6fd"] {
-    border-color: #334155 !important;
+    border-color: #3d3028 !important;
 }
