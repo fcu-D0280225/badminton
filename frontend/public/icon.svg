@@ -1,4 +1,31 @@
-<svg width="192" height="192" xmlns="http://www.w3.org/2000/svg">
-  <rect width="192" height="192" fill="#667eea" rx="20"/>
-  <text x="96" y="120" font-size="80" text-anchor="middle" fill="white">🏸</text>
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#667eea" rx="96"/>
+
+  <!-- Racket head (oval frame) -->
+  <ellipse cx="256" cy="195" rx="108" ry="128" fill="none" stroke="white" stroke-width="22"/>
+
+  <!-- Strings: horizontal -->
+  <line x1="155" y1="155" x2="357" y2="155" stroke="white" stroke-width="7" opacity="0.6" stroke-linecap="round"/>
+  <line x1="149" y1="195" x2="363" y2="195" stroke="white" stroke-width="7" opacity="0.6" stroke-linecap="round"/>
+  <line x1="155" y1="235" x2="357" y2="235" stroke="white" stroke-width="7" opacity="0.6" stroke-linecap="round"/>
+
+  <!-- Strings: vertical -->
+  <line x1="206" y1="70" x2="206" y2="320" stroke="white" stroke-width="7" opacity="0.6" stroke-linecap="round"/>
+  <line x1="256" y1="67" x2="256" y2="323" stroke="white" stroke-width="7" opacity="0.6" stroke-linecap="round"/>
+  <line x1="306" y1="70" x2="306" y2="320" stroke="white" stroke-width="7" opacity="0.6" stroke-linecap="round"/>
+
+  <!-- Throat (connecting oval to handle) -->
+  <path d="M224 318 L224 345 L288 345 L288 318" fill="white" stroke="white" stroke-width="2"/>
+
+  <!-- Handle -->
+  <rect x="236" y="344" width="40" height="118" rx="10" fill="white"/>
+
+  <!-- Grip wrap lines -->
+  <line x1="232" y1="385" x2="280" y2="385" stroke="#667eea" stroke-width="5" opacity="0.5" stroke-linecap="round"/>
+  <line x1="232" y1="405" x2="280" y2="405" stroke="#667eea" stroke-width="5" opacity="0.5" stroke-linecap="round"/>
+  <line x1="232" y1="425" x2="280" y2="425" stroke="#667eea" stroke-width="5" opacity="0.5" stroke-linecap="round"/>
+
+  <!-- Butt cap -->
+  <rect x="226" y="454" width="60" height="18" rx="9" fill="white"/>
 </svg>
