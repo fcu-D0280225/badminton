@@ -27,22 +27,23 @@ export class BookingController {
     private readonly participantService: BookingParticipantService,
   ) {}
 
-  // 建立單筆預約
+  // 建立單筆預約 — SEC-005: 走 CreateBookingDto 白名單，request body 多餘欄位由
+  // 全域 ValidationPipe (forbidNonWhitelisted=true) 直接 400 拒絕。
   @Post()
   async createBooking(
     @CurrentUser() user: AuthUser,
-    @Body() data: CreateBookingDto,
+    @Body() dto: CreateBookingDto,
   ): Promise<Booking> {
-    return await this.bookingService.createBooking(data, user);
+    return await this.bookingService.createBooking(dto, user);
   }
 
   // 建立重複預約（回傳建立的所有預約）
   @Post('recurring')
   async createRecurring(
     @CurrentUser() user: AuthUser,
-    @Body() data: CreateRecurringBookingDto,
+    @Body() dto: CreateRecurringBookingDto,
   ): Promise<Booking[]> {
-    return await this.bookingService.createRecurringBookings(data, user);
+    return await this.bookingService.createRecurringBookings(dto, user);
   }
 
   @Get()
@@ -67,13 +68,15 @@ export class BookingController {
     return await this.bookingService.findRecurringGroup(groupId, user);
   }
 
+  // SEC-005: 走 UpdateBookingDto 白名單；checkedIn 改走 /:id/checkin、notes 走
+  // /:id/notes，避免 request body 直接寫入 holdExpiresAt / recurringGroupId 等內部欄位。
   @Put(':id')
   async updateBooking(
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
-    @Body() data: UpdateBookingDto,
+    @Body() dto: UpdateBookingDto,
   ): Promise<Booking> {
-    return await this.bookingService.updateBooking(+id, data, user);
+    return await this.bookingService.updateBooking(+id, dto, user);
   }
 
   @Put(':id/checkin')
