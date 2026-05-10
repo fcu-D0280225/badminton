@@ -2123,19 +2123,21 @@ async function refreshNotifButton() {
     if (!btn) return;
     if (!pushSupported()) {
         btn.style.display = '';
-        btn.textContent = '🚫 不支援';
+        btn.textContent = '不支援';
         btn.disabled = true;
         return;
     }
     btn.disabled = false;
     btn.style.display = '';
+    const svgNotif = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
     try {
         const reg = await navigator.serviceWorker.ready;
         const existing = await reg.pushManager.getSubscription();
-        btn.textContent = existing ? '關閉通知' : '開啟通知';
+        const label = existing ? '關閉通知' : '開啟通知';
+        btn.innerHTML = svgNotif + '<span class="btn-notif-label">' + label + '</span>';
         btn.dataset.subscribed = existing ? '1' : '0';
     } catch {
-        btn.textContent = '開啟通知';
+        btn.innerHTML = svgNotif + '<span class="btn-notif-label">開啟通知</span>';
         btn.dataset.subscribed = '0';
     }
 }

@@ -597,6 +597,25 @@ button:focus-visible {
         font-size: 12px;
         padding: 5px;
     }
+
+    .header-actions {
+        gap: 6px;
+    }
+
+    .header-actions .user-info {
+        display: none;
+    }
+
+    .header-actions .btn-notif-label,
+    .header-actions .btn-install-label {
+        display: none;
+    }
+
+    .btn-install,
+    .header-actions .btn {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
 }
 
 /* 登入頁面 */
@@ -662,7 +681,12 @@ button:focus-visible {
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.header-actions .btn {
+    white-space: nowrap;
 }
 
 .header-actions .user-info {
