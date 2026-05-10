@@ -40,10 +40,7 @@ export class PlayerController {
   }
 
   @Get(':id/credit-score')
-  async getCreditScore(
-    @CurrentUser() user: AuthUser,
-    @Param('id') id: string,
-  ) {
+  async getCreditScore(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return await this.playerService.getCreditScore(+id, user);
   }
 

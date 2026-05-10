@@ -40,7 +40,10 @@ export class PricingService {
     });
   }
 
-  async create(venueId: number, data: Partial<PricingRule>): Promise<PricingRule> {
+  async create(
+    venueId: number,
+    data: Partial<PricingRule>,
+  ): Promise<PricingRule> {
     this.validate(data);
     const rule = this.ruleRepo.create({ ...data, venueId });
     return this.ruleRepo.save(rule);
@@ -91,7 +94,12 @@ export class PricingService {
     venueId: number,
     date: string, // YYYY-MM-DD
     timeSlot: string, // HH:MM-HH:MM
-  ): Promise<{ amount: number; pricePerHour: number; ruleId: number | null; source: 'rule' | 'venue_default' | 'zero' }> {
+  ): Promise<{
+    amount: number;
+    pricePerHour: number;
+    ruleId: number | null;
+    source: 'rule' | 'venue_default' | 'zero';
+  }> {
     const slot = parseSlot(timeSlot);
     if (!slot) {
       return { amount: 0, pricePerHour: 0, ruleId: null, source: 'zero' };

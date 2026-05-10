@@ -18,3 +18,10 @@ Key routing rules:
 - Architecture review → invoke plan-eng-review
 - Save progress, checkpoint, resume → invoke checkpoint
 - Code quality, health check → invoke health
+
+## Health Stack
+
+- typecheck: cd backend && npx tsc --noEmit
+- lint: cd backend && npx eslint "{src,apps,libs,test}/**/*.ts"
+- test: cd backend && npx jest --forceExit
+- shell: shellcheck deploy.sh

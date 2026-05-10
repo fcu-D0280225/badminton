@@ -4,7 +4,10 @@ import { Repository } from 'typeorm';
 import { Payment } from '../entities/payment.entity';
 import { Booking } from '../entities/booking.entity';
 import { AuthUser } from '../auth/types';
-import { isBookingOwnedBy, bookingOwnerWhereClauses } from '../auth/ownership.helper';
+import {
+  isBookingOwnedBy,
+  bookingOwnerWhereClauses,
+} from '../auth/ownership.helper';
 
 @Injectable()
 export class PaymentService {
@@ -16,7 +19,10 @@ export class PaymentService {
   ) {}
 
   // 建立付款紀錄（需確認該 booking 屬於 user）
-  async createPayment(data: Partial<Payment>, user?: AuthUser): Promise<Payment> {
+  async createPayment(
+    data: Partial<Payment>,
+    user?: AuthUser,
+  ): Promise<Payment> {
     if (user && data.bookingId) {
       const booking = await this.bookingRepository.findOne({
         where: { id: data.bookingId },
@@ -31,7 +37,8 @@ export class PaymentService {
 
   // 取得所有付款紀錄（依 user 角色過濾對應 booking）
   async findAll(user?: AuthUser): Promise<Payment[]> {
-    if (!user) return await this.paymentRepository.find({ relations: ['booking'] });
+    if (!user)
+      return await this.paymentRepository.find({ relations: ['booking'] });
     const ownedBookings = await this.bookingRepository.find({
       where: bookingOwnerWhereClauses(user),
       select: ['id'],

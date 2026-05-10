@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Organizer } from '../entities/organizer.entity';
@@ -26,7 +30,10 @@ export class OrganizerService {
   ) {}
 
   // 建立團主（venue/admin 才允許）
-  async createOrganizer(data: Partial<Organizer>, user?: AuthUser): Promise<Organizer> {
+  async createOrganizer(
+    data: Partial<Organizer>,
+    user?: AuthUser,
+  ): Promise<Organizer> {
     if (user && user.role !== 'venue') {
       throw new ForbiddenException('僅館方帳號可建立團主');
     }
@@ -39,7 +46,9 @@ export class OrganizerService {
     if (!user) return await this.organizerRepository.find();
     if (user.role === 'venue') return await this.organizerRepository.find();
     if (user.role === 'organizer' || user.role === 'member') {
-      const o = await this.organizerRepository.findOne({ where: { id: user.entityId } });
+      const o = await this.organizerRepository.findOne({
+        where: { id: user.entityId },
+      });
       return o ? [o] : [];
     }
     return [];
@@ -63,7 +72,8 @@ export class OrganizerService {
       order: { date: 'DESC', timeSlot: 'ASC' },
     });
     // venue 角色：只回該場地的預約
-    if (user?.role === 'venue') return rows.filter((b) => getVenueIdsForUser(user).includes(b.venueId));
+    if (user?.role === 'venue')
+      return rows.filter((b) => getVenueIdsForUser(user).includes(b.venueId));
     return rows;
   }
 
@@ -76,7 +86,11 @@ export class OrganizerService {
     });
 
     const playerIds = bookings
-      .filter((b) => user?.role !== 'venue' || getVenueIdsForUser(user).includes(b.venueId))
+      .filter(
+        (b) =>
+          user?.role !== 'venue' ||
+          getVenueIdsForUser(user).includes(b.venueId),
+      )
       .map((b) => b.playerId)
       .filter((id) => id !== null);
 
@@ -91,14 +105,18 @@ export class OrganizerService {
   }
 
   // 取得團主的臨打預約紀錄
-  async getPlayerBookings(organizerId: number, user?: AuthUser): Promise<Booking[]> {
+  async getPlayerBookings(
+    organizerId: number,
+    user?: AuthUser,
+  ): Promise<Booking[]> {
     if (user) await this.assertReadable(organizerId, user);
     const rows = await this.bookingRepository.find({
       where: { organizerId },
       relations: ['player', 'venue'],
       order: { date: 'DESC', timeSlot: 'ASC' },
     });
-    if (user?.role === 'venue') return rows.filter((b) => getVenueIdsForUser(user).includes(b.venueId));
+    if (user?.role === 'venue')
+      return rows.filter((b) => getVenueIdsForUser(user).includes(b.venueId));
     return rows;
   }
 
@@ -154,7 +172,10 @@ export class OrganizerService {
   }
 
   // ── 私有：是否可讀取此 organizerId 的資料 ──────────────────────
-  private async assertReadable(organizerId: number, user: AuthUser): Promise<void> {
+  private async assertReadable(
+    organizerId: number,
+    user: AuthUser,
+  ): Promise<void> {
     if (user.role === 'venue') {
       // venue 只能讀取「曾在自己（任一綁定）場地預約過」的 organizer
       const booked = await this.bookingRepository.findOne({
@@ -167,8 +188,13 @@ export class OrganizerService {
     throw new NotFoundException(`團主 #${organizerId} 不存在`);
   }
 
-  private async assertNoteWritable(noteId: number, user: AuthUser): Promise<void> {
-    const note = await this.organizerNoteRepository.findOne({ where: { id: noteId } });
+  private async assertNoteWritable(
+    noteId: number,
+    user: AuthUser,
+  ): Promise<void> {
+    const note = await this.organizerNoteRepository.findOne({
+      where: { id: noteId },
+    });
     if (!note) throw new NotFoundException(`備註 #${noteId} 不存在`);
     await this.assertReadable(note.organizerId, user);
   }

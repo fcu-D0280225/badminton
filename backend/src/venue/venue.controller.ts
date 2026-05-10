@@ -117,7 +117,8 @@ export class VenueController {
     @Param('id') id: string,
     @Query('visibility') visibility?: string,
   ): Promise<VenueNote[]> {
-    const isOwner = user.role === 'venue' && getVenueIdsForUser(user).includes(+id);
+    const isOwner =
+      user.role === 'venue' && getVenueIdsForUser(user).includes(+id);
     const effectiveVisibility = isOwner ? visibility : 'public';
     return await this.venueService.getNotes(+id, effectiveVisibility);
   }

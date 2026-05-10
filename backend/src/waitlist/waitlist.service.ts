@@ -81,7 +81,10 @@ export class WaitlistService {
   }
 
   // 查詢特定團主的所有候補
-  async getByOrganizer(organizerId: number, user?: AuthUser): Promise<Waitlist[]> {
+  async getByOrganizer(
+    organizerId: number,
+    user?: AuthUser,
+  ): Promise<Waitlist[]> {
     if (user && !ownsOrganizer(user, organizerId)) {
       throw new NotFoundException(`團主 #${organizerId} 不存在`);
     }
@@ -96,8 +99,10 @@ export class WaitlistService {
     if (user) {
       const entry = await this.waitlistRepository.findOne({ where: { id } });
       if (!entry) throw new NotFoundException(`候補 #${id} 不存在`);
-      const okPlayer = entry.playerId != null && ownsPlayer(user, entry.playerId);
-      const okOrg = entry.organizerId != null && ownsOrganizer(user, entry.organizerId);
+      const okPlayer =
+        entry.playerId != null && ownsPlayer(user, entry.playerId);
+      const okOrg =
+        entry.organizerId != null && ownsOrganizer(user, entry.organizerId);
       const okVenue = venueOwnsVenue(user, entry.venueId);
       if (!okPlayer && !okOrg && !okVenue) {
         throw new NotFoundException(`候補 #${id} 不存在`);

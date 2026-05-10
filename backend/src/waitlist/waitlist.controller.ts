@@ -42,7 +42,12 @@ export class WaitlistController {
     @Query('date') date: string,
     @Query('timeSlot') timeSlot: string,
   ) {
-    return await this.waitlistService.getWaitlist(+venueId, date, timeSlot, user);
+    return await this.waitlistService.getWaitlist(
+      +venueId,
+      date,
+      timeSlot,
+      user,
+    );
   }
 
   // 查詢臨打的候補紀錄
@@ -65,10 +70,7 @@ export class WaitlistController {
 
   // 離開候補
   @Delete(':id')
-  async leave(
-    @CurrentUser() user: AuthUser,
-    @Param('id') id: string,
-  ) {
+  async leave(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     await this.waitlistService.leaveWaitlist(+id, user);
     return { ok: true };
   }

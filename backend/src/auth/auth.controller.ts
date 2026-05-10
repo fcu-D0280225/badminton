@@ -2,9 +2,7 @@ import {
   Controller,
   Post,
   Get,
-  Delete,
   Body,
-  Param,
   UseGuards,
   ForbiddenException,
 } from '@nestjs/common';

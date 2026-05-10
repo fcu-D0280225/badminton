@@ -36,14 +36,37 @@ describe('PricingService.resolveAmount', () => {
     ruleRepo.find.mockResolvedValue([]);
     venueRepo.findOne.mockResolvedValue({ defaultPricePerHour: 500 });
     const r = await service.resolveAmount(1, '2026-05-09', 'bad-slot');
-    expect(r).toEqual({ amount: 0, pricePerHour: 0, ruleId: null, source: 'zero' });
+    expect(r).toEqual({
+      amount: 0,
+      pricePerHour: 0,
+      ruleId: null,
+      source: 'zero',
+    });
   });
 
   it('匹配規則 → 套用 rule pricePerHour × 小時', async () => {
     // 2026-05-09 是週六（getDay = 6）
     ruleRepo.find.mockResolvedValue([
-      { id: 1, venueId: 1, dayOfWeek: 6, startTime: '18:00', endTime: '22:00', pricePerHour: 800, priority: 10, active: true },
-      { id: 2, venueId: 1, dayOfWeek: -1, startTime: '00:00', endTime: '24:00', pricePerHour: 500, priority: 0, active: true },
+      {
+        id: 1,
+        venueId: 1,
+        dayOfWeek: 6,
+        startTime: '18:00',
+        endTime: '22:00',
+        pricePerHour: 800,
+        priority: 10,
+        active: true,
+      },
+      {
+        id: 2,
+        venueId: 1,
+        dayOfWeek: -1,
+        startTime: '00:00',
+        endTime: '24:00',
+        pricePerHour: 500,
+        priority: 0,
+        active: true,
+      },
     ]);
     const r = await service.resolveAmount(1, '2026-05-09', '19:00-21:00');
     expect(r.ruleId).toBe(1);
@@ -54,8 +77,26 @@ describe('PricingService.resolveAmount', () => {
 
   it('priority 較高的規則先勝（priority desc）', async () => {
     ruleRepo.find.mockResolvedValue([
-      { id: 1, venueId: 1, dayOfWeek: -1, startTime: '00:00', endTime: '24:00', pricePerHour: 1000, priority: 100, active: true },
-      { id: 2, venueId: 1, dayOfWeek: -1, startTime: '00:00', endTime: '24:00', pricePerHour: 500, priority: 0, active: true },
+      {
+        id: 1,
+        venueId: 1,
+        dayOfWeek: -1,
+        startTime: '00:00',
+        endTime: '24:00',
+        pricePerHour: 1000,
+        priority: 100,
+        active: true,
+      },
+      {
+        id: 2,
+        venueId: 1,
+        dayOfWeek: -1,
+        startTime: '00:00',
+        endTime: '24:00',
+        pricePerHour: 500,
+        priority: 0,
+        active: true,
+      },
     ]);
     const r = await service.resolveAmount(1, '2026-05-09', '10:00-11:00');
     expect(r.ruleId).toBe(1);
@@ -64,7 +105,16 @@ describe('PricingService.resolveAmount', () => {
 
   it('沒匹配規則 → fallback venue.defaultPricePerHour', async () => {
     ruleRepo.find.mockResolvedValue([
-      { id: 1, venueId: 1, dayOfWeek: 1 /* 週一 */, startTime: '18:00', endTime: '22:00', pricePerHour: 800, priority: 10, active: true },
+      {
+        id: 1,
+        venueId: 1,
+        dayOfWeek: 1 /* 週一 */,
+        startTime: '18:00',
+        endTime: '22:00',
+        pricePerHour: 800,
+        priority: 10,
+        active: true,
+      },
     ]);
     venueRepo.findOne.mockResolvedValue({ defaultPricePerHour: '450' });
     // 2026-05-09 週六，不會匹配 dayOfWeek=1
@@ -77,7 +127,16 @@ describe('PricingService.resolveAmount', () => {
 
   it('規則只覆蓋部分時段 → booking 不完全落內 → 不套', async () => {
     ruleRepo.find.mockResolvedValue([
-      { id: 1, venueId: 1, dayOfWeek: -1, startTime: '18:00', endTime: '20:00', pricePerHour: 800, priority: 10, active: true },
+      {
+        id: 1,
+        venueId: 1,
+        dayOfWeek: -1,
+        startTime: '18:00',
+        endTime: '20:00',
+        pricePerHour: 800,
+        priority: 10,
+        active: true,
+      },
     ]);
     venueRepo.findOne.mockResolvedValue({ defaultPricePerHour: '500' });
     // booking 19:00-21:00 跨越規則邊界
@@ -91,7 +150,12 @@ describe('PricingService.resolveAmount', () => {
     ruleRepo.find.mockResolvedValue([]);
     venueRepo.findOne.mockResolvedValue({ defaultPricePerHour: 0 });
     const r = await service.resolveAmount(1, '2026-05-09', '10:00-11:00');
-    expect(r).toEqual({ amount: 0, pricePerHour: 0, ruleId: null, source: 'zero' });
+    expect(r).toEqual({
+      amount: 0,
+      pricePerHour: 0,
+      ruleId: null,
+      source: 'zero',
+    });
   });
 
   it('half-hour booking 也能正確計費', async () => {
@@ -119,25 +183,45 @@ describe('PricingService.validate', () => {
 
   it('rejects invalid dayOfWeek', async () => {
     await expect(
-      service.create(1, { dayOfWeek: 99, startTime: '10:00', endTime: '12:00', pricePerHour: 500 } as any),
+      service.create(1, {
+        dayOfWeek: 99,
+        startTime: '10:00',
+        endTime: '12:00',
+        pricePerHour: 500,
+      } as any),
     ).rejects.toThrow(BadRequestException);
   });
 
   it('rejects invalid time format', async () => {
     await expect(
-      service.create(1, { dayOfWeek: 0, startTime: '25:99', endTime: '12:00', pricePerHour: 500 } as any),
+      service.create(1, {
+        dayOfWeek: 0,
+        startTime: '25:99',
+        endTime: '12:00',
+        pricePerHour: 500,
+      } as any),
     ).rejects.toThrow(BadRequestException);
   });
 
   it('rejects start >= end', async () => {
     await expect(
-      service.create(1, { dayOfWeek: 0, startTime: '20:00', endTime: '18:00', pricePerHour: 500 } as any),
+      service.create(1, {
+        dayOfWeek: 0,
+        startTime: '20:00',
+        endTime: '18:00',
+        pricePerHour: 500,
+      } as any),
     ).rejects.toThrow(BadRequestException);
   });
 
   it('rejects negative price', async () => {
     await expect(
-      service.create(1, { dayOfWeek: 0, startTime: '10:00', endTime: '12:00', pricePerHour: -1 } as any),
+      service.create(1, {
+        dayOfWeek: 0,
+        startTime: '10:00',
+        endTime: '12:00',
+        pricePerHour: -1,
+      } as any),
     ).rejects.toThrow(BadRequestException);
   });
 });

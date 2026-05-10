@@ -8,8 +8,8 @@ import { CoachClass } from '../entities/coach-class.entity';
 const mockRepo = () => ({
   find: jest.fn(),
   findOne: jest.fn(),
-  create: jest.fn(d => d),
-  save: jest.fn(d => Promise.resolve({ id: 1, ...d })),
+  create: jest.fn((d) => d),
+  save: jest.fn((d) => Promise.resolve({ id: 1, ...d })),
   delete: jest.fn(),
   createQueryBuilder: jest.fn(),
 });
@@ -17,7 +17,6 @@ const mockRepo = () => ({
 describe('CoachService', () => {
   let service: CoachService;
   let coachRepo: ReturnType<typeof mockRepo>;
-  let classRepo: ReturnType<typeof mockRepo>;
 
   beforeEach(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
@@ -29,7 +28,6 @@ describe('CoachService', () => {
     }).compile();
     service = moduleRef.get(CoachService);
     coachRepo = moduleRef.get(getRepositoryToken(Coach));
-    classRepo = moduleRef.get(getRepositoryToken(CoachClass));
   });
 
   describe('getCoach (ownership)', () => {
@@ -41,7 +39,9 @@ describe('CoachService', () => {
 
     it('throws NotFoundException when coach belongs to another venue', async () => {
       coachRepo.findOne.mockResolvedValue({ id: 5, venueId: 99, name: 'A' });
-      await expect(service.getCoach(5, [7, 12])).rejects.toThrow(NotFoundException);
+      await expect(service.getCoach(5, [7, 12])).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('throws NotFoundException when coach does not exist', async () => {
@@ -52,7 +52,9 @@ describe('CoachService', () => {
 
   describe('createCoach', () => {
     it('rejects without name', async () => {
-      await expect(service.createCoach(7, {})).rejects.toThrow(BadRequestException);
+      await expect(service.createCoach(7, {})).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -72,7 +74,11 @@ describe('CoachService', () => {
     it('rejects invalid timeSlot', async () => {
       coachRepo.findOne.mockResolvedValue({ id: 9, venueId: 7 });
       await expect(
-        service.createClass(7, { coachId: 9, date: '2026-05-09', timeSlot: 'bad' } as any),
+        service.createClass(7, {
+          coachId: 9,
+          date: '2026-05-09',
+          timeSlot: 'bad',
+        } as any),
       ).rejects.toThrow(BadRequestException);
     });
 

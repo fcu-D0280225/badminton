@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Player } from '../entities/player.entity';
@@ -41,11 +45,15 @@ export class PlayerService {
       return await this.playerRepository.find();
     }
     if (user.role === 'player') {
-      const p = await this.playerRepository.findOne({ where: { id: user.entityId } });
+      const p = await this.playerRepository.findOne({
+        where: { id: user.entityId },
+      });
       return p ? [p] : [];
     }
     if (user.role === 'member' && user.linkedEntityId) {
-      const p = await this.playerRepository.findOne({ where: { id: user.linkedEntityId } });
+      const p = await this.playerRepository.findOne({
+        where: { id: user.linkedEntityId },
+      });
       return p ? [p] : [];
     }
     return [];
@@ -61,7 +69,10 @@ export class PlayerService {
   }
 
   // 取得臨打的預約歷程
-  async getBookingHistory(playerId: number, user?: AuthUser): Promise<Booking[]> {
+  async getBookingHistory(
+    playerId: number,
+    user?: AuthUser,
+  ): Promise<Booking[]> {
     if (user) await this.assertReadable(playerId, user);
     return await this.bookingRepository.find({
       where: { playerId },
@@ -71,7 +82,10 @@ export class PlayerService {
   }
 
   // 取得臨打對館方的預約紀錄和備註
-  async getVenueBookingsWithNotes(playerId: number, user?: AuthUser): Promise<any[]> {
+  async getVenueBookingsWithNotes(
+    playerId: number,
+    user?: AuthUser,
+  ): Promise<any[]> {
     if (user) await this.assertReadable(playerId, user);
     const bookings = await this.bookingRepository.find({
       where: { playerId },
@@ -101,7 +115,10 @@ export class PlayerService {
   }
 
   // ── 信用分數 ──────────────────────────────────────────────────
-  async getCreditScore(playerId: number, user?: AuthUser): Promise<{
+  async getCreditScore(
+    playerId: number,
+    user?: AuthUser,
+  ): Promise<{
     score: number;
     grade: string;
     totalBookings: number;
@@ -157,7 +174,10 @@ export class PlayerService {
   }
 
   // 取得臨打對團主的預約紀錄和備註
-  async getOrganizerBookingsWithNotes(playerId: number, user?: AuthUser): Promise<any[]> {
+  async getOrganizerBookingsWithNotes(
+    playerId: number,
+    user?: AuthUser,
+  ): Promise<any[]> {
     if (user) await this.assertReadable(playerId, user);
     const bookings = await this.bookingRepository.find({
       where: { playerId },
@@ -187,7 +207,10 @@ export class PlayerService {
   }
 
   // ── 私有：是否可讀取此 playerId ─────────────────────────────────
-  private async assertReadable(playerId: number, user: AuthUser): Promise<void> {
+  private async assertReadable(
+    playerId: number,
+    user: AuthUser,
+  ): Promise<void> {
     if (user.role === 'venue') {
       // venue 只能讀取「曾在自己（任一綁定）場地預約過」的 player
       const booked = await this.bookingRepository.findOne({

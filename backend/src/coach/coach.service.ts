@@ -8,7 +8,6 @@ import { In, Repository } from 'typeorm';
 import { Coach } from '../entities/coach.entity';
 import { CoachClass } from '../entities/coach-class.entity';
 
-const TIME_RE = /^\d{2}:\d{2}$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const SLOT_RE = /^\d{2}:\d{2}-\d{2}:\d{2}$/;
 const CLASS_STATUSES = ['open', 'closed', 'cancelled'] as const;
@@ -71,7 +70,8 @@ export class CoachService {
       .where('c.venueId IN (:...venueIds)', { venueIds })
       .orderBy('c.date', 'DESC')
       .addOrderBy('c.timeSlot', 'ASC');
-    if (opts.coachId) qb.andWhere('c.coachId = :coachId', { coachId: opts.coachId });
+    if (opts.coachId)
+      qb.andWhere('c.coachId = :coachId', { coachId: opts.coachId });
     if (opts.from) qb.andWhere('c.date >= :from', { from: opts.from });
     if (opts.to) qb.andWhere('c.date <= :to', { to: opts.to });
     return qb.getMany();
@@ -110,7 +110,9 @@ export class CoachService {
     const c = await this.getClass(id, venueIds);
     this.validateClass({ ...c, ...data });
     if (data.coachId && data.coachId !== c.coachId) {
-      const coach = await this.coachRepo.findOne({ where: { id: data.coachId } });
+      const coach = await this.coachRepo.findOne({
+        where: { id: data.coachId },
+      });
       if (!coach || coach.venueId !== c.venueId) {
         throw new NotFoundException('指定的教練不屬於此場館');
       }
@@ -143,7 +145,9 @@ export class CoachService {
       }
     }
     if (data.status != null && !CLASS_STATUSES.includes(data.status as any)) {
-      throw new BadRequestException(`status 必須是 ${CLASS_STATUSES.join('/')}`);
+      throw new BadRequestException(
+        `status 必須是 ${CLASS_STATUSES.join('/')}`,
+      );
     }
   }
 }

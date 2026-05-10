@@ -41,7 +41,9 @@ export class PricingController {
     @CurrentUser() user: AuthUser,
     @Query('venueId') venueIdRaw?: string,
   ) {
-    return this.pricingService.listForVenue(this.resolveVenueId(user, venueIdRaw));
+    return this.pricingService.listForVenue(
+      this.resolveVenueId(user, venueIdRaw),
+    );
   }
 
   @Post('rules')
@@ -50,7 +52,10 @@ export class PricingController {
     @Body() data: Partial<PricingRule>,
     @Query('venueId') venueIdRaw?: string,
   ) {
-    return this.pricingService.create(this.resolveVenueId(user, venueIdRaw), data);
+    return this.pricingService.create(
+      this.resolveVenueId(user, venueIdRaw),
+      data,
+    );
   }
 
   @Patch('rules/:id')
