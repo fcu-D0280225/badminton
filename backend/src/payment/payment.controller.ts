@@ -5,6 +5,7 @@ import {
   Put,
   Body,
   Param,
+  ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -70,5 +71,14 @@ export class PaymentController {
       data.transactionId,
       user,
     );
+  }
+
+  @Post(':id/checkout-session')
+  async createCheckoutSession(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthUser,
+  ): Promise<{ url: string }> {
+    const url = await this.paymentService.createCheckoutSession(id, user);
+    return { url };
   }
 }

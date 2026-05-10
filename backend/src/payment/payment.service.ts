@@ -1,6 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
+import Stripe from 'stripe';
 import { Payment } from '../entities/payment.entity';
 import { Booking } from '../entities/booking.entity';
 import { AuthUser } from '../auth/types';
@@ -16,6 +23,9 @@ export class PaymentService {
     private paymentRepository: Repository<Payment>,
     @InjectRepository(Booking)
     private bookingRepository: Repository<Booking>,
+    @Inject('STRIPE_CLIENT')
+    private readonly stripe: InstanceType<typeof Stripe>,
+    private readonly dataSource: DataSource,
   ) {}
 
   // 建立付款紀錄（需確認該 booking 屬於 user）
@@ -119,5 +129,85 @@ export class PaymentService {
       return saved;
     }
     return null;
+  }
+
+  // 建立 Stripe Checkout Session
+  async createCheckoutSession(
+    paymentId: number,
+    user: AuthUser,
+  ): Promise<string> {
+    const payment = await this.paymentRepository.findOne({
+      where: { id: paymentId },
+      relations: ['booking'],
+    });
+    if (!payment) throw new NotFoundException('Payment not found');
+    if (!isBookingOwnedBy(user, payment.booking)) throw new ForbiddenException();
+    if (payment.status !== 'unpaid')
+      throw new BadRequestException('Payment already initiated');
+
+    const session = await this.stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'twd',
+            unit_amount: Math.round(payment.amount), // TWD zero-decimal
+            product_data: { name: `場地預約 #${payment.bookingId}` },
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${process.env.FRONTEND_URL}/booking/${payment.bookingId}?paid=true`,
+      cancel_url: `${process.env.FRONTEND_URL}/booking/${payment.bookingId}?paid=false`,
+      metadata: { paymentId: String(payment.id) }, // session-level metadata
+    });
+
+    await this.paymentRepository.update(paymentId, {
+      status: 'processing',
+      gatewayOrderId: session.id,
+    });
+
+    return session.url!;
+  }
+
+  // Webhook: 標記付款成功（含 hold-expiry race condition 處理）
+  async markAsPaidByGateway(
+    paymentId: number,
+    txnId: string,
+  ): Promise<void> {
+    await this.dataSource.transaction(async (manager) => {
+      const payment = await manager.findOne(Payment, {
+        where: { id: paymentId },
+        relations: ['booking'],
+      });
+      if (!payment) return; // idempotency: already processed
+      if (payment.status === 'paid') return;
+
+      // Hold-expiry race: booking cancelled 在 webhook 到達前
+      if (payment.booking.status === 'cancelled') {
+        if (payment.status === 'refunding') return; // idempotency guard
+        await manager.update(Payment, paymentId, { status: 'refunding' });
+        await this.stripe.refunds.create({ payment_intent: txnId });
+        await manager.update(Payment, paymentId, { status: 'refunded' });
+        return;
+      }
+
+      await manager.update(Payment, paymentId, {
+        status: 'paid',
+        paidAt: new Date(),
+        transactionId: txnId,
+      });
+      await manager.update(Booking, payment.bookingId, { status: 'confirmed' });
+    });
+  }
+
+  // Webhook: 標記付款失敗（session expired）
+  async markAsFailedByGateway(paymentId: number): Promise<void> {
+    const payment = await this.paymentRepository.findOne({
+      where: { id: paymentId },
+    });
+    if (!payment || payment.status !== 'processing') return; // idempotency
+    await this.paymentRepository.update(paymentId, { status: 'failed' });
   }
 }
