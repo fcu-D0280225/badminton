@@ -39,13 +39,13 @@
 <body>
     <div id="app">
         <header class="header">
-            <h1>🏸 羽毛球預約系統</h1>
+            <h1>羽毛球預約系統</h1>
             <div class="header-actions">
                 <span class="user-info" id="user-info"></span>
                 <button id="theme-toggle" class="theme-toggle-btn" type="button" onclick="toggleTheme()" aria-label="切換夜間模式" title="切換夜間模式">🌙</button>
-                <button id="btn-notif" class="btn btn-secondary" onclick="toggleNotifications()" style="display:none">🔔 開啟通知</button>
+                <button id="btn-notif" class="btn btn-secondary" onclick="toggleNotifications()" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>開啟通知</button>
                 <button class="btn btn-secondary btn-logout" onclick="logout()">登出</button>
-                <button class="btn btn-install" onclick="showInstallQR()">📱 手機安裝</button>
+                <button class="btn btn-install" onclick="showInstallQR()"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>手機安裝</button>
             </div>
             <nav class="nav-tabs">
                 <button class="tab-btn" data-view="venue" id="tab-venue">館方</button>
@@ -59,7 +59,7 @@
         <div id="qr-modal" class="modal" style="display: none;">
             <div class="modal-content">
                 <span class="close" onclick="closeQRModal()">&times;</span>
-                <h2>📱 手機安裝</h2>
+                <h2>手機安裝</h2>
                 <div class="qr-instructions">
                     <p><strong>步驟：</strong></p>
                     <ol>
