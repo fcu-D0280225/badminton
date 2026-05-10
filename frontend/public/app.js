@@ -2132,10 +2132,10 @@ async function refreshNotifButton() {
     try {
         const reg = await navigator.serviceWorker.ready;
         const existing = await reg.pushManager.getSubscription();
-        btn.textContent = existing ? '🔕 關閉通知' : '🔔 開啟通知';
+        btn.textContent = existing ? '關閉通知' : '開啟通知';
         btn.dataset.subscribed = existing ? '1' : '0';
     } catch {
-        btn.textContent = '🔔 開啟通知';
+        btn.textContent = '開啟通知';
         btn.dataset.subscribed = '0';
     }
 }

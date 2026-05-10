@@ -52,7 +52,7 @@ function renderVenueSwitcher() {
         sw.style.display = 'none';
         return;
     }
-    const allOpt = `<option value="all"${_currentVenueId === 'all' ? ' selected' : ''}>📊 全部場館（彙整）</option>`;
+    const allOpt = `<option value="all"${_currentVenueId === 'all' ? ' selected' : ''}>全部場館（彙整）</option>`;
     sw.innerHTML = allOpt + _venues.map(v =>
         `<option value="${v.venueId}"${v.venueId === _currentVenueId ? ' selected' : ''}>${escapeHtml(v.name)}${v.isPrimary ? ' ⭐' : ''}</option>`
     ).join('');

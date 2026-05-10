@@ -39,7 +39,7 @@ body {
     border: 2px solid #9f4200;
     background: white;
     color: #9f4200;
-    border-radius: 50px;
+    border-radius: 20px;
     cursor: pointer;
     font-size: 16px;
     font-weight: 600;
@@ -137,7 +137,7 @@ body {
 .btn {
     padding: 12px 24px;
     border: none;
-    border-radius: 50px;
+    border-radius: 20px;
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
@@ -154,7 +154,6 @@ button:focus-visible {
 .btn-primary {
     background: #9f4200;
     color: #ffffff;
-    border-radius: 50px;
 }
 
 .btn-primary:hover {
@@ -166,7 +165,6 @@ button:focus-visible {
 .btn-secondary {
     background: #f0ede9;
     color: #574238;
-    border-radius: 50px;
 }
 
 .btn-secondary:hover {
@@ -176,7 +174,6 @@ button:focus-visible {
 .btn-danger {
     background: #ba1a1a;
     color: white;
-    border-radius: 50px;
 }
 
 .btn-danger:hover {
@@ -295,7 +292,7 @@ button:focus-visible {
     color: white;
     padding: 10px 20px;
     border: none;
-    border-radius: 50px;
+    border-radius: 20px;
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
