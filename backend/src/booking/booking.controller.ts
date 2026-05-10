@@ -12,13 +12,17 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { AuthUser } from '../auth/types';
 import { BookingService } from './booking.service';
+import { BookingParticipantService } from './booking-participant.service';
 import { Booking } from '../entities/booking.entity';
 import { BookingParticipant } from '../entities/booking-participant.entity';
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/bookings')
 export class BookingController {
-  constructor(private readonly bookingService: BookingService) {}
+  constructor(
+    private readonly bookingService: BookingService,
+    private readonly participantService: BookingParticipantService,
+  ) {}
 
   // 建立單筆預約
   @Post()
@@ -123,7 +127,7 @@ export class BookingController {
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
   ): Promise<BookingParticipant[]> {
-    return await this.bookingService.getParticipants(+id, user);
+    return await this.participantService.getParticipants(+id, user);
   }
 
   @Post(':id/participants')
@@ -132,7 +136,7 @@ export class BookingController {
     @Param('id') id: string,
     @Body() data: { name: string; phone?: string },
   ): Promise<BookingParticipant> {
-    return await this.bookingService.addParticipant(+id, data, user);
+    return await this.participantService.addParticipant(+id, data, user);
   }
 
   @Delete(':id/participants/:participantId')
@@ -140,7 +144,7 @@ export class BookingController {
     @CurrentUser() user: AuthUser,
     @Param('participantId') participantId: string,
   ): Promise<void> {
-    return await this.bookingService.removeParticipant(+participantId, user);
+    return await this.participantService.removeParticipant(+participantId, user);
   }
 
   @Put(':id/participants/:participantId/checkin')
@@ -148,7 +152,7 @@ export class BookingController {
     @CurrentUser() user: AuthUser,
     @Param('participantId') participantId: string,
   ): Promise<BookingParticipant> {
-    return await this.bookingService.toggleParticipantCheckin(
+    return await this.participantService.toggleParticipantCheckin(
       +participantId,
       user,
     );
@@ -160,7 +164,7 @@ export class BookingController {
     @Param('participantId') participantId: string,
     @Body() data: { paymentStatus?: string; amount?: number },
   ): Promise<BookingParticipant> {
-    return await this.bookingService.updateParticipantPayment(
+    return await this.participantService.updateParticipantPayment(
       +participantId,
       data,
       user,

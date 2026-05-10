@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BookingController } from './booking.controller';
 import { BookingService } from './booking.service';
+import { BookingParticipantService } from './booking-participant.service';
 import { HoldExpiryService } from './hold-expiry.service';
 import { Booking } from '../entities/booking.entity';
 import { Venue } from '../entities/venue.entity';
@@ -34,7 +35,7 @@ import { PricingModule } from '../pricing/pricing.module';
     PricingModule,
   ],
   controllers: [BookingController],
-  providers: [BookingService, HoldExpiryService],
-  exports: [BookingService],
+  providers: [BookingService, BookingParticipantService, HoldExpiryService],
+  exports: [BookingService, BookingParticipantService],
 })
 export class BookingModule {}

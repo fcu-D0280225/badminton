@@ -5,12 +5,11 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not, LessThan } from 'typeorm';
+import { DataSource, EntityManager, Repository, Not, LessThan } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { Booking } from '../entities/booking.entity';
 import { Payment } from '../entities/payment.entity';
 import { Account } from '../entities/account.entity';
-import { BookingParticipant } from '../entities/booking-participant.entity';
 import { WaitlistService } from '../waitlist/waitlist.service';
 import { PushService } from '../push/push.service';
 import { PricingService } from '../pricing/pricing.service';
@@ -33,11 +32,10 @@ export class BookingService {
     private paymentRepository: Repository<Payment>,
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
-    @InjectRepository(BookingParticipant)
-    private participantRepository: Repository<BookingParticipant>,
     private waitlistService: WaitlistService,
     private pushService: PushService,
     private pricingService: PricingService,
+    private dataSource: DataSource,
   ) {}
 
   // ── 建立單筆預約（內部共用）──────────────────────────────────────
@@ -93,7 +91,7 @@ export class BookingService {
     return await this.findOne(booking.id);
   }
 
-  // ── 建立重複預約 ─────────────────────────────────────────────────
+  // ── 建立重複預約（全系列原子性：任一週失敗即全部回滾）──────────
   async createRecurringBookings(
     data: Partial<Booking> & {
       amount?: number;
@@ -110,26 +108,75 @@ export class BookingService {
     } = data;
     const interval = recurringType === 'biweekly' ? 14 : 7;
     const groupId = randomUUID();
-    const bookings: Booking[] = [];
 
+    // Step 1: 在 transaction 外預先驗證 + 解析定價（避免在 transaction 內做外部呼叫）
+    const weekData: Array<{ date: string; resolvedAmount: number }> = [];
     for (let i = 0; i < recurringWeeks; i++) {
       const base = new Date(baseData.date + 'T00:00:00');
       base.setDate(base.getDate() + i * interval);
       const dateStr = base.toISOString().split('T')[0];
 
-      const booking = await this.createBooking(
-        {
-          ...baseData,
-          date: dateStr,
-          recurringGroupId: groupId,
-          recurringType,
-          amount,
-        },
-        user,
-      );
-      bookings.push(booking);
+      if (user) this.assertCreateAllowed({ ...baseData, date: dateStr }, user);
+      await this.assertNoDuplicate({ ...baseData, date: dateStr });
+
+      let resolvedAmount = amount;
+      if (
+        resolvedAmount == null &&
+        baseData.venueId &&
+        baseData.timeSlot
+      ) {
+        try {
+          const quote = await this.pricingService.resolveAmount(
+            baseData.venueId,
+            dateStr,
+            baseData.timeSlot,
+          );
+          resolvedAmount = quote.amount;
+        } catch {
+          resolvedAmount = 0;
+        }
+      }
+      weekData.push({ date: dateStr, resolvedAmount: resolvedAmount ?? 0 });
     }
-    return bookings;
+
+    // Step 2: 所有 DB 寫入包在同一個 transaction，任一週失敗全系列回滾
+    const savedBookings = await this.dataSource.transaction(
+      async (manager: EntityManager) => {
+        const results: Booking[] = [];
+        for (const { date, resolvedAmount } of weekData) {
+          const holdExpiresAt = new Date();
+          holdExpiresAt.setMinutes(holdExpiresAt.getMinutes() + HOLD_MINUTES);
+
+          const booking = await manager.save(
+            manager.create(Booking, {
+              ...baseData,
+              date,
+              recurringGroupId: groupId,
+              recurringType,
+              holdExpiresAt,
+            }),
+          );
+          await manager.save(
+            manager.create(Payment, {
+              bookingId: booking.id,
+              amount: resolvedAmount,
+              status: 'unpaid',
+            }),
+          );
+          results.push(booking);
+        }
+        return results;
+      },
+    );
+
+    // Step 3: transaction 成功後載入關聯 + 發推播
+    const fullBookings: Booking[] = [];
+    for (const b of savedBookings) {
+      const full = await this.findOne(b.id);
+      await this.notifyBookingCreated(full);
+      fullBookings.push(full);
+    }
+    return fullBookings;
   }
 
   // ── 取得所有預約（依 user 角色過濾）─────────────────────────────
@@ -383,75 +430,6 @@ export class BookingService {
     });
   }
 
-  // ── 參與者管理 ─────────────────────────────────────────────────
-  async getParticipants(
-    bookingId: number,
-    user?: AuthUser,
-  ): Promise<BookingParticipant[]> {
-    if (user) await this.assertParticipantBookingOwned(bookingId, user);
-    return await this.participantRepository.find({
-      where: { bookingId },
-      order: { addedAt: 'ASC' },
-    });
-  }
-
-  async addParticipant(
-    bookingId: number,
-    data: { name: string; phone?: string },
-    user?: AuthUser,
-  ): Promise<BookingParticipant> {
-    if (user) await this.assertParticipantBookingOwned(bookingId, user);
-    return await this.participantRepository.save(
-      this.participantRepository.create({
-        bookingId,
-        name: data.name,
-        phone: data.phone,
-      }),
-    );
-  }
-
-  async removeParticipant(
-    participantId: number,
-    user?: AuthUser,
-  ): Promise<void> {
-    if (user) await this.assertParticipantOwned(participantId, user);
-    await this.participantRepository.delete(participantId);
-  }
-
-  async toggleParticipantCheckin(
-    participantId: number,
-    user?: AuthUser,
-  ): Promise<BookingParticipant> {
-    if (user) await this.assertParticipantOwned(participantId, user);
-    const p = await this.participantRepository.findOne({
-      where: { id: participantId },
-    });
-    p.checkedIn = !p.checkedIn;
-    return await this.participantRepository.save(p);
-  }
-
-  async updateParticipantPayment(
-    participantId: number,
-    data: { paymentStatus?: string; amount?: number },
-    user?: AuthUser,
-  ): Promise<BookingParticipant> {
-    if (user) await this.assertParticipantOwned(participantId, user);
-    const p = await this.participantRepository.findOne({
-      where: { id: participantId },
-    });
-    if (data.paymentStatus !== undefined) {
-      const allowed = ['unpaid', 'paid', 'refunded'];
-      if (!allowed.includes(data.paymentStatus)) {
-        throw new Error(`無效的付款狀態：${data.paymentStatus}`);
-      }
-      p.paymentStatus = data.paymentStatus;
-    }
-    if (data.amount !== undefined) {
-      p.amount = data.amount;
-    }
-    return await this.participantRepository.save(p);
-  }
-
   // ── 私有：建立預約時禁止偽造他人身分 ───────────────────────────
   private assertCreateAllowed(data: Partial<Booking>, user: AuthUser): void {
     switch (user.role) {
@@ -487,29 +465,6 @@ export class BookingService {
       default:
         throw new ForbiddenException('未知的角色');
     }
-  }
-
-  private async assertParticipantBookingOwned(
-    bookingId: number,
-    user: AuthUser,
-  ): Promise<void> {
-    const booking = await this.bookingRepository.findOne({
-      where: { id: bookingId },
-    });
-    if (!booking || !isBookingOwnedBy(user, booking)) {
-      throw new NotFoundException(`預約 #${bookingId} 不存在`);
-    }
-  }
-
-  private async assertParticipantOwned(
-    participantId: number,
-    user: AuthUser,
-  ): Promise<void> {
-    const p = await this.participantRepository.findOne({
-      where: { id: participantId },
-    });
-    if (!p) throw new NotFoundException(`參與者 #${participantId} 不存在`);
-    await this.assertParticipantBookingOwned(p.bookingId, user);
   }
 
   // ── 私有：從 playerId/organizerId 找 accountId ─────────────────

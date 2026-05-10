@@ -1,20 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getRepositoryToken, getDataSourceToken } from '@nestjs/typeorm';
 import { In } from 'typeorm';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { Booking } from '../entities/booking.entity';
 import { Payment } from '../entities/payment.entity';
 import { Account } from '../entities/account.entity';
-import { BookingParticipant } from '../entities/booking-participant.entity';
 import { WaitlistService } from '../waitlist/waitlist.service';
 import { PushService } from '../push/push.service';
 import { PricingService } from '../pricing/pricing.service';
 import { AuthUser } from '../auth/types';
 
 const mockRepo = () => ({
-  create: jest.fn(),
-  save: jest.fn(),
+  create: jest.fn((d) => d),
+  save: jest.fn((d) => Promise.resolve({ id: 1, ...d })),
   findOne: jest.fn(),
   find: jest.fn(),
   update: jest.fn(),
@@ -31,9 +30,16 @@ const mkUser = (
 describe('BookingService (SEC-001 ownership filter)', () => {
   let service: BookingService;
   let bookingRepo: ReturnType<typeof mockRepo>;
-  let participantRepo: ReturnType<typeof mockRepo>;
+  let paymentRepo: ReturnType<typeof mockRepo>;
+  let pricingService: { resolveAmount: jest.Mock };
+  let pushService: { notifyAccount: jest.Mock };
 
   beforeEach(async () => {
+    pricingService = {
+      resolveAmount: jest.fn().mockResolvedValue({ amount: 500, pricePerHour: 250, ruleId: 1, source: 'rule' }),
+    };
+    pushService = { notifyAccount: jest.fn().mockResolvedValue(undefined) };
+
     const moduleRef: TestingModule = await Test.createTestingModule({
       providers: [
         BookingService,
@@ -41,23 +47,18 @@ describe('BookingService (SEC-001 ownership filter)', () => {
         { provide: getRepositoryToken(Payment), useFactory: mockRepo },
         { provide: getRepositoryToken(Account), useFactory: mockRepo },
         {
-          provide: getRepositoryToken(BookingParticipant),
-          useFactory: mockRepo,
-        },
-        {
           provide: WaitlistService,
           useValue: { getFirstWaiting: jest.fn(), markNotified: jest.fn() },
         },
-        { provide: PushService, useValue: { notifyAccount: jest.fn() } },
+        { provide: PushService, useValue: pushService },
+        { provide: PricingService, useValue: pricingService },
         {
-          provide: PricingService,
+          provide: getDataSourceToken(),
           useValue: {
-            resolveAmount: jest.fn().mockResolvedValue({
-              amount: 0,
-              pricePerHour: 0,
-              ruleId: null,
-              source: 'zero',
-            }),
+            transaction: jest.fn().mockImplementation((cb) => cb({
+              create: jest.fn((Entity, d) => d),
+              save: jest.fn((d) => Promise.resolve({ id: 99, ...d })),
+            })),
           },
         },
       ],
@@ -65,7 +66,7 @@ describe('BookingService (SEC-001 ownership filter)', () => {
 
     service = moduleRef.get<BookingService>(BookingService);
     bookingRepo = moduleRef.get(getRepositoryToken(Booking));
-    participantRepo = moduleRef.get(getRepositoryToken(BookingParticipant));
+    paymentRepo = moduleRef.get(getRepositoryToken(Payment));
   });
 
   describe('findAll', () => {
@@ -126,22 +127,16 @@ describe('BookingService (SEC-001 ownership filter)', () => {
     });
   });
 
-  describe('createBooking ownership enforcement', () => {
+  describe('createBooking — ownership enforcement', () => {
     it('rejects player trying to book as another player', async () => {
       await expect(
-        service.createBooking(
-          { playerId: 99, venueId: 1 },
-          mkUser('player', 5),
-        ),
+        service.createBooking({ playerId: 99, venueId: 1 }, mkUser('player', 5)),
       ).rejects.toThrow(ForbiddenException);
     });
 
     it('rejects organizer impersonating other organizer', async () => {
       await expect(
-        service.createBooking(
-          { organizerId: 99, venueId: 1 },
-          mkUser('organizer', 3),
-        ),
+        service.createBooking({ organizerId: 99, venueId: 1 }, mkUser('organizer', 3)),
       ).rejects.toThrow(ForbiddenException);
     });
 
@@ -152,20 +147,54 @@ describe('BookingService (SEC-001 ownership filter)', () => {
     });
   });
 
-  describe('participant operations', () => {
-    it('throws NotFoundException when accessing participants of unowned booking', async () => {
-      bookingRepo.findOne.mockResolvedValue({ id: 1, venueId: 8 });
-      await expect(
-        service.getParticipants(1, mkUser('venue', 7)),
-      ).rejects.toThrow(NotFoundException);
+  describe('createBooking — happy path', () => {
+    const venueUser = mkUser('venue', 7);
+    const baseBookingData = {
+      venueId: 7,
+      date: '2026-06-01',
+      timeSlot: '09:00-11:00',
+      organizerId: undefined as number,
+    };
+
+    const savedBooking = { ...baseBookingData, id: 10, holdExpiresAt: new Date() };
+
+    beforeEach(() => {
+      bookingRepo.create.mockImplementation((d) => d);
+      // assertNoDuplicate returns early (no member IDs in baseBookingData),
+      // so findOne is only called in this.findOne(booking.id) at the end.
+      bookingRepo.findOne.mockResolvedValue(savedBooking);
+      bookingRepo.save.mockResolvedValue(savedBooking);
+      paymentRepo.create.mockImplementation((d) => d);
+      paymentRepo.save.mockResolvedValue({ id: 1, bookingId: 10, amount: 500, status: 'unpaid' });
     });
 
-    it('throws NotFoundException when removing participant from unowned booking', async () => {
-      participantRepo.findOne.mockResolvedValue({ id: 5, bookingId: 1 });
-      bookingRepo.findOne.mockResolvedValue({ id: 1, venueId: 8 });
-      await expect(
-        service.removeParticipant(5, mkUser('venue', 7)),
-      ).rejects.toThrow(NotFoundException);
+    it('creates booking and payment record', async () => {
+      const result = await service.createBooking(baseBookingData, venueUser);
+      expect(bookingRepo.save).toHaveBeenCalled();
+      expect(paymentRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ bookingId: 10, amount: 500, status: 'unpaid' }),
+      );
+      expect(result.id).toBe(10);
+    });
+
+    it('auto-resolves pricing via PricingService', async () => {
+      await service.createBooking(baseBookingData, venueUser);
+      expect(pricingService.resolveAmount).toHaveBeenCalledWith(7, '2026-06-01', '09:00-11:00');
+    });
+
+    it('falls back to amount=0 when pricing throws', async () => {
+      pricingService.resolveAmount.mockRejectedValue(new Error('pricing error'));
+      await service.createBooking(baseBookingData, venueUser);
+      expect(paymentRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ amount: 0 }),
+      );
+    });
+
+    it('sets holdExpiresAt on the created booking', async () => {
+      await service.createBooking(baseBookingData, venueUser);
+      expect(bookingRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ holdExpiresAt: expect.any(Date) }),
+      );
     });
   });
 });

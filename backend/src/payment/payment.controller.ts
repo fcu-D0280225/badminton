@@ -12,6 +12,8 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { AuthUser } from '../auth/types';
 import { PaymentService } from './payment.service';
 import { Payment } from '../entities/payment.entity';
+import { CreatePaymentDto } from './dto/create-payment.dto';
+import { UpdatePaymentDto } from './dto/update-payment.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/payments')
@@ -21,9 +23,9 @@ export class PaymentController {
   @Post()
   async createPayment(
     @CurrentUser() user: AuthUser,
-    @Body() data: Partial<Payment>,
+    @Body() dto: CreatePaymentDto,
   ): Promise<Payment> {
-    return await this.paymentService.createPayment(data, user);
+    return await this.paymentService.createPayment(dto, user);
   }
 
   @Get()
@@ -51,9 +53,9 @@ export class PaymentController {
   async updatePayment(
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
-    @Body() data: Partial<Payment>,
+    @Body() dto: UpdatePaymentDto,
   ): Promise<Payment> {
-    return await this.paymentService.updatePayment(+id, data, user);
+    return await this.paymentService.updatePayment(+id, dto, user);
   }
 
   @Put(':id/mark-paid')
