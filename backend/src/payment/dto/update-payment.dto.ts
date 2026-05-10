@@ -7,8 +7,8 @@ export class UpdatePaymentDto {
 
   @IsOptional()
   @IsString()
-  @IsIn(['unpaid', 'paid', 'refunded'])
-  status?: string;
+  @IsIn(['unpaid', 'processing', 'refunding', 'paid', 'refunded', 'failed'])
+  status?: 'unpaid' | 'processing' | 'refunding' | 'paid' | 'refunded' | 'failed';
 
   @IsOptional()
   @IsString()
