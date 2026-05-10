@@ -15,6 +15,9 @@ import { BookingService } from './booking.service';
 import { BookingParticipantService } from './booking-participant.service';
 import { Booking } from '../entities/booking.entity';
 import { BookingParticipant } from '../entities/booking-participant.entity';
+import { CreateBookingDto } from './dto/create-booking.dto';
+import { CreateRecurringBookingDto } from './dto/create-recurring-booking.dto';
+import { UpdateBookingDto } from './dto/update-booking.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/bookings')
@@ -28,7 +31,7 @@ export class BookingController {
   @Post()
   async createBooking(
     @CurrentUser() user: AuthUser,
-    @Body() data: Partial<Booking> & { amount?: number },
+    @Body() data: CreateBookingDto,
   ): Promise<Booking> {
     return await this.bookingService.createBooking(data, user);
   }
@@ -37,12 +40,7 @@ export class BookingController {
   @Post('recurring')
   async createRecurring(
     @CurrentUser() user: AuthUser,
-    @Body()
-    data: Partial<Booking> & {
-      amount?: number;
-      recurringWeeks: number;
-      recurringType?: string;
-    },
+    @Body() data: CreateRecurringBookingDto,
   ): Promise<Booking[]> {
     return await this.bookingService.createRecurringBookings(data, user);
   }
@@ -73,7 +71,7 @@ export class BookingController {
   async updateBooking(
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
-    @Body() data: Partial<Booking>,
+    @Body() data: UpdateBookingDto,
   ): Promise<Booking> {
     return await this.bookingService.updateBooking(+id, data, user);
   }
