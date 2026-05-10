@@ -54,7 +54,12 @@ export class BookingService {
 
     // 動態定價：未指定 amount 時自動套用規則 + venue 預設價格
     let resolvedAmount = amount;
-    if (resolvedAmount == null && bookingData.venueId && bookingData.date && bookingData.timeSlot) {
+    if (
+      resolvedAmount == null &&
+      bookingData.venueId &&
+      bookingData.date &&
+      bookingData.timeSlot
+    ) {
       try {
         const quote = await this.pricingService.resolveAmount(
           bookingData.venueId,
@@ -132,7 +137,14 @@ export class BookingService {
     const where = user ? bookingOwnerWhereClauses(user) : undefined;
     return await this.bookingRepository.find({
       where,
-      relations: ['venue', 'organizer', 'player', 'booker', 'payment', 'participants'],
+      relations: [
+        'venue',
+        'organizer',
+        'player',
+        'booker',
+        'payment',
+        'participants',
+      ],
     });
   }
 
@@ -140,7 +152,14 @@ export class BookingService {
   async findOne(id: number, user?: AuthUser): Promise<Booking> {
     const booking = await this.bookingRepository.findOne({
       where: { id },
-      relations: ['venue', 'organizer', 'player', 'booker', 'payment', 'participants'],
+      relations: [
+        'venue',
+        'organizer',
+        'player',
+        'booker',
+        'payment',
+        'participants',
+      ],
     });
     if (user && booking && !isBookingOwnedBy(user, booking)) {
       throw new NotFoundException(`預約 #${id} 不存在`);
@@ -249,9 +268,30 @@ export class BookingService {
 
     // 只需要有任一身份欄位就檢查
     const memberConditions: object[] = [];
-    if (playerId)    memberConditions.push({ venueId, date, timeSlot, playerId,    status: Not('cancelled') });
-    if (organizerId) memberConditions.push({ venueId, date, timeSlot, organizerId, status: Not('cancelled') });
-    if (bookerId)    memberConditions.push({ venueId, date, timeSlot, bookerId,    status: Not('cancelled') });
+    if (playerId)
+      memberConditions.push({
+        venueId,
+        date,
+        timeSlot,
+        playerId,
+        status: Not('cancelled'),
+      });
+    if (organizerId)
+      memberConditions.push({
+        venueId,
+        date,
+        timeSlot,
+        organizerId,
+        status: Not('cancelled'),
+      });
+    if (bookerId)
+      memberConditions.push({
+        venueId,
+        date,
+        timeSlot,
+        bookerId,
+        status: Not('cancelled'),
+      });
 
     if (memberConditions.length === 0) return;
 
@@ -370,7 +410,10 @@ export class BookingService {
     );
   }
 
-  async removeParticipant(participantId: number, user?: AuthUser): Promise<void> {
+  async removeParticipant(
+    participantId: number,
+    user?: AuthUser,
+  ): Promise<void> {
     if (user) await this.assertParticipantOwned(participantId, user);
     await this.participantRepository.delete(participantId);
   }
@@ -410,10 +453,7 @@ export class BookingService {
   }
 
   // ── 私有：建立預約時禁止偽造他人身分 ───────────────────────────
-  private assertCreateAllowed(
-    data: Partial<Booking>,
-    user: AuthUser,
-  ): void {
+  private assertCreateAllowed(data: Partial<Booking>, user: AuthUser): void {
     switch (user.role) {
       case 'venue':
         if (!getVenueIdsForUser(user).includes(data.venueId)) {

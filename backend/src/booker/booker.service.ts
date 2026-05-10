@@ -11,9 +11,7 @@ export class BookerService {
   ) {}
 
   async create(data: { name: string; contact: string }): Promise<Booker> {
-    return await this.bookerRepository.save(
-      this.bookerRepository.create(data),
-    );
+    return await this.bookerRepository.save(this.bookerRepository.create(data));
   }
 
   async findOne(id: number): Promise<Booker> {

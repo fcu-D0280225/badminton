@@ -70,9 +70,15 @@ describe('bookingOwnerWhereClauses', () => {
 
 describe('isBookingOwnedBy', () => {
   it('venue matches venueId from venueIds list (multi-venue)', () => {
-    expect(isBookingOwnedBy(mkUser('venue', 7, undefined, [7, 12]), { venueId: 7 })).toBe(true);
-    expect(isBookingOwnedBy(mkUser('venue', 7, undefined, [7, 12]), { venueId: 12 })).toBe(true);
-    expect(isBookingOwnedBy(mkUser('venue', 7, undefined, [7, 12]), { venueId: 99 })).toBe(false);
+    expect(
+      isBookingOwnedBy(mkUser('venue', 7, undefined, [7, 12]), { venueId: 7 }),
+    ).toBe(true);
+    expect(
+      isBookingOwnedBy(mkUser('venue', 7, undefined, [7, 12]), { venueId: 12 }),
+    ).toBe(true);
+    expect(
+      isBookingOwnedBy(mkUser('venue', 7, undefined, [7, 12]), { venueId: 99 }),
+    ).toBe(false);
   });
 
   it('venue without venueIds falls back to entityId', () => {
@@ -83,7 +89,9 @@ describe('isBookingOwnedBy', () => {
   it('player matches its own playerId only', () => {
     expect(isBookingOwnedBy(mkUser('player', 5), { playerId: 5 })).toBe(true);
     expect(isBookingOwnedBy(mkUser('player', 5), { playerId: 6 })).toBe(false);
-    expect(isBookingOwnedBy(mkUser('player', 5), { organizerId: 5 })).toBe(false);
+    expect(isBookingOwnedBy(mkUser('player', 5), { organizerId: 5 })).toBe(
+      false,
+    );
   });
 
   it('member matches own organizerId OR linkedEntityId as playerId', () => {
@@ -117,7 +125,9 @@ describe('ownsOrganizer', () => {
 
 describe('getVenueIdsForUser', () => {
   it('returns venueIds list when present', () => {
-    expect(getVenueIdsForUser(mkUser('venue', 7, undefined, [7, 12, 33]))).toEqual([7, 12, 33]);
+    expect(
+      getVenueIdsForUser(mkUser('venue', 7, undefined, [7, 12, 33])),
+    ).toEqual([7, 12, 33]);
   });
   it('falls back to [entityId] when venueIds empty', () => {
     expect(getVenueIdsForUser(mkUser('venue', 7))).toEqual([7]);
@@ -130,8 +140,12 @@ describe('getVenueIdsForUser', () => {
 
 describe('venueOwnsVenue', () => {
   it('venue owns any venueId in their list', () => {
-    expect(venueOwnsVenue(mkUser('venue', 7, undefined, [7, 12]), 12)).toBe(true);
-    expect(venueOwnsVenue(mkUser('venue', 7, undefined, [7, 12]), 99)).toBe(false);
+    expect(venueOwnsVenue(mkUser('venue', 7, undefined, [7, 12]), 12)).toBe(
+      true,
+    );
+    expect(venueOwnsVenue(mkUser('venue', 7, undefined, [7, 12]), 99)).toBe(
+      false,
+    );
   });
   it('non-venue never owns', () => {
     expect(venueOwnsVenue(mkUser('player', 7), 7)).toBe(false);

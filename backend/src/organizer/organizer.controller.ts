@@ -43,18 +43,12 @@ export class OrganizerController {
   }
 
   @Get(':id/bookings')
-  async getBookings(
-    @CurrentUser() user: AuthUser,
-    @Param('id') id: string,
-  ) {
+  async getBookings(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return await this.organizerService.getBookings(+id, user);
   }
 
   @Get(':id/players')
-  async getPlayers(
-    @CurrentUser() user: AuthUser,
-    @Param('id') id: string,
-  ) {
+  async getPlayers(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return await this.organizerService.getPlayers(+id, user);
   }
 

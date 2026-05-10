@@ -1,6 +1,11 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique } from 'typeorm';
 
-export type AccountRole = 'venue' | 'organizer' | 'player' | 'member' | 'booker';
+export type AccountRole =
+  | 'venue'
+  | 'organizer'
+  | 'player'
+  | 'member'
+  | 'booker';
 
 @Entity('accounts')
 @Unique(['username'])

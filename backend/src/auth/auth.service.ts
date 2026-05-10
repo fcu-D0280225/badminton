@@ -262,34 +262,47 @@ export class AuthService {
 
   // 把另一個 venue 加到既有 venue 帳號的可管理清單（管理員/後台用）
   async grantVenueToAccount(accountId: number, venueId: number): Promise<void> {
-    const account = await this.accountRepository.findOne({ where: { id: accountId } });
+    const account = await this.accountRepository.findOne({
+      where: { id: accountId },
+    });
     if (!account) throw new ConflictException('帳號不存在');
     if (account.role !== 'venue') {
       throw new ForbiddenException('僅 venue 角色帳號可綁定多場館');
     }
-    const venue = await this.venueRepository.findOne({ where: { id: venueId } });
+    const venue = await this.venueRepository.findOne({
+      where: { id: venueId },
+    });
     if (!venue) throw new ConflictException('場館不存在');
     const existing = await this.accountVenueRepository.findOne({
       where: { accountId, venueId },
     });
     if (existing) return; // idempotent
-    await this.accountVenueRepository.save({ accountId, venueId, isPrimary: false });
+    await this.accountVenueRepository.save({
+      accountId,
+      venueId,
+      isPrimary: false,
+    });
   }
 
-  async revokeVenueFromAccount(accountId: number, venueId: number): Promise<void> {
+  async revokeVenueFromAccount(
+    accountId: number,
+    venueId: number,
+  ): Promise<void> {
     const row = await this.accountVenueRepository.findOne({
       where: { accountId, venueId },
     });
     if (!row) return;
     if (row.isPrimary) {
-      throw new ForbiddenException('不可移除 primary 場館，請改設定其他 primary 後再試');
+      throw new ForbiddenException(
+        '不可移除 primary 場館，請改設定其他 primary 後再試',
+      );
     }
     await this.accountVenueRepository.delete({ accountId, venueId });
   }
 
-  async listAccountVenues(accountId: number): Promise<
-    { venueId: number; name: string; isPrimary: boolean }[]
-  > {
+  async listAccountVenues(
+    accountId: number,
+  ): Promise<{ venueId: number; name: string; isPrimary: boolean }[]> {
     const rows = await this.accountVenueRepository.find({
       where: { accountId },
       relations: ['venue'],

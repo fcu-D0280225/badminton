@@ -44,9 +44,22 @@ describe('BookingService (SEC-001 ownership filter)', () => {
           provide: getRepositoryToken(BookingParticipant),
           useFactory: mockRepo,
         },
-        { provide: WaitlistService, useValue: { getFirstWaiting: jest.fn(), markNotified: jest.fn() } },
+        {
+          provide: WaitlistService,
+          useValue: { getFirstWaiting: jest.fn(), markNotified: jest.fn() },
+        },
         { provide: PushService, useValue: { notifyAccount: jest.fn() } },
-        { provide: PricingService, useValue: { resolveAmount: jest.fn().mockResolvedValue({ amount: 0, pricePerHour: 0, ruleId: null, source: 'zero' }) } },
+        {
+          provide: PricingService,
+          useValue: {
+            resolveAmount: jest.fn().mockResolvedValue({
+              amount: 0,
+              pricePerHour: 0,
+              ruleId: null,
+              source: 'zero',
+            }),
+          },
+        },
       ],
     }).compile();
 
@@ -116,7 +129,10 @@ describe('BookingService (SEC-001 ownership filter)', () => {
   describe('createBooking ownership enforcement', () => {
     it('rejects player trying to book as another player', async () => {
       await expect(
-        service.createBooking({ playerId: 99, venueId: 1 }, mkUser('player', 5)),
+        service.createBooking(
+          { playerId: 99, venueId: 1 },
+          mkUser('player', 5),
+        ),
       ).rejects.toThrow(ForbiddenException);
     });
 

@@ -54,7 +54,10 @@ export class BookerController {
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
   ): Promise<Booker> {
-    if (user.role !== 'venue' && !(user.role === 'booker' && user.entityId === +id)) {
+    if (
+      user.role !== 'venue' &&
+      !(user.role === 'booker' && user.entityId === +id)
+    ) {
       throw new ForbiddenException('無權限存取此預約人資料');
     }
     return await this.bookerService.findOne(+id);
@@ -66,7 +69,10 @@ export class BookerController {
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
   ): Promise<Booking[]> {
-    if (user.role !== 'venue' && !(user.role === 'booker' && user.entityId === +id)) {
+    if (
+      user.role !== 'venue' &&
+      !(user.role === 'booker' && user.entityId === +id)
+    ) {
       throw new ForbiddenException('無權限存取此預約人的預約紀錄');
     }
     return await this.bookingService.findByBooker(+id);

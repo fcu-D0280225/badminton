@@ -60,9 +60,15 @@ export class BillingController {
   ) {
     this.assertVenueRole(user);
     if (dto.recurring) {
-      return this.billingService.createRecurringSeries(dto, this.resolveVenueId(user, venueIdRaw));
+      return this.billingService.createRecurringSeries(
+        dto,
+        this.resolveVenueId(user, venueIdRaw),
+      );
     }
-    return this.billingService.create(dto, this.resolveVenueId(user, venueIdRaw));
+    return this.billingService.create(
+      dto,
+      this.resolveVenueId(user, venueIdRaw),
+    );
   }
 
   // GET /api/billing/records
@@ -74,10 +80,13 @@ export class BillingController {
     @Query('venueId') venueIdRaw?: string,
   ) {
     this.assertVenueRole(user);
-    return this.billingService.findAll(this.resolveVenueScope(user, venueIdRaw), {
-      unpaidOnly: unpaidOnly === 'true',
-      date,
-    });
+    return this.billingService.findAll(
+      this.resolveVenueScope(user, venueIdRaw),
+      {
+        unpaidOnly: unpaidOnly === 'true',
+        date,
+      },
+    );
   }
 
   // GET /api/billing/records/export/csv
@@ -90,7 +99,10 @@ export class BillingController {
   ) {
     this.assertVenueRole(user);
     const targetMonth = month ?? new Date().toISOString().slice(0, 7); // 預設當月
-    const csv = await this.billingService.exportCsv(this.resolveVenueId(user, venueIdRaw), targetMonth);
+    const csv = await this.billingService.exportCsv(
+      this.resolveVenueId(user, venueIdRaw),
+      targetMonth,
+    );
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader(
       'Content-Disposition',
@@ -108,7 +120,10 @@ export class BillingController {
   ) {
     this.assertVenueRole(user);
     const targetMonth = month ?? new Date().toISOString().slice(0, 7);
-    return this.billingService.getAnalytics(this.resolveVenueScope(user, venueIdRaw), targetMonth);
+    return this.billingService.getAnalytics(
+      this.resolveVenueScope(user, venueIdRaw),
+      targetMonth,
+    );
   }
 
   // GET /api/billing/records/:id
@@ -119,7 +134,10 @@ export class BillingController {
     @Query('venueId') venueIdRaw?: string,
   ) {
     this.assertVenueRole(user);
-    return this.billingService.findOne(id, this.resolveVenueId(user, venueIdRaw));
+    return this.billingService.findOne(
+      id,
+      this.resolveVenueId(user, venueIdRaw),
+    );
   }
 
   // PATCH /api/billing/records/:id
@@ -131,7 +149,11 @@ export class BillingController {
     @Query('venueId') venueIdRaw?: string,
   ) {
     this.assertVenueRole(user);
-    return this.billingService.update(id, this.resolveVenueId(user, venueIdRaw), dto);
+    return this.billingService.update(
+      id,
+      this.resolveVenueId(user, venueIdRaw),
+      dto,
+    );
   }
 
   // DELETE /api/billing/records/recurring/:groupId — 刪除整個系列
@@ -142,7 +164,10 @@ export class BillingController {
     @Query('venueId') venueIdRaw?: string,
   ) {
     this.assertVenueRole(user);
-    await this.billingService.deleteRecurringSeries(groupId, this.resolveVenueId(user, venueIdRaw));
+    await this.billingService.deleteRecurringSeries(
+      groupId,
+      this.resolveVenueId(user, venueIdRaw),
+    );
     return { success: true };
   }
 

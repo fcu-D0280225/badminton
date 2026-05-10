@@ -14,7 +14,14 @@ import { Booker } from '../entities/booker.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Account, AccountVenue, Venue, Organizer, Player, Booker]),
+    TypeOrmModule.forFeature([
+      Account,
+      AccountVenue,
+      Venue,
+      Organizer,
+      Player,
+      Booker,
+    ]),
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,

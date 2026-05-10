@@ -62,7 +62,8 @@ export function isBookingOwnedBy(
     case 'member':
       return (
         booking.organizerId === user.entityId ||
-        (user.linkedEntityId != null && booking.playerId === user.linkedEntityId)
+        (user.linkedEntityId != null &&
+          booking.playerId === user.linkedEntityId)
       );
     case 'booker':
       return booking.bookerId === user.entityId;
