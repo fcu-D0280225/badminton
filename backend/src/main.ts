@@ -42,8 +42,19 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // 啟用驗證管道
-  app.useGlobalPipes(new ValidationPipe());
+  // 啟用驗證管道（SEC-005 mass assignment 防護）
+  // - whitelist: 只保留 DTO 列出的欄位（其餘 silently 剝除）
+  // - forbidNonWhitelisted: 客戶端送出 DTO 未列欄位直接 400 拒絕
+  // - transform: plain object → DTO class instance，啟用 class-validator 進階驗證
+  // 注意：僅當 @Body 型別為帶有 class-validator 裝飾子的 class 時生效；inline
+  // type alias（如 { name: string }）不受此 pipe 約束。
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   await app.listen(3010, '0.0.0.0');
   console.log('後端伺服器運行在 http://0.0.0.0:3010');

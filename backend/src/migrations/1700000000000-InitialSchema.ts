@@ -7,12 +7,16 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * 補充此 migration 確保全新環境（含 CI、新開發機、disaster recovery）可以
  * 正確執行 `migrationsRun: true` 的啟動流程。
  *
- * 使用 CREATE TABLE IF NOT EXISTS，對現有 DB 為冪等操作。
- * 現有 DB 需將此 migration 標記為已執行：
- *   INSERT INTO migrations (timestamp, name) VALUES (0, 'InitialSchema0000000000000');
+ * 使用 CREATE TABLE IF NOT EXISTS，對現有 DB 為冪等操作（先建表者完整 schema，
+ * 後啟動者所有 IF NOT EXISTS 都跳過）。
+ *
+ * 註：原檔名 0000000000000-InitialSchema.ts 在 TypeORM 啟動 migrationsRun 時
+ * 會丟 "migration class name should have a JavaScript timestamp appended" — 因為
+ * `parseInt('0000000000000') === 0` 被視為 falsy。此處改用 1700000000000（早於
+ * 1778…* 的後續 migration，以維持執行順序）。
  */
-export class InitialSchema0000000000000 implements MigrationInterface {
-  name = 'InitialSchema0000000000000';
+export class InitialSchema1700000000000 implements MigrationInterface {
+  name = 'InitialSchema1700000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // ── accounts ──────────────────────────────────────────────────

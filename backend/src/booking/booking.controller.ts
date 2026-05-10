@@ -15,6 +15,9 @@ import { BookingService } from './booking.service';
 import { BookingParticipantService } from './booking-participant.service';
 import { Booking } from '../entities/booking.entity';
 import { BookingParticipant } from '../entities/booking-participant.entity';
+import { CreateBookingDto } from './dto/create-booking.dto';
+import { CreateRecurringBookingDto } from './dto/create-recurring-booking.dto';
+import { UpdateBookingDto } from './dto/update-booking.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('api/bookings')
@@ -24,27 +27,23 @@ export class BookingController {
     private readonly participantService: BookingParticipantService,
   ) {}
 
-  // 建立單筆預約
+  // 建立單筆預約 — SEC-005: 走 CreateBookingDto 白名單，request body 多餘欄位由
+  // 全域 ValidationPipe (forbidNonWhitelisted=true) 直接 400 拒絕。
   @Post()
   async createBooking(
     @CurrentUser() user: AuthUser,
-    @Body() data: Partial<Booking> & { amount?: number },
+    @Body() dto: CreateBookingDto,
   ): Promise<Booking> {
-    return await this.bookingService.createBooking(data, user);
+    return await this.bookingService.createBooking(dto, user);
   }
 
   // 建立重複預約（回傳建立的所有預約）
   @Post('recurring')
   async createRecurring(
     @CurrentUser() user: AuthUser,
-    @Body()
-    data: Partial<Booking> & {
-      amount?: number;
-      recurringWeeks: number;
-      recurringType?: string;
-    },
+    @Body() dto: CreateRecurringBookingDto,
   ): Promise<Booking[]> {
-    return await this.bookingService.createRecurringBookings(data, user);
+    return await this.bookingService.createRecurringBookings(dto, user);
   }
 
   @Get()
@@ -69,13 +68,15 @@ export class BookingController {
     return await this.bookingService.findRecurringGroup(groupId, user);
   }
 
+  // SEC-005: 走 UpdateBookingDto 白名單；checkedIn 改走 /:id/checkin、notes 走
+  // /:id/notes，避免 request body 直接寫入 holdExpiresAt / recurringGroupId 等內部欄位。
   @Put(':id')
   async updateBooking(
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
-    @Body() data: Partial<Booking>,
+    @Body() dto: UpdateBookingDto,
   ): Promise<Booking> {
-    return await this.bookingService.updateBooking(+id, data, user);
+    return await this.bookingService.updateBooking(+id, dto, user);
   }
 
   @Put(':id/checkin')
