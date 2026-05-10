@@ -60,13 +60,13 @@
             <div class="admin-sidebar-header">🏸 館方管理</div>
             <nav class="admin-sidebar-nav">
                 <button class="admin-nav-item active" data-admin-group="overview" onclick="showAdminGroup('overview')">
-                    <span class="admin-nav-icon">📊</span><span class="admin-nav-label">場館總覽</span>
+                    <span class="admin-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg></span><span class="admin-nav-label">場館總覽</span>
                 </button>
                 <button class="admin-nav-item" data-admin-group="bookings" onclick="showAdminGroup('bookings')">
-                    <span class="admin-nav-icon">📅</span><span class="admin-nav-label">預約管理</span>
+                    <span class="admin-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="admin-nav-label">預約管理</span>
                 </button>
                 <button class="admin-nav-item" data-admin-group="settings" onclick="showAdminGroup('settings')">
-                    <span class="admin-nav-icon">⚙️</span><span class="admin-nav-label">場館設定</span>
+                    <span class="admin-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="admin-nav-label">場館設定</span>
                 </button>
             </nav>
         </aside>
@@ -126,7 +126,7 @@
                     <!-- FEAT-009: KPI 卡片（今日預約數 / 本月收入 / 待確認匯款筆數） -->
                     <div class="kpi-grid" id="overview-kpi-grid">
                         <div class="kpi-card">
-                            <div class="kpi-icon">📅</div>
+                            <div class="kpi-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
                             <div class="kpi-body">
                                 <div class="kpi-label">今日預約數</div>
                                 <div class="kpi-value" id="kpi-today-bookings">—</div>
@@ -134,7 +134,7 @@
                             </div>
                         </div>
                         <div class="kpi-card">
-                            <div class="kpi-icon">💰</div>
+                            <div class="kpi-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
                             <div class="kpi-body">
                                 <div class="kpi-label">本月收入</div>
                                 <div class="kpi-value" id="kpi-month-revenue">—</div>
@@ -142,7 +142,7 @@
                             </div>
                         </div>
                         <div class="kpi-card">
-                            <div class="kpi-icon">⏳</div>
+                            <div class="kpi-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
                             <div class="kpi-body">
                                 <div class="kpi-label">待確認匯款</div>
                                 <div class="kpi-value" id="kpi-pending-confirm">—</div>
@@ -313,7 +313,7 @@
                         <!-- 🔔 待確認預約 inbox -->
                         <div class="section bookings-inbox-section">
                             <h3 class="bookings-inbox-title">
-                                <span>🔔 待確認預約</span>
+                                <span>待確認預約</span>
                                 <span id="bookings-inbox-count" class="bookings-inbox-count"></span>
                             </h3>
                             <div id="bookings-inbox-list"></div>
@@ -322,7 +322,7 @@
                         <!-- 📅 今日預約 -->
                         <div class="section">
                             <h3>
-                                📅 今日預約
+                                今日預約
                                 <span id="bookings-today-date" class="bookings-today-date"></span>
                             </h3>
                             <div id="bookings-today-list"></div>
@@ -330,7 +330,7 @@
 
                         <!-- 📆 預約日曆 -->
                         <div class="section">
-                            <h3>📆 預約日曆</h3>
+                            <h3>預約日曆</h3>
                             <div class="calendar-controls">
                                 <button class="btn btn-secondary" onclick="previousMonth()">◀ 上個月</button>
                                 <h4 id="calendar-month-year"></h4>
@@ -453,13 +453,13 @@
         <nav class="admin-bottom-tabs" aria-label="主導覽（行動版）">
             <div class="admin-bottom-grid">
                 <button class="admin-bottom-tab active" data-admin-group="overview" onclick="showAdminGroup('overview')">
-                    <span class="bt-icon">📊</span><span>總覽</span>
+                    <span class="bt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg></span><span>總覽</span>
                 </button>
                 <button class="admin-bottom-tab" data-admin-group="bookings" onclick="showAdminGroup('bookings')">
-                    <span class="bt-icon">📅</span><span>預約</span>
+                    <span class="bt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span>預約</span>
                 </button>
                 <button class="admin-bottom-tab" data-admin-group="settings" onclick="showAdminGroup('settings')">
-                    <span class="bt-icon">⚙️</span><span>設定</span>
+                    <span class="bt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>設定</span>
                 </button>
             </div>
         </nav>

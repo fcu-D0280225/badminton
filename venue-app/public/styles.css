@@ -1091,11 +1091,13 @@ body.admin-shell-active .main-content {
 }
 
 .admin-nav-icon {
-    font-size: 16px;
     width: 22px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
 }
+.admin-nav-icon svg { width: 18px; height: 18px; display: block; }
 
 .admin-nav-label {
     flex: 1;
@@ -1297,7 +1299,8 @@ body.admin-shell-active #tab-analytics {
     cursor: pointer;
     padding: 4px;
 }
-.admin-bottom-tab .bt-icon { font-size: 18px; line-height: 1; }
+.admin-bottom-tab .bt-icon { font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+.admin-bottom-tab .bt-icon svg { width: 22px; height: 22px; display: block; }
 .admin-bottom-tab.active {
     color: var(--admin-active-text);
     font-weight: 600;
@@ -1443,6 +1446,7 @@ body.admin-shell-active #tab-analytics {
     color: var(--admin-active-text);
     flex-shrink: 0;
 }
+.kpi-icon svg { width: 26px; height: 26px; display: block; }
 .kpi-body { flex: 1; min-width: 0; }
 .kpi-label {
     font-size: 12px;
