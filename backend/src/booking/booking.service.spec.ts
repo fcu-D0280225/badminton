@@ -9,6 +9,7 @@ import { Account } from '../entities/account.entity';
 import { WaitlistService } from '../waitlist/waitlist.service';
 import { PushService } from '../push/push.service';
 import { PricingService } from '../pricing/pricing.service';
+import { WalletService } from '../wallet/wallet.service';
 import { AuthUser } from '../auth/types';
 
 const mockRepo = () => ({
@@ -52,6 +53,10 @@ describe('BookingService (SEC-001 ownership filter)', () => {
         },
         { provide: PushService, useValue: pushService },
         { provide: PricingService, useValue: pricingService },
+        {
+          provide: WalletService,
+          useValue: { refundIfWalletPaid: jest.fn().mockResolvedValue(undefined) },
+        },
         {
           provide: getDataSourceToken(),
           useValue: {

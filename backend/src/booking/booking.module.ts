@@ -16,6 +16,7 @@ import { BookingParticipant } from '../entities/booking-participant.entity';
 import { WaitlistModule } from '../waitlist/waitlist.module';
 import { PushModule } from '../push/push.module';
 import { PricingModule } from '../pricing/pricing.module';
+import { WalletModule } from '../wallet/wallet.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { PricingModule } from '../pricing/pricing.module';
     WaitlistModule,
     PushModule,
     PricingModule,
+    WalletModule,
   ],
   controllers: [BookingController],
   providers: [BookingService, BookingParticipantService, HoldExpiryService],

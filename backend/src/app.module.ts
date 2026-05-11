@@ -17,6 +17,7 @@ import { BillingModule } from './billing/billing.module';
 import { BookerModule } from './booker/booker.module';
 import { PricingModule } from './pricing/pricing.module';
 import { CoachModule } from './coach/coach.module';
+import { WalletModule } from './wallet/wallet.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { CoachModule } from './coach/coach.module';
     BookerModule,
     PricingModule,
     CoachModule,
+    WalletModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

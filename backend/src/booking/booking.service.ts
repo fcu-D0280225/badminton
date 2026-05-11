@@ -13,6 +13,7 @@ import { Account } from '../entities/account.entity';
 import { WaitlistService } from '../waitlist/waitlist.service';
 import { PushService } from '../push/push.service';
 import { PricingService } from '../pricing/pricing.service';
+import { WalletService } from '../wallet/wallet.service';
 import { AuthUser } from '../auth/types';
 import {
   bookingOwnerWhereClauses,
@@ -35,6 +36,7 @@ export class BookingService {
     private waitlistService: WaitlistService,
     private pushService: PushService,
     private pricingService: PricingService,
+    private walletService: WalletService,
     private dataSource: DataSource,
   ) {}
 
@@ -243,8 +245,9 @@ export class BookingService {
     await this.bookingRepository.update(id, data);
     const after = await this.findOne(id);
 
-    // 取消時：通知候補名單第一位
+    // 取消時：退款（若為錢包付款）+ 通知候補名單第一位
     if (data.status === 'cancelled' && before.status !== 'cancelled') {
+      await this.walletService.refundIfWalletPaid(id);
       await this.triggerWaitlistNotification(after);
       await this.notifyBookingCancelled(after);
     }

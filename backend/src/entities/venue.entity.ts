@@ -29,6 +29,14 @@ export class Venue {
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   defaultPricePerHour: number;
 
+  /**
+   * 取消退款免退期限（小時）。
+   * null = 任何時間取消皆可退款（無限制）。
+   * 例如 24 = 活動開始前 24 小時內取消，錢包付款不退款。
+   */
+  @Column({ type: 'int', nullable: true, default: null })
+  cancellationPolicyHours: number | null;
+
   @OneToMany(() => Booking, (booking) => booking.venue)
   bookings: Booking[];
 
