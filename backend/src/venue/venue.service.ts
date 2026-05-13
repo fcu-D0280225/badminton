@@ -47,6 +47,7 @@ export class VenueService {
       'description',
       'openingHours',
       'feeInfo',
+      'cancellationPolicyHours',
     ];
     const patch: Partial<Venue> = {};
     for (const key of allowed) {

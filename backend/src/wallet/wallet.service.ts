@@ -2,11 +2,13 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
+import Stripe from 'stripe';
 import { MemberWallet } from '../entities/member-wallet.entity';
 import { WalletTransaction } from '../entities/wallet-transaction.entity';
 import { Booking } from '../entities/booking.entity';
@@ -30,6 +32,8 @@ export class WalletService {
     private venueRepository: Repository<Venue>,
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
+    @Inject('STRIPE_CLIENT')
+    private readonly stripe: InstanceType<typeof Stripe>,
     private dataSource: DataSource,
   ) {}
 
@@ -275,6 +279,82 @@ export class WalletService {
         }),
       );
 
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  // ── Stripe 線上充值：建立 Checkout Session ───────────────────────
+  async createTopupSession(
+    accountId: number,
+    amount: number,
+  ): Promise<{ url: string }> {
+    await this.getOrCreateWallet(accountId);
+
+    const session = await this.stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'twd',
+            unit_amount: Math.round(amount), // TWD zero-decimal
+            product_data: { name: `錢包儲值 ${amount} 元` },
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${process.env.FRONTEND_URL}/wallet?topup=success`,
+      cancel_url: `${process.env.FRONTEND_URL}/wallet?topup=cancel`,
+      metadata: {
+        walletTopupAccountId: String(accountId),
+        walletTopupAmount: String(amount),
+      },
+    });
+
+    return { url: session.url! };
+  }
+
+  // ── Stripe 線上充值：Webhook 處理（冪等，防重複到帳）──────────────
+  async processStripeTopup(
+    accountId: number,
+    amount: number,
+    stripeSessionId: string,
+  ): Promise<void> {
+    // 冪等防護：同一 stripeSessionId 已存在就跳過
+    const existing = await this.txRepository.findOne({
+      where: { stripeSessionId, type: 'topup' },
+    });
+    if (existing) return;
+
+    const wallet = await this.getOrCreateWallet(accountId);
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const locked = await this.lockWallet(queryRunner, wallet.id);
+      const newBalance = Number(locked.balance) + Number(amount);
+
+      await queryRunner.manager.update(MemberWallet, wallet.id, {
+        balance: newBalance,
+      });
+      await queryRunner.manager.save(
+        queryRunner.manager.create(WalletTransaction, {
+          walletId: wallet.id,
+          type: 'topup',
+          amount,
+          balanceAfter: newBalance,
+          bookingId: null,
+          stripeSessionId,
+          note: null,
+          createdByAccountId: accountId,
+        }),
+      );
       await queryRunner.commitTransaction();
     } catch (err) {
       await queryRunner.rollbackTransaction();

@@ -78,6 +78,12 @@ describe('WalletService', () => {
         { provide: getRepositoryToken(Payment), useFactory: mockRepo },
         { provide: getRepositoryToken(Venue), useFactory: mockRepo },
         { provide: getRepositoryToken(Account), useFactory: mockRepo },
+        {
+          provide: 'STRIPE_CLIENT',
+          useValue: {
+            checkout: { sessions: { create: jest.fn() } },
+          },
+        },
         { provide: DataSource, useValue: dataSource },
       ],
     }).compile();

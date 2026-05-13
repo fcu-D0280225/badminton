@@ -9,12 +9,14 @@ import {
 import { RawBodyRequest } from '@nestjs/common';
 import Stripe from 'stripe';
 import { PaymentService } from './payment.service';
+import { WalletService } from '../wallet/wallet.service';
 
 @Controller('stripe')
 export class StripeWebhookController {
   constructor(
     @Inject('STRIPE_CLIENT') private readonly stripe: InstanceType<typeof Stripe>,
     private readonly paymentService: PaymentService,
+    private readonly walletService: WalletService,
   ) {}
 
   @Post('webhook')
@@ -35,15 +37,31 @@ export class StripeWebhookController {
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as any;
-      const paymentId = Number(session.metadata?.paymentId);
-      const txnId = session.payment_intent as string;
-      await this.paymentService.markAsPaidByGateway(paymentId, txnId);
+
+      // 錢包線上充值
+      if (session.metadata?.walletTopupAccountId) {
+        const accountId = Number(session.metadata.walletTopupAccountId);
+        const amount = Number(session.metadata.walletTopupAmount);
+        await this.walletService.processStripeTopup(
+          accountId,
+          amount,
+          session.id,
+        );
+      } else {
+        // 一般預約付款
+        const paymentId = Number(session.metadata?.paymentId);
+        const txnId = session.payment_intent as string;
+        await this.paymentService.markAsPaidByGateway(paymentId, txnId);
+      }
     }
 
     if (event.type === 'checkout.session.expired') {
       const session = event.data.object as any;
-      const paymentId = Number(session.metadata?.paymentId);
-      await this.paymentService.markAsFailedByGateway(paymentId);
+      // 錢包充值 session 過期不需特殊處理（無狀態機）
+      if (!session.metadata?.walletTopupAccountId) {
+        const paymentId = Number(session.metadata?.paymentId);
+        await this.paymentService.markAsFailedByGateway(paymentId);
+      }
     }
   }
 }

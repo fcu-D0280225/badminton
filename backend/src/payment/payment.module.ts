@@ -6,9 +6,10 @@ import { PaymentService } from './payment.service';
 import { StripeWebhookController } from './stripe-webhook.controller';
 import { Payment } from '../entities/payment.entity';
 import { Booking } from '../entities/booking.entity';
+import { WalletModule } from '../wallet/wallet.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Payment, Booking])],
+  imports: [TypeOrmModule.forFeature([Payment, Booking]), WalletModule],
   controllers: [PaymentController, StripeWebhookController],
   providers: [
     {
