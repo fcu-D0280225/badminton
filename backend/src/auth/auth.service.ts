@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   UnauthorizedException,
   ConflictException,
@@ -8,7 +9,14 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { IsIn, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 import { Account, AccountRole } from '../entities/account.entity';
 import { AccountVenue } from '../entities/account-venue.entity';
 import { Venue } from '../entities/venue.entity';
@@ -55,6 +63,10 @@ export class RegisterDto {
   @IsString()
   @IsNotEmpty()
   contact: string;
+
+  @IsOptional()
+  @IsEmail({}, { message: 'email 格式不正確' })
+  email?: string;
 }
 
 @Injectable()
@@ -138,6 +150,9 @@ export class AuthService {
     let linkedEntityId: number | undefined;
 
     if (dto.role === 'member') {
+      if (!dto.email) {
+        throw new BadRequestException('member 帳號必須填寫 email');
+      }
       // member 同時建立 organizer + player 兩筆記錄
       const organizer = await this.organizerRepository.save(
         this.organizerRepository.create({
@@ -180,6 +195,7 @@ export class AuthService {
       role: dto.role,
       entityId,
       linkedEntityId,
+      email: dto.email ?? null,
     });
 
     return this.login(dto.username, dto.password);
