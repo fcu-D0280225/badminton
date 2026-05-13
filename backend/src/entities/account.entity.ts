@@ -22,6 +22,9 @@ export class Account {
   @Column()
   role: AccountRole;
 
+  @Column({ nullable: true })
+  email: string | null;
+
   @Column()
   entityId: number;
 

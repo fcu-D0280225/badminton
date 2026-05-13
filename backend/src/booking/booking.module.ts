@@ -17,6 +17,7 @@ import { WaitlistModule } from '../waitlist/waitlist.module';
 import { PushModule } from '../push/push.module';
 import { PricingModule } from '../pricing/pricing.module';
 import { WalletModule } from '../wallet/wallet.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { WalletModule } from '../wallet/wallet.module';
     PushModule,
     PricingModule,
     WalletModule,
+    EmailModule,
   ],
   controllers: [BookingController],
   providers: [BookingService, BookingParticipantService, HoldExpiryService],

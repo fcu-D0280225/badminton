@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { WalletService } from './wallet.service';
+import { EmailService } from '../email/email.service';
 import { MemberWallet } from '../entities/member-wallet.entity';
 import { WalletTransaction } from '../entities/wallet-transaction.entity';
 import { Booking } from '../entities/booking.entity';
@@ -82,6 +83,14 @@ describe('WalletService', () => {
           provide: 'STRIPE_CLIENT',
           useValue: {
             checkout: { sessions: { create: jest.fn() } },
+          },
+        },
+        {
+          provide: EmailService,
+          useValue: {
+            notifyWalletTopup: jest.fn(),
+            notifyBookingCreated: jest.fn(),
+            notifyBookingCancelled: jest.fn(),
           },
         },
         { provide: DataSource, useValue: dataSource },

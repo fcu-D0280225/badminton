@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import Stripe from 'stripe';
+import { EmailModule } from '../email/email.module';
 import { MemberWallet } from '../entities/member-wallet.entity';
 import { WalletTransaction } from '../entities/wallet-transaction.entity';
 import { Booking } from '../entities/booking.entity';
@@ -21,6 +22,7 @@ import { VenueWalletController } from './venue-wallet.controller';
       Venue,
       Account,
     ]),
+    EmailModule,
   ],
   controllers: [WalletController, VenueWalletController],
   providers: [

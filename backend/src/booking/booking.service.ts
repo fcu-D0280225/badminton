@@ -14,6 +14,7 @@ import { WaitlistService } from '../waitlist/waitlist.service';
 import { PushService } from '../push/push.service';
 import { PricingService } from '../pricing/pricing.service';
 import { WalletService } from '../wallet/wallet.service';
+import { EmailService } from '../email/email.service';
 import { AuthUser } from '../auth/types';
 import {
   bookingOwnerWhereClauses,
@@ -37,6 +38,7 @@ export class BookingService {
     private pushService: PushService,
     private pricingService: PricingService,
     private walletService: WalletService,
+    private emailService: EmailService,
     private dataSource: DataSource,
   ) {}
 
@@ -380,9 +382,20 @@ export class BookingService {
       body: `${booking.date} ${booking.timeSlot} 的場次有空位，快去預約！`,
       url: '/',
     });
+    const account = await this.accountRepository.findOne({
+      where: { id: accountId },
+    });
+    if (account?.email) {
+      await this.emailService.notifyWaitlistAvailable({
+        to: account.email,
+        date: booking.date,
+        timeSlot: booking.timeSlot,
+        venueName: booking.venue?.name ?? `場館 #${booking.venueId}`,
+      });
+    }
   }
 
-  // ── 私有：預約建立推播 ─────────────────────────────────────────
+  // ── 私有：預約建立推播 + Email ────────────────────────────────
   private async notifyBookingCreated(booking: Booking): Promise<void> {
     const accountId = await this.resolveAccountId(
       booking.playerId,
@@ -394,9 +407,21 @@ export class BookingService {
       body: `${booking.date} ${booking.timeSlot} 預約已建立，請於 ${HOLD_MINUTES} 分鐘內完成付款`,
       url: '/',
     });
+    const account = await this.accountRepository.findOne({
+      where: { id: accountId },
+    });
+    if (account?.email) {
+      await this.emailService.notifyBookingCreated({
+        to: account.email,
+        date: booking.date,
+        timeSlot: booking.timeSlot,
+        venueName: booking.venue?.name ?? `場館 #${booking.venueId}`,
+        bookingId: booking.id,
+      });
+    }
   }
 
-  // ── 私有：取消預約推播 ─────────────────────────────────────────
+  // ── 私有：取消預約推播 + Email ────────────────────────────────
   private async notifyBookingCancelled(booking: Booking): Promise<void> {
     const accountId = await this.resolveAccountId(
       booking.playerId,
@@ -408,6 +433,18 @@ export class BookingService {
       body: `${booking.date} ${booking.timeSlot} 的預約已被取消`,
       url: '/',
     });
+    const account = await this.accountRepository.findOne({
+      where: { id: accountId },
+    });
+    if (account?.email) {
+      await this.emailService.notifyBookingCancelled({
+        to: account.email,
+        date: booking.date,
+        timeSlot: booking.timeSlot,
+        venueName: booking.venue?.name ?? `場館 #${booking.venueId}`,
+        bookingId: booking.id,
+      });
+    }
   }
 
   // ── 私有：保留到期推播 ─────────────────────────────────────────

@@ -15,6 +15,7 @@ import { Booking } from '../entities/booking.entity';
 import { Payment } from '../entities/payment.entity';
 import { Venue } from '../entities/venue.entity';
 import { Account } from '../entities/account.entity';
+import { EmailService } from '../email/email.service';
 import { AuthUser } from '../auth/types';
 
 @Injectable()
@@ -34,6 +35,7 @@ export class WalletService {
     private accountRepository: Repository<Account>,
     @Inject('STRIPE_CLIENT')
     private readonly stripe: InstanceType<typeof Stripe>,
+    private emailService: EmailService,
     private dataSource: DataSource,
   ) {}
 
@@ -356,6 +358,18 @@ export class WalletService {
         }),
       );
       await queryRunner.commitTransaction();
+
+      // 儲值成功 email 通知
+      const account = await this.accountRepository.findOne({
+        where: { id: accountId },
+      });
+      if (account?.email) {
+        await this.emailService.notifyWalletTopup({
+          to: account.email,
+          amount,
+          balance: newBalance,
+        });
+      }
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
