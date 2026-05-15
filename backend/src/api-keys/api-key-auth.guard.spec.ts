@@ -94,11 +94,12 @@ describe('ApiKeyAuthGuard', () => {
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
   });
 
-  it('apiKey.venueIds 為空陣列 → entityId fallback 為 0', async () => {
+  it('apiKey.venueIds 為空陣列 → ForbiddenException（防呆，避免 entityId=0 兜底）', async () => {
+    // 語意改為「空 = 全部所屬」後 service 端會 materialise 入庫，
+    // 空陣列理論上不該發生；若仍出現（歷史資料 / 人為改 DB），guard 應直接拒絕，
+    // 否則 ownership.helper 會用 entityId=0 查詢，可能誤判。
     apiKeysService.verify.mockResolvedValue(mkApiKey({ venueIds: [] }));
-    const { ctx, req } = mkContext({ 'x-api-key': 'pk_live_abcd1234567890' });
-    await guard.canActivate(ctx);
-    expect(req.user.venueIds).toEqual([]);
-    expect(req.user.entityId).toBe(0);
+    const { ctx } = mkContext({ 'x-api-key': 'pk_live_abcd1234567890' });
+    await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
   });
 });

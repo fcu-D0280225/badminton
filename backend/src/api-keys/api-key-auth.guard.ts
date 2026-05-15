@@ -69,16 +69,23 @@ export class ApiKeyAuthGuard implements CanActivate {
   /**
    * 將 ApiKey 映射成一個 venue 角色 AuthUser，讓既有 ownership helper /
    * controller 邏輯（assertOwnsVenue / bookingOwnerWhereClauses）可以無痛吃。
-   * - id / entityId 來自 createdByAccountId（用於除錯而非授權）
-   * - venueIds 直接套用 apiKey.venueIds
+   * - id / entityId 來自合成（用於除錯而非授權）
+   * - venueIds 直接套用 apiKey.venueIds（service 端已 materialise，理論上不會為空）
+   *
+   * 防呆：service 改為建立時 materialise venueIds，空陣列理論上不會發生；
+   * 若 DB 仍出現空陣列（歷史資料或人為直接寫入），直接拒絕避免後續 ownership
+   * helper 用 entityId=0 兜底而誤判。
    */
   private synthesizeAuthUser(apiKey: ApiKey): AuthUser {
     const venueIds = apiKey.venueIds ?? [];
+    if (venueIds.length === 0) {
+      throw new ForbiddenException('此 API Key 未綁定任何場館');
+    }
     return {
       id: apiKey.createdByAccountId,
       username: `api-key:${apiKey.keyPrefix}`,
       role: 'venue',
-      entityId: venueIds[0] ?? 0,
+      entityId: venueIds[0],
       venueIds,
     };
   }

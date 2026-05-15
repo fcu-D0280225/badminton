@@ -137,12 +137,52 @@ describe('ApiKeysService', () => {
       expect(result.apiKey.scopes).toEqual(['bookings:read', 'venues:read']);
     });
 
-    it('venueIds 省略 → 空陣列', async () => {
+    it('venueIds 省略 → materialise 為建立者當下所屬全部場館入庫', async () => {
+      // 使用者拍板：空 = 全部所屬，且要在入庫當下展開，不要動態 fallback
       await service.create(
         { name: 'X', scopes: ['venues:read'] },
-        mkUser(),
+        mkUser({ venueIds: [1, 3] }),
       );
-      expect(repo.rows[0].venueIds).toEqual([]);
+      expect(repo.rows[0].venueIds).toEqual([1, 3]);
+    });
+
+    it('venueIds 空陣列 → 與省略同義，materialise 入庫', async () => {
+      await service.create(
+        { name: 'Y', scopes: ['venues:read'], venueIds: [] },
+        mkUser({ venueIds: [2, 4, 6] }),
+      );
+      expect(repo.rows[0].venueIds).toEqual([2, 4, 6]);
+    });
+
+    it('venueIds 含建立者未綁定的場館 → ForbiddenException 且 DB 不寫入', async () => {
+      // admin v=[1] 嘗試建出 venueIds=[3] 的 key → 必須拒絕
+      await expect(
+        service.create(
+          { name: 'Z', scopes: ['venues:read'], venueIds: [3] },
+          mkUser({ venueIds: [1] }),
+        ),
+      ).rejects.toThrow(ForbiddenException);
+      expect(repo.rows).toHaveLength(0);
+    });
+
+    it('venueIds 部分合法部分越權 → 全拒，DB 不寫入', async () => {
+      await expect(
+        service.create(
+          { name: 'Z2', scopes: ['venues:read'], venueIds: [5, 99] },
+          mkUser({ venueIds: [5, 7] }),
+        ),
+      ).rejects.toThrow(ForbiddenException);
+      expect(repo.rows).toHaveLength(0);
+    });
+
+    it('venue 角色但無任何 venueIds → ForbiddenException', async () => {
+      await expect(
+        service.create(
+          { name: 'X', scopes: ['venues:read'] },
+          mkUser({ venueIds: [] }),
+        ),
+      ).rejects.toThrow(ForbiddenException);
+      expect(repo.rows).toHaveLength(0);
     });
 
     it('非 venue 角色拒絕建立', async () => {

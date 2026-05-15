@@ -46,6 +46,30 @@ export class ApiKeysService {
       throw new ForbiddenException('僅館方帳號可建立 API Key');
     }
 
+    // 建立者當下所屬場館（venue 角色 login 時帶下來；應永遠至少 1 筆）
+    const ownerVenueIds = user.venueIds ?? [];
+    if (ownerVenueIds.length === 0) {
+      // 防呆：理論上 venue 角色一定有 venueIds（auth.service 用 entityId fallback）
+      throw new ForbiddenException('建立者帳號未綁定任何場館，無法發出 API Key');
+    }
+
+    // venueIds 語意（使用者拍板）：
+    // - 省略 / 空陣列 → materialise 為建立者當下所屬全部場館入庫（行為穩定）
+    // - 顯式指定 → 每個都必須屬於建立者，否則拒絕（防 admin 自己越權發 key）
+    let venueIds: number[];
+    if (!dto.venueIds || dto.venueIds.length === 0) {
+      venueIds = [...ownerVenueIds];
+    } else {
+      const ownerSet = new Set(ownerVenueIds);
+      const illegal = dto.venueIds.filter((v) => !ownerSet.has(v));
+      if (illegal.length > 0) {
+        throw new ForbiddenException(
+          `API Key 的 venueIds 含建立者未綁定的場館：${illegal.join(', ')}`,
+        );
+      }
+      venueIds = [...dto.venueIds];
+    }
+
     const plaintext = this.generatePlaintextKey();
     const keyPrefix = plaintext.slice(0, 16);
     const keyHash = this.hashKey(plaintext);
@@ -53,7 +77,7 @@ export class ApiKeysService {
     const entity = this.apiKeyRepo.create({
       name: dto.name,
       scopes: dto.scopes,
-      venueIds: dto.venueIds ?? [],
+      venueIds,
       keyHash,
       keyPrefix,
       createdByAccountId: user.id,

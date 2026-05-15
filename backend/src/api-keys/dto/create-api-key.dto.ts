@@ -52,7 +52,8 @@ export class CreateApiKeyDto {
 
   @ApiPropertyOptional({
     description:
-      '此 key 可存取的場館 id 白名單；省略或空陣列 = 沿用建立者所屬全部場館',
+      '此 key 可存取的場館 id 白名單。省略或空陣列 = materialise 為建立者「當下」所屬全部場館入庫（之後 admin 加 venue 不會自動放權）。' +
+      '顯式指定時，每個 venueId 都必須屬於建立者，否則回 403。',
     type: 'array',
     items: { type: 'number' },
   })
