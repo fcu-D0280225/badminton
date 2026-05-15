@@ -20,6 +20,7 @@ import { CoachModule } from './coach/coach.module';
 import { WalletModule } from './wallet/wallet.module';
 import { EmailModule } from './email/email.module';
 import { ApiKeysModule } from './api-keys/api-keys.module';
+import { PublicApiModule } from './public-api/public-api.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { ApiKeysModule } from './api-keys/api-keys.module';
     WalletModule,
     EmailModule,
     ApiKeysModule,
+    PublicApiModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
