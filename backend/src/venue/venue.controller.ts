@@ -10,6 +10,12 @@ import {
   UseGuards,
   ForbiddenException,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { AuthUser } from '../auth/types';
@@ -18,6 +24,8 @@ import { VenueService } from './venue.service';
 import { Venue } from '../entities/venue.entity';
 import { VenueNote } from '../entities/venue-note.entity';
 
+@ApiTags('venues')
+@ApiBearerAuth('jwt')
 @UseGuards(JwtAuthGuard)
 @Controller('api/venues')
 export class VenueController {
@@ -37,6 +45,8 @@ export class VenueController {
   }
 
   // 建立場館：僅館方角色
+  @ApiOperation({ summary: '建立場館（僅館方）' })
+  @ApiResponse({ status: 403, description: '非館方角色' })
   @Post()
   async createVenue(
     @CurrentUser() user: AuthUser,
@@ -47,12 +57,14 @@ export class VenueController {
   }
 
   // 取得所有場館：任何已登入使用者（選館用）
+  @ApiOperation({ summary: '取得所有場館列表' })
   @Get()
   async findAll(): Promise<Venue[]> {
     return await this.venueService.findAll();
   }
 
   // 取得單一場館：任何已登入使用者
+  @ApiOperation({ summary: '取得單一場館' })
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Venue> {
     return await this.venueService.findOne(+id);
@@ -87,6 +99,7 @@ export class VenueController {
   }
 
   // 取得可用時段：任何已登入使用者（預約時選擇）
+  @ApiOperation({ summary: '取得指定日期的可用時段' })
   @Get(':id/available-time-slots')
   async getAvailableTimeSlots(
     @Param('id') id: string,

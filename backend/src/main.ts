@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 // 預設允許的前端來源（開發環境常用 port）
@@ -58,6 +59,30 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  // Swagger / OpenAPI 文件 (BADM-T15)
+  // - JSON spec: /api/docs-json
+  // - UI:        /api/docs
+  // 預設常駐開啟（公開 API 文件）；若需在 production 關閉可設 SWAGGER_DISABLED=true
+  if (process.env.SWAGGER_DISABLED !== 'true') {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('Badminton Booking API')
+      .setDescription(
+        '羽毛球場館預約系統 API。對外公開 API 走 X-API-Key（見 BADM-T15 開放 API），' +
+          '其餘管理端點走 JWT Bearer。',
+      )
+      .setVersion('1.0.0')
+      .addBearerAuth(
+        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+        'jwt',
+      )
+      .addApiKey({ type: 'apiKey', name: 'X-API-Key', in: 'header' }, 'api-key')
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: { persistAuthorization: true },
+    });
+  }
 
   await app.listen(3010, '0.0.0.0');
   console.log('後端伺服器運行在 http://0.0.0.0:3010');

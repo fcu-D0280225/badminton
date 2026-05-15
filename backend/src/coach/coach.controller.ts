@@ -11,6 +11,7 @@ import {
   ForbiddenException,
   ParseIntPipe,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { AuthUser } from '../auth/types';
@@ -19,6 +20,8 @@ import { CoachService } from './coach.service';
 import { Coach } from '../entities/coach.entity';
 import { CoachClass } from '../entities/coach-class.entity';
 
+@ApiTags('coach')
+@ApiBearerAuth('jwt')
 @UseGuards(JwtAuthGuard)
 @Controller('api')
 export class CoachController {
@@ -43,6 +46,7 @@ export class CoachController {
   }
 
   // ── Coaches ─────────────────────────────────────────────────────
+  @ApiOperation({ summary: '列出館方可見的所有教練' })
   @Get('coaches')
   async listCoaches(@CurrentUser() user: AuthUser) {
     return this.coachService.listCoaches(this.assertVenue(user));
@@ -87,6 +91,7 @@ export class CoachController {
   }
 
   // ── Coach Classes ───────────────────────────────────────────────
+  @ApiOperation({ summary: '列出教練排課（支援 coachId / from / to 過濾）' })
   @Get('coach-classes')
   async listClasses(
     @CurrentUser() user: AuthUser,

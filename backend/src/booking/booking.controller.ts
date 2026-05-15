@@ -8,6 +8,12 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { AuthUser } from '../auth/types';
@@ -19,6 +25,8 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { CreateRecurringBookingDto } from './dto/create-recurring-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 
+@ApiTags('bookings')
+@ApiBearerAuth('jwt')
 @UseGuards(JwtAuthGuard)
 @Controller('api/bookings')
 export class BookingController {
@@ -29,6 +37,9 @@ export class BookingController {
 
   // 建立單筆預約 — SEC-005: 走 CreateBookingDto 白名單，request body 多餘欄位由
   // 全域 ValidationPipe (forbidNonWhitelisted=true) 直接 400 拒絕。
+  @ApiOperation({ summary: '建立單筆預約' })
+  @ApiResponse({ status: 201, description: '預約建立成功' })
+  @ApiResponse({ status: 409, description: '同場次重複預約衝突' })
   @Post()
   async createBooking(
     @CurrentUser() user: AuthUser,
@@ -38,6 +49,7 @@ export class BookingController {
   }
 
   // 建立重複預約（回傳建立的所有預約）
+  @ApiOperation({ summary: '建立重複預約（weekly / biweekly）' })
   @Post('recurring')
   async createRecurring(
     @CurrentUser() user: AuthUser,
@@ -46,11 +58,14 @@ export class BookingController {
     return await this.bookingService.createRecurringBookings(dto, user);
   }
 
+  @ApiOperation({ summary: '取得目前使用者可見的所有預約（依角色過濾）' })
   @Get()
   async findAll(@CurrentUser() user: AuthUser): Promise<Booking[]> {
     return await this.bookingService.findAll(user);
   }
 
+  @ApiOperation({ summary: '取得單筆預約' })
+  @ApiResponse({ status: 404, description: '預約不存在或無權限存取' })
   @Get(':id')
   async findOne(
     @CurrentUser() user: AuthUser,

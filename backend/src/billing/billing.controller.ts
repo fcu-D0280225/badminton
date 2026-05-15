@@ -12,6 +12,7 @@ import {
   Res,
   ParseIntPipe,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -21,6 +22,8 @@ import { BillingService } from './billing.service';
 import { CreatePaymentRecordDto } from './dto/create-payment-record.dto';
 import { UpdatePaymentRecordDto } from './dto/update-payment-record.dto';
 
+@ApiTags('billing')
+@ApiBearerAuth('jwt')
 @UseGuards(JwtAuthGuard)
 @Controller('api/billing')
 export class BillingController {
@@ -52,6 +55,7 @@ export class BillingController {
   }
 
   // POST /api/billing/records
+  @ApiOperation({ summary: '建立收費紀錄（單筆或週期系列）' })
   @Post('records')
   async create(
     @CurrentUser() user: AuthUser,
@@ -72,6 +76,7 @@ export class BillingController {
   }
 
   // GET /api/billing/records
+  @ApiOperation({ summary: '列出收費紀錄（支援 unpaidOnly / date 過濾）' })
   @Get('records')
   async findAll(
     @CurrentUser() user: AuthUser,
@@ -90,6 +95,7 @@ export class BillingController {
   }
 
   // GET /api/billing/records/export/csv
+  @ApiOperation({ summary: '匯出當月收費 CSV（含 UTF-8 BOM）' })
   @Get('records/export/csv')
   async exportCsv(
     @CurrentUser() user: AuthUser,
@@ -112,6 +118,7 @@ export class BillingController {
   }
 
   // GET /api/billing/analytics
+  @ApiOperation({ summary: '取得當月收費統計' })
   @Get('analytics')
   async getAnalytics(
     @CurrentUser() user: AuthUser,

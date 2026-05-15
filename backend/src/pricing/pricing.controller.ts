@@ -11,6 +11,7 @@ import {
   ForbiddenException,
   ParseIntPipe,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { AuthUser } from '../auth/types';
@@ -18,6 +19,8 @@ import { getVenueIdsForUser } from '../auth/ownership.helper';
 import { PricingService } from './pricing.service';
 import { PricingRule } from '../entities/pricing-rule.entity';
 
+@ApiTags('pricing')
+@ApiBearerAuth('jwt')
 @UseGuards(JwtAuthGuard)
 @Controller('api/pricing')
 export class PricingController {
@@ -36,6 +39,7 @@ export class PricingController {
   }
 
   // ── 規則 CRUD ────────────────────────────────────────────────────
+  @ApiOperation({ summary: '列出此場館的所有定價規則' })
   @Get('rules')
   async list(
     @CurrentUser() user: AuthUser,
@@ -109,6 +113,9 @@ export class PricingController {
   }
 
   // ── 預覽：給前端「目前這個時段會收多少錢」用 ────────────────────
+  @ApiOperation({
+    summary: '報價：依場館 / 日期 / 時段預估金額（不會建立預約）',
+  })
   @Get('quote')
   async quote(
     @CurrentUser() user: AuthUser,
