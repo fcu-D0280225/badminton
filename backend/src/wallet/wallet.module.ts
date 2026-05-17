@@ -28,10 +28,11 @@ import { VenueWalletController } from './venue-wallet.controller';
   providers: [
     {
       provide: 'STRIPE_CLIENT',
-      useFactory: () =>
-        new Stripe(process.env.STRIPE_SECRET_KEY!, {
-          apiVersion: '2026-04-22.dahlia',
-        }),
+      useFactory: () => {
+        const key = process.env.STRIPE_SECRET_KEY;
+        if (!key) return null;
+        return new Stripe(key, { apiVersion: '2026-04-22.dahlia' });
+      },
     },
     WalletService,
   ],

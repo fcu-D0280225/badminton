@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -24,7 +25,7 @@ export class PaymentService {
     @InjectRepository(Booking)
     private bookingRepository: Repository<Booking>,
     @Inject('STRIPE_CLIENT')
-    private readonly stripe: InstanceType<typeof Stripe>,
+    private readonly stripe: InstanceType<typeof Stripe> | null,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -136,6 +137,9 @@ export class PaymentService {
     paymentId: number,
     user: AuthUser,
   ): Promise<string> {
+    if (!this.stripe) {
+      throw new ServiceUnavailableException('線上付款功能未啟用');
+    }
     const payment = await this.paymentRepository.findOne({
       where: { id: paymentId },
       relations: ['booking'],
@@ -176,6 +180,10 @@ export class PaymentService {
     paymentId: number,
     txnId: string,
   ): Promise<void> {
+    if (!this.stripe) {
+      throw new ServiceUnavailableException('線上付款功能未啟用');
+    }
+    const stripe = this.stripe;
     await this.dataSource.transaction(async (manager) => {
       const payment = await manager.findOne(Payment, {
         where: { id: paymentId },
@@ -188,7 +196,7 @@ export class PaymentService {
       if (payment.booking.status === 'cancelled') {
         if (payment.status === 'refunding') return; // idempotency guard
         await manager.update(Payment, paymentId, { status: 'refunding' });
-        await this.stripe.refunds.create({ payment_intent: txnId });
+        await stripe.refunds.create({ payment_intent: txnId });
         await manager.update(Payment, paymentId, { status: 'refunded' });
         return;
       }

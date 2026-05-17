@@ -5,6 +5,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
@@ -34,7 +35,7 @@ export class WalletService {
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
     @Inject('STRIPE_CLIENT')
-    private readonly stripe: InstanceType<typeof Stripe>,
+    private readonly stripe: InstanceType<typeof Stripe> | null,
     private emailService: EmailService,
     private dataSource: DataSource,
   ) {}
@@ -295,6 +296,9 @@ export class WalletService {
     accountId: number,
     amount: number,
   ): Promise<{ url: string }> {
+    if (!this.stripe) {
+      throw new ServiceUnavailableException('線上付款功能未啟用');
+    }
     await this.getOrCreateWallet(accountId);
 
     const session = await this.stripe.checkout.sessions.create({

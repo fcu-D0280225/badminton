@@ -5,6 +5,7 @@ import {
   Inject,
   Post,
   Req,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { RawBodyRequest } from '@nestjs/common';
 import Stripe from 'stripe';
@@ -14,7 +15,7 @@ import { WalletService } from '../wallet/wallet.service';
 @Controller('stripe')
 export class StripeWebhookController {
   constructor(
-    @Inject('STRIPE_CLIENT') private readonly stripe: InstanceType<typeof Stripe>,
+    @Inject('STRIPE_CLIENT') private readonly stripe: InstanceType<typeof Stripe> | null,
     private readonly paymentService: PaymentService,
     private readonly walletService: WalletService,
   ) {}
@@ -24,6 +25,9 @@ export class StripeWebhookController {
     @Headers('stripe-signature') sig: string,
     @Req() req: RawBodyRequest<Request>,
   ): Promise<void> {
+    if (!this.stripe) {
+      throw new ServiceUnavailableException('線上付款功能未啟用');
+    }
     let event: any;
     try {
       event = this.stripe.webhooks.constructEvent(
