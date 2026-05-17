@@ -65,6 +65,9 @@
                 <button class="admin-nav-item" data-admin-group="bookings" onclick="showAdminGroup('bookings')">
                     <span class="admin-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="admin-nav-label">預約管理</span>
                 </button>
+                <button class="admin-nav-item" data-admin-group="coach" onclick="showAdminGroup('coach')">
+                    <span class="admin-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="admin-nav-label">教練課</span>
+                </button>
                 <button class="admin-nav-item" data-admin-group="settings" onclick="showAdminGroup('settings')">
                     <span class="admin-nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="admin-nav-label">場館設定</span>
                 </button>
@@ -404,6 +407,74 @@
                 </div>
                 </div><!-- /#admin-group-bookings -->
 
+                <!-- 教練課 group（BADM-T14）：教練 + 課程排程 + 學員 enrollment -->
+                <div class="admin-group hidden" id="admin-group-coach">
+                    <div class="admin-panel">
+                        <!-- 教練清單 -->
+                        <div class="section">
+                            <h3>教練清單</h3>
+                            <div class="form-group" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;align-items:end;">
+                                <div>
+                                    <label>姓名</label>
+                                    <input type="text" id="coach-name" placeholder="例：王教練">
+                                </div>
+                                <div>
+                                    <label>聯絡方式</label>
+                                    <input type="text" id="coach-contact" placeholder="電話 / Line">
+                                </div>
+                                <div>
+                                    <label>時薪（元）</label>
+                                    <input type="number" id="coach-hourly-rate" min="0" step="1" value="0">
+                                </div>
+                                <button class="btn btn-primary" onclick="createCoach()">新增教練</button>
+                            </div>
+                            <div id="coach-list" style="margin-top:12px;">
+                                <p class="text-muted">載入中⋯</p>
+                            </div>
+                        </div>
+
+                        <!-- 教練課排程 -->
+                        <div class="section">
+                            <h3>教練課排程</h3>
+                            <div class="form-group" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;align-items:end;">
+                                <div>
+                                    <label>教練</label>
+                                    <select id="class-coach"></select>
+                                </div>
+                                <div>
+                                    <label>日期</label>
+                                    <input type="date" id="class-date">
+                                </div>
+                                <div>
+                                    <label>時段 (HH:MM-HH:MM)</label>
+                                    <input type="text" id="class-time-slot" placeholder="例：18:00-20:00">
+                                </div>
+                                <div>
+                                    <label>名額（空白=不限）</label>
+                                    <input type="number" id="class-capacity" min="1" step="1" placeholder="例：8">
+                                </div>
+                                <div>
+                                    <label>學員費 / 人</label>
+                                    <input type="number" id="class-fee" min="0" step="1" value="0">
+                                </div>
+                                <button class="btn btn-primary" onclick="createCoachClass()">新增排課</button>
+                            </div>
+                            <div class="filter-group" style="margin-top:12px;flex-wrap:wrap;gap:8px;">
+                                <label style="display:flex;align-items:center;gap:4px;margin:0;">起：
+                                    <input type="date" id="class-filter-from" onchange="loadCoachClasses()">
+                                </label>
+                                <label style="display:flex;align-items:center;gap:4px;margin:0;">迄：
+                                    <input type="date" id="class-filter-to" onchange="loadCoachClasses()">
+                                </label>
+                                <button class="btn btn-secondary" onclick="resetCoachClassFilter()">清除</button>
+                            </div>
+                            <div id="coach-classes-list" style="margin-top:12px;">
+                                <p class="text-muted">載入中⋯</p>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /#admin-group-coach -->
+
                 <!-- ===== 收費管理 ===== (FEAT-008: 屬於「場館總覽」group，由 JS 統一隱藏/顯示) -->
                 <div id="tab-billing" class="tab-panel" style="display:none;">
                     <!-- 新增記錄表單 -->
@@ -491,6 +562,9 @@
                 <button class="admin-bottom-tab" data-admin-group="bookings" onclick="showAdminGroup('bookings')">
                     <span class="bt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span>預約</span>
                 </button>
+                <button class="admin-bottom-tab" data-admin-group="coach" onclick="showAdminGroup('coach')">
+                    <span class="bt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span>教練課</span>
+                </button>
                 <button class="admin-bottom-tab" data-admin-group="settings" onclick="showAdminGroup('settings')">
                     <span class="bt-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span>設定</span>
                 </button>
@@ -562,6 +636,41 @@
             <div style="display:flex;gap:8px;margin-top:12px;">
                 <button class="btn btn-primary" onclick="saveBillingEdit()">儲存</button>
                 <button class="btn btn-danger" onclick="confirmDeleteBillingRecord()">刪除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 學員報名管理 modal（BADM-T14） -->
+    <div id="enrollment-modal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:760px;">
+            <button class="close" onclick="closeEnrollmentModal()" aria-label="關閉">&times;</button>
+            <h2>學員管理</h2>
+            <div id="enrollment-modal-meta" class="text-muted" style="font-size:13px;margin-bottom:8px;"></div>
+
+            <!-- 新增報名表單 -->
+            <div class="section" style="padding:12px;margin-bottom:8px;">
+                <h3 style="margin-top:0;">＋ 新增學員</h3>
+                <div class="form-group">
+                    <label>學員 ID（請輸入 player ID 數字；之後可加搜尋下拉）</label>
+                    <input type="number" id="enroll-player-id" min="1" step="1" placeholder="例：12">
+                </div>
+                <div class="form-group">
+                    <label>金額（空白=採用課程預設費用）</label>
+                    <input type="number" id="enroll-amount" min="0" step="1">
+                </div>
+                <div class="form-group">
+                    <label>備註（選填）</label>
+                    <textarea id="enroll-notes" rows="2" placeholder="補充說明..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="submitEnroll()">新增學員</button>
+            </div>
+
+            <!-- 學員清單 -->
+            <div class="section" style="padding:12px;">
+                <h3 style="margin-top:0;">學員清單</h3>
+                <div id="enrollment-list">
+                    <p class="text-muted">載入中⋯</p>
+                </div>
             </div>
         </div>
     </div>

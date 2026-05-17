@@ -17,6 +17,7 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { AuthUser } from '../auth/types';
 import { getVenueIdsForUser } from '../auth/ownership.helper';
 import { CoachService } from './coach.service';
+import { EnrollmentService } from './enrollment.service';
 import { Coach } from '../entities/coach.entity';
 import { CoachClass } from '../entities/coach-class.entity';
 
@@ -25,7 +26,10 @@ import { CoachClass } from '../entities/coach-class.entity';
 @UseGuards(JwtAuthGuard)
 @Controller('api')
 export class CoachController {
-  constructor(private readonly coachService: CoachService) {}
+  constructor(
+    private readonly coachService: CoachService,
+    private readonly enrollmentService: EnrollmentService,
+  ) {}
 
   private assertVenue(user: AuthUser): number[] {
     if (user.role !== 'venue') {
@@ -142,5 +146,99 @@ export class CoachController {
   ) {
     await this.coachService.deleteClass(id, this.assertVenue(user));
     return { success: true };
+  }
+
+  // ── Coach Class Enrollments ─────────────────────────────────────
+  @ApiOperation({ summary: '列出某教練課的所有學員報名（含 cancelled）' })
+  @Get('coach-classes/:id/enrollments')
+  async listEnrollments(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseIntPipe) classId: number,
+  ) {
+    return this.enrollmentService.listByClass(
+      classId,
+      this.assertVenue(user),
+    );
+  }
+
+  @ApiOperation({ summary: '替某學員報名某教練課' })
+  @Post('coach-classes/:id/enrollments')
+  async createEnrollment(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseIntPipe) classId: number,
+    @Body() data: { playerId: number; amount?: number; notes?: string },
+  ) {
+    return this.enrollmentService.enroll(
+      classId,
+      data.playerId,
+      this.assertVenue(user),
+      { amount: data.amount, notes: data.notes },
+    );
+  }
+
+  @ApiOperation({ summary: '取消學員報名（保留 row 做 audit）' })
+  @Delete('enrollments/:enrollmentId')
+  async cancelEnrollment(
+    @CurrentUser() user: AuthUser,
+    @Param('enrollmentId', ParseIntPipe) enrollmentId: number,
+  ) {
+    return this.enrollmentService.cancel(
+      enrollmentId,
+      this.assertVenue(user),
+    );
+  }
+
+  @ApiOperation({ summary: '學員報到（標記 checkedInAt = now）' })
+  @Post('enrollments/:enrollmentId/checkin')
+  async checkinEnrollment(
+    @CurrentUser() user: AuthUser,
+    @Param('enrollmentId', ParseIntPipe) enrollmentId: number,
+  ) {
+    return this.enrollmentService.checkin(
+      enrollmentId,
+      this.assertVenue(user),
+    );
+  }
+
+  @ApiOperation({ summary: '取消學員報到（誤點救援）' })
+  @Post('enrollments/:enrollmentId/checkin/undo')
+  async undoCheckinEnrollment(
+    @CurrentUser() user: AuthUser,
+    @Param('enrollmentId', ParseIntPipe) enrollmentId: number,
+  ) {
+    return this.enrollmentService.undoCheckin(
+      enrollmentId,
+      this.assertVenue(user),
+    );
+  }
+
+  @ApiOperation({ summary: '更新學員付款狀態（含可選的金額覆寫）' })
+  @Patch('enrollments/:enrollmentId/payment')
+  async updateEnrollmentPayment(
+    @CurrentUser() user: AuthUser,
+    @Param('enrollmentId', ParseIntPipe) enrollmentId: number,
+    @Body() data: { paymentStatus: 'pending' | 'paid' | 'refunded'; amount?: number },
+  ) {
+    return this.enrollmentService.updatePayment(
+      enrollmentId,
+      this.assertVenue(user),
+      data.paymentStatus,
+      data.amount,
+    );
+  }
+
+  @ApiOperation({ summary: '取得目前登入學員（player/member）的報名清單' })
+  @Get('me/enrollments')
+  async listMyEnrollments(@CurrentUser() user: AuthUser) {
+    let playerId: number | undefined;
+    if (user.role === 'player') {
+      playerId = user.entityId;
+    } else if (user.role === 'member' && user.linkedEntityId) {
+      playerId = user.linkedEntityId;
+    }
+    if (!playerId) {
+      throw new ForbiddenException('僅學員 / 已綁定 player 的會員可使用');
+    }
+    return this.enrollmentService.listByPlayer(playerId);
   }
 }

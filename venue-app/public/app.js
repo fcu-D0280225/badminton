@@ -163,12 +163,15 @@ const TAB_TO_GROUP = {
 const GROUP_TITLES = {
     overview: '場館總覽',
     bookings: '預約管理',
+    coach:    '教練課',
     settings: '場館設定',
 };
 
+const ADMIN_GROUPS = ['overview', 'bookings', 'coach', 'settings'];
+
 function showAdminGroup(group) {
     // 切換 group 容器顯示
-    ['overview', 'bookings', 'settings'].forEach(g => {
+    ADMIN_GROUPS.forEach(g => {
         const el = document.getElementById('admin-group-' + g);
         if (el) el.classList.toggle('hidden', g !== group);
     });
@@ -192,6 +195,7 @@ function showAdminGroup(group) {
         loadVenueSettings();
         if (typeof loadVenueNotes === 'function') loadVenueNotes();
         if (typeof loadPricingPanel === 'function') loadPricingPanel();
+        if (typeof loadVenueGroupPanel === 'function') loadVenueGroupPanel();
     }
 
     // FEAT-016: 進入「預約管理」時要把 tab-bookings 顯示回來
@@ -200,6 +204,12 @@ function showAdminGroup(group) {
         const tb = document.getElementById('tab-bookings');
         if (tb) tb.style.display = 'block';
         if (typeof loadVenueData === 'function') loadVenueData();
+    }
+
+    // BADM-T14: 進入「教練課」時載入教練 + 排程清單
+    if (group === 'coach') {
+        if (typeof loadCoaches === 'function') loadCoaches();
+        if (typeof loadCoachClasses === 'function') loadCoachClasses();
     }
 
     // sidebar / 底部 tab 的 active state
@@ -236,7 +246,7 @@ function showTab(tabId) {
         const currentGroup = activeBtn ? activeBtn.dataset.adminGroup : null;
         if (currentGroup !== targetGroup) {
             // 避免遞迴：直接更新 group 容器與 sidebar/bottom-tab，不呼叫 showAdminGroup
-            ['overview', 'bookings', 'settings'].forEach(g => {
+            ADMIN_GROUPS.forEach(g => {
                 const el = document.getElementById('admin-group-' + g);
                 if (el) el.classList.toggle('hidden', g !== targetGroup);
             });
@@ -2108,3 +2118,376 @@ async function saveVenueParent() {
 
 window.saveVenueParent = saveVenueParent;
 window.loadVenueGroupSection = loadVenueGroupSection;
+
+// ============================================================
+// BADM-T14: 教練 / 教練課 / 學員報名
+// ============================================================
+
+let _coachCache = []; // 用於把 coach select 與 list 共用
+
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function formatDateTime(s) {
+    if (!s) return '—';
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return s;
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+async function loadCoaches() {
+    const listEl = document.getElementById('coach-list');
+    const selectEl = document.getElementById('class-coach');
+    if (!listEl) return;
+    try {
+        const res = await authFetch(`${API_BASE}/coaches`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const coaches = await res.json();
+        _coachCache = coaches || [];
+
+        if (selectEl) {
+            const prev = selectEl.value;
+            selectEl.innerHTML = _coachCache.length
+                ? _coachCache.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('')
+                : '<option value="">（尚無教練）</option>';
+            if (prev && _coachCache.some(c => String(c.id) === prev)) selectEl.value = prev;
+        }
+
+        if (!_coachCache.length) {
+            listEl.innerHTML = '<p class="text-muted">尚無教練資料，請先新增。</p>';
+            return;
+        }
+        listEl.innerHTML = `
+            <table class="bookings-table">
+                <thead><tr><th>ID</th><th>姓名</th><th>聯絡</th><th>時薪</th><th>狀態</th><th>操作</th></tr></thead>
+                <tbody>
+                ${_coachCache.map(c => `
+                    <tr>
+                        <td>#${c.id}</td>
+                        <td>${escapeHtml(c.name)}</td>
+                        <td>${escapeHtml(c.contact || '—')}</td>
+                        <td>$${c.hourlyRate || 0}</td>
+                        <td>${c.active ? '啟用中' : '停用'}</td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="toggleCoachActive(${c.id}, ${!c.active})">${c.active ? '停用' : '啟用'}</button>
+                            <button class="btn btn-danger" onclick="deleteCoach(${c.id})">刪除</button>
+                        </td>
+                    </tr>
+                `).join('')}
+                </tbody>
+            </table>
+        `;
+    } catch (e) {
+        listEl.innerHTML = `<p style="color:#dc2626;">載入教練失敗：${escapeHtml(e.message)}</p>`;
+    }
+}
+window.loadCoaches = loadCoaches;
+
+async function createCoach() {
+    const name = document.getElementById('coach-name').value.trim();
+    const contact = document.getElementById('coach-contact').value.trim();
+    const hourlyRate = parseFloat(document.getElementById('coach-hourly-rate').value || '0');
+    if (!name) { alert('請輸入教練姓名'); return; }
+    try {
+        const res = await authFetch(`${API_BASE}/coaches`, {
+            method: 'POST',
+            body: JSON.stringify({ name, contact, hourlyRate }),
+        });
+        if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
+        document.getElementById('coach-name').value = '';
+        document.getElementById('coach-contact').value = '';
+        document.getElementById('coach-hourly-rate').value = '0';
+        await loadCoaches();
+    } catch (e) { alert('新增失敗：' + e.message); }
+}
+window.createCoach = createCoach;
+
+async function toggleCoachActive(id, active) {
+    try {
+        const res = await authFetch(`${API_BASE}/coaches/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ active }),
+        });
+        if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
+        await loadCoaches();
+    } catch (e) { alert('更新失敗：' + e.message); }
+}
+window.toggleCoachActive = toggleCoachActive;
+
+async function deleteCoach(id) {
+    if (!confirm('確定刪除此教練？相關排課也會一併刪除。')) return;
+    try {
+        const res = await authFetch(`${API_BASE}/coaches/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
+        await loadCoaches();
+        await loadCoachClasses();
+    } catch (e) { alert('刪除失敗：' + e.message); }
+}
+window.deleteCoach = deleteCoach;
+
+async function loadCoachClasses() {
+    const listEl = document.getElementById('coach-classes-list');
+    if (!listEl) return;
+    const from = document.getElementById('class-filter-from')?.value || '';
+    const to = document.getElementById('class-filter-to')?.value || '';
+    const params = new URLSearchParams();
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    const url = `${API_BASE}/coach-classes${params.toString() ? '?' + params.toString() : ''}`;
+    try {
+        const res = await authFetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const classes = await res.json();
+        if (!classes.length) {
+            listEl.innerHTML = '<p class="text-muted">尚無教練課排程。</p>';
+            return;
+        }
+        listEl.innerHTML = `
+            <table class="bookings-table">
+                <thead><tr><th>ID</th><th>日期</th><th>時段</th><th>教練</th><th>名額</th><th>學費</th><th>狀態</th><th>操作</th></tr></thead>
+                <tbody>
+                ${classes.map(c => `
+                    <tr>
+                        <td>#${c.id}</td>
+                        <td>${escapeHtml(c.date)}</td>
+                        <td>${escapeHtml(c.timeSlot)}</td>
+                        <td>${escapeHtml(c.coach?.name || `#${c.coachId}`)}</td>
+                        <td>${c.capacity == null ? '不限' : c.capacity}</td>
+                        <td>$${c.feePerStudent || 0}</td>
+                        <td>${escapeHtml(c.status)}</td>
+                        <td>
+                            <button class="btn btn-primary" onclick="openEnrollmentModal(${c.id})">學員</button>
+                            <button class="btn btn-secondary" onclick="cycleCoachClassStatus(${c.id}, '${escapeHtml(c.status)}')">切狀態</button>
+                            <button class="btn btn-danger" onclick="deleteCoachClass(${c.id})">刪除</button>
+                        </td>
+                    </tr>
+                `).join('')}
+                </tbody>
+            </table>
+        `;
+    } catch (e) {
+        listEl.innerHTML = `<p style="color:#dc2626;">載入排程失敗：${escapeHtml(e.message)}</p>`;
+    }
+}
+window.loadCoachClasses = loadCoachClasses;
+
+function resetCoachClassFilter() {
+    const f = document.getElementById('class-filter-from');
+    const t = document.getElementById('class-filter-to');
+    if (f) f.value = '';
+    if (t) t.value = '';
+    loadCoachClasses();
+}
+window.resetCoachClassFilter = resetCoachClassFilter;
+
+async function createCoachClass() {
+    const coachId = parseInt(document.getElementById('class-coach').value || '0', 10);
+    const date = document.getElementById('class-date').value;
+    const timeSlot = document.getElementById('class-time-slot').value.trim();
+    const capacityRaw = document.getElementById('class-capacity').value;
+    const capacity = capacityRaw === '' ? null : parseInt(capacityRaw, 10);
+    const feePerStudent = parseFloat(document.getElementById('class-fee').value || '0');
+    if (!coachId) { alert('請選擇教練'); return; }
+    if (!date || !timeSlot) { alert('請輸入日期與時段'); return; }
+    try {
+        const res = await authFetch(`${API_BASE}/coach-classes`, {
+            method: 'POST',
+            body: JSON.stringify({ coachId, date, timeSlot, capacity, feePerStudent }),
+        });
+        if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
+        document.getElementById('class-time-slot').value = '';
+        document.getElementById('class-capacity').value = '';
+        document.getElementById('class-fee').value = '0';
+        await loadCoachClasses();
+    } catch (e) { alert('新增失敗：' + e.message); }
+}
+window.createCoachClass = createCoachClass;
+
+async function cycleCoachClassStatus(id, currentStatus) {
+    const order = ['open', 'closed', 'cancelled'];
+    const idx = order.indexOf(currentStatus);
+    const next = order[(idx + 1) % order.length];
+    try {
+        const res = await authFetch(`${API_BASE}/coach-classes/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status: next }),
+        });
+        if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
+        await loadCoachClasses();
+    } catch (e) { alert('更新失敗：' + e.message); }
+}
+window.cycleCoachClassStatus = cycleCoachClassStatus;
+
+async function deleteCoachClass(id) {
+    if (!confirm('確定刪除此排程？所有學員報名也會一併刪除。')) return;
+    try {
+        const res = await authFetch(`${API_BASE}/coach-classes/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
+        await loadCoachClasses();
+    } catch (e) { alert('刪除失敗：' + e.message); }
+}
+window.deleteCoachClass = deleteCoachClass;
+
+// ── Enrollment modal ─────────────────────────────────────────
+let _currentEnrollmentClassId = null;
+
+async function openEnrollmentModal(classId) {
+    _currentEnrollmentClassId = classId;
+    const modal = document.getElementById('enrollment-modal');
+    const metaEl = document.getElementById('enrollment-modal-meta');
+    const listEl = document.getElementById('enrollment-list');
+    if (!modal) return;
+    modal.style.display = 'block';
+    metaEl.textContent = `課程 #${classId} — 載入中…`;
+    listEl.innerHTML = '<p class="text-muted">載入中⋯</p>';
+    document.getElementById('enroll-player-id').value = '';
+    document.getElementById('enroll-amount').value = '';
+    document.getElementById('enroll-notes').value = '';
+
+    try {
+        const classRes = await authFetch(`${API_BASE}/coach-classes/${classId}`);
+        if (classRes.ok) {
+            const cls = await classRes.json();
+            metaEl.textContent = `課程 #${classId}｜${cls.date} ${cls.timeSlot}｜教練：${cls.coach?.name || '—'}｜名額：${cls.capacity == null ? '不限' : cls.capacity}｜學費 / 人：$${cls.feePerStudent || 0}`;
+        }
+    } catch (_) {}
+
+    await loadEnrollments();
+}
+window.openEnrollmentModal = openEnrollmentModal;
+
+function closeEnrollmentModal() {
+    const modal = document.getElementById('enrollment-modal');
+    if (modal) modal.style.display = 'none';
+    _currentEnrollmentClassId = null;
+}
+window.closeEnrollmentModal = closeEnrollmentModal;
+
+async function loadEnrollments() {
+    const listEl = document.getElementById('enrollment-list');
+    if (!listEl || !_currentEnrollmentClassId) return;
+    try {
+        const res = await authFetch(`${API_BASE}/coach-classes/${_currentEnrollmentClassId}/enrollments`);
+        if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
+        const enrollments = await res.json();
+        if (!enrollments.length) {
+            listEl.innerHTML = '<p class="text-muted">尚無學員報名。</p>';
+            return;
+        }
+        listEl.innerHTML = `
+            <table class="enrollment-table">
+                <thead><tr><th>ID</th><th>學員</th><th>狀態</th><th>報到</th><th>付款</th><th>金額</th><th>操作</th></tr></thead>
+                <tbody>
+                ${enrollments.map(e => {
+                    const playerName = escapeHtml(e.player?.name || `#${e.playerId}`);
+                    const statusCls = `enrollment-status-${e.status}`;
+                    const payCls = `payment-${e.paymentStatus}`;
+                    const isCancelled = e.status === 'cancelled';
+                    return `
+                        <tr class="${statusCls}">
+                            <td>#${e.id}</td>
+                            <td>${playerName}</td>
+                            <td><span class="enrollment-status-badge ${statusCls}">${escapeHtml(e.status)}</span></td>
+                            <td>${e.checkedInAt ? formatDateTime(e.checkedInAt) : '—'}</td>
+                            <td>
+                                <select class="payment-select ${payCls}" ${isCancelled ? 'disabled' : ''} onchange="updateEnrollmentPayment(${e.id}, this.value)">
+                                    <option value="pending"  ${e.paymentStatus === 'pending'  ? 'selected' : ''}>pending</option>
+                                    <option value="paid"     ${e.paymentStatus === 'paid'     ? 'selected' : ''}>paid</option>
+                                    <option value="refunded" ${e.paymentStatus === 'refunded' ? 'selected' : ''}>refunded</option>
+                                </select>
+                            </td>
+                            <td>$${e.amount || 0}</td>
+                            <td class="enrollment-actions">
+                                ${isCancelled ? '' : (
+                                    e.checkedInAt
+                                        ? `<button class="btn btn-secondary" onclick="undoCheckinEnrollment(${e.id})">取消報到</button>`
+                                        : `<button class="btn btn-primary" onclick="checkinEnrollment(${e.id})">報到</button>`
+                                )}
+                                ${isCancelled ? '' : `<button class="btn btn-danger" onclick="cancelEnrollment(${e.id})">取消報名</button>`}
+                            </td>
+                        </tr>
+                    `;
+                }).join('')}
+                </tbody>
+            </table>
+        `;
+    } catch (e) {
+        listEl.innerHTML = `<p style="color:#dc2626;">載入學員失敗：${escapeHtml(e.message)}</p>`;
+    }
+}
+window.loadEnrollments = loadEnrollments;
+
+async function submitEnroll() {
+    if (!_currentEnrollmentClassId) return;
+    const playerId = parseInt(document.getElementById('enroll-player-id').value || '0', 10);
+    const amountRaw = document.getElementById('enroll-amount').value;
+    const amount = amountRaw === '' ? undefined : parseFloat(amountRaw);
+    const notes = document.getElementById('enroll-notes').value.trim() || undefined;
+    if (!playerId || playerId < 1) { alert('請輸入有效的學員 ID'); return; }
+    try {
+        const body = { playerId };
+        if (amount !== undefined) body.amount = amount;
+        if (notes !== undefined) body.notes = notes;
+        const res = await authFetch(`${API_BASE}/coach-classes/${_currentEnrollmentClassId}/enrollments`, {
+            method: 'POST',
+            body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
+        document.getElementById('enroll-player-id').value = '';
+        document.getElementById('enroll-amount').value = '';
+        document.getElementById('enroll-notes').value = '';
+        await loadEnrollments();
+    } catch (e) { alert('報名失敗：' + e.message); }
+}
+window.submitEnroll = submitEnroll;
+
+async function checkinEnrollment(id) {
+    try {
+        const res = await authFetch(`${API_BASE}/enrollments/${id}/checkin`, { method: 'POST' });
+        if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
+        await loadEnrollments();
+    } catch (e) { alert('報到失敗：' + e.message); }
+}
+window.checkinEnrollment = checkinEnrollment;
+
+async function undoCheckinEnrollment(id) {
+    try {
+        const res = await authFetch(`${API_BASE}/enrollments/${id}/checkin/undo`, { method: 'POST' });
+        if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
+        await loadEnrollments();
+    } catch (e) { alert('取消報到失敗：' + e.message); }
+}
+window.undoCheckinEnrollment = undoCheckinEnrollment;
+
+async function cancelEnrollment(id) {
+    if (!confirm('確定取消此學員報名？（紀錄保留）')) return;
+    try {
+        const res = await authFetch(`${API_BASE}/enrollments/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
+        await loadEnrollments();
+    } catch (e) { alert('取消失敗：' + e.message); }
+}
+window.cancelEnrollment = cancelEnrollment;
+
+async function updateEnrollmentPayment(id, paymentStatus) {
+    try {
+        const res = await authFetch(`${API_BASE}/enrollments/${id}/payment`, {
+            method: 'PATCH',
+            body: JSON.stringify({ paymentStatus }),
+        });
+        if (!res.ok) throw new Error((await res.json()).message || `HTTP ${res.status}`);
+        await loadEnrollments();
+    } catch (e) {
+        alert('更新付款狀態失敗：' + e.message);
+        await loadEnrollments();
+    }
+}
+window.updateEnrollmentPayment = updateEnrollmentPayment;

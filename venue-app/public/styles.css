@@ -1914,3 +1914,106 @@ body.admin-shell-active #tab-analytics {
 /* admin-panel-placeholder 文字 */
 [data-theme="dark"] .admin-panel-placeholder { color: var(--admin-sidebar-muted); }
 [data-theme="dark"] .admin-panel-placeholder .ph-title { color: var(--admin-sidebar-text); }
+
+/* ====================================================================
+ * BADM-T14: 教練學員 enrollment 樣式
+ * ==================================================================== */
+.enrollment-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
+}
+.enrollment-table thead th {
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--admin-bg);
+    border-bottom: 1px solid var(--admin-border);
+    font-weight: 600;
+    color: var(--admin-sidebar-text);
+    font-size: 13px;
+    white-space: nowrap;
+}
+.enrollment-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--admin-border);
+    color: var(--admin-topbar-text);
+    vertical-align: middle;
+}
+.enrollment-table tbody tr.enrollment-status-cancelled td:not(:last-child) {
+    color: var(--admin-sidebar-muted);
+    text-decoration: line-through;
+}
+.enrollment-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.enrollment-actions .btn {
+    padding: 4px 10px;
+    font-size: 12px;
+}
+
+/* 狀態 badge */
+.enrollment-status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+.enrollment-status-badge.enrollment-status-enrolled {
+    background: #d1fae5;
+    color: #065f46;
+}
+.enrollment-status-badge.enrollment-status-cancelled {
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+/* 付款 select 顏色暗示 */
+.payment-select {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--admin-border);
+    font-size: 12px;
+}
+.payment-select.payment-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+.payment-select.payment-paid {
+    background: #d1fae5;
+    color: #065f46;
+}
+.payment-select.payment-refunded {
+    background: #fee2e2;
+    color: #991b1b;
+}
+.payment-select:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+[data-theme="dark"] .enrollment-status-badge.enrollment-status-enrolled {
+    background: #064e3b;
+    color: #a7f3d0;
+}
+[data-theme="dark"] .enrollment-status-badge.enrollment-status-cancelled {
+    background: #334155;
+    color: #cbd5e1;
+}
+[data-theme="dark"] .payment-select.payment-pending {
+    background: #78350f;
+    color: #fde68a;
+}
+[data-theme="dark"] .payment-select.payment-paid {
+    background: #064e3b;
+    color: #a7f3d0;
+}
+[data-theme="dark"] .payment-select.payment-refunded {
+    background: #7f1d1d;
+    color: #fecaca;
+}
