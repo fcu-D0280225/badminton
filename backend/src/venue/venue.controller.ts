@@ -78,7 +78,36 @@ export class VenueController {
     @Body() data: Partial<Venue>,
   ): Promise<Venue> {
     this.assertOwnsVenue(user, +id);
+    // BADM-T11: 設定 parentVenueId 時，呼叫者必須對 parent venue 也有 ownership
+    // 避免 A 把自家場館掛到 B 的場館下。null（解除）跳過此檢查。
+    if (
+      Object.prototype.hasOwnProperty.call(data, 'parentVenueId') &&
+      data.parentVenueId !== null &&
+      data.parentVenueId !== undefined
+    ) {
+      const parentId = Number(data.parentVenueId);
+      if (
+        Number.isFinite(parentId) &&
+        !getVenueIdsForUser(user).includes(parentId)
+      ) {
+        throw new ForbiddenException('無權限將場館掛到該母場館下');
+      }
+    }
     return await this.venueService.updateVenue(+id, data);
+  }
+
+  // BADM-T11: 取得指定場館的子場館列表
+  @ApiOperation({ summary: '取得指定場館的子場館列表' })
+  @Get(':id/children')
+  async getChildren(@Param('id') id: string): Promise<Venue[]> {
+    return await this.venueService.getChildren(+id);
+  }
+
+  // BADM-T11: 取得指定場館所屬集團的樹狀結構（從 root 展開）
+  @ApiOperation({ summary: '取得指定場館所屬集團樹狀結構' })
+  @Get(':id/group-tree')
+  async getGroupTree(@Param('id') id: string) {
+    return await this.venueService.getGroupTree(+id);
   }
 
   // 取得場館預約：僅該場館的館方帳號

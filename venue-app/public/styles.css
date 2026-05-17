@@ -1238,6 +1238,26 @@ body.admin-shell-active #tab-analytics {
     border: 1px solid #f5b8b1;
 }
 
+/* BADM-T11: 集團架構區塊（母 / 子場館） */
+.venue-group-children-list,
+.venue-group-tree ul {
+    list-style: none;
+    padding-left: 1.2em;
+    margin: 4px 0;
+}
+.venue-group-children-list {
+    padding-left: 0;
+}
+.venue-group-children-list li,
+.venue-group-tree li {
+    padding: 2px 0;
+    color: var(--color-text);
+    line-height: 1.5;
+}
+.venue-group-tree {
+    font-size: 14px;
+}
+
 /* 場館總覽內的 sub-tab 列（收費管理 / 分析報表） */
 .admin-subtabs {
     display: flex;

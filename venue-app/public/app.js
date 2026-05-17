@@ -1723,6 +1723,10 @@ async function loadVenueSettings() {
         document.getElementById('vs-fee-info').value      = v.feeInfo || '';
         document.getElementById('vs-description').value   = v.description || '';
         showVenueSettingsStatus('', null);
+        // BADM-T11: 載入集團架構區塊（不影響主流程，失敗只在區塊內顯示訊息）
+        loadVenueGroupSection(venueId, v.parentVenueId ?? null).catch((e) =>
+            console.error('載入集團架構失敗:', e),
+        );
     } catch (err) {
         console.error('載入場館設定失敗:', err);
         showVenueSettingsStatus('載入失敗，請稍後重試', 'error');
@@ -1986,3 +1990,121 @@ async function quotePricing() {
     } catch (e) { out.textContent = '查詢失敗：' + e.message; }
 }
 window.quotePricing = quotePricing;
+
+// ========== BADM-T11: 集團架構（母 / 子場館） ==========
+
+/**
+ * 載入「集團架構」整段：母場館下拉、子場館列表、樹狀預覽。
+ * @param {number|string} venueId 當前場館 id
+ * @param {number|null} currentParentId 當前 parentVenueId（從 GET /venues/:id 取得）
+ */
+async function loadVenueGroupSection(venueId, currentParentId) {
+    await Promise.all([
+        loadVenueGroupParentOptions(venueId, currentParentId),
+        loadVenueGroupChildren(venueId),
+        loadVenueGroupTree(venueId),
+    ]);
+}
+
+async function loadVenueGroupParentOptions(venueId, currentParentId) {
+    const sel = document.getElementById('vg-parent-select');
+    if (!sel) return;
+    // 候選清單來自 _venues（使用者可管理的場館），排除自己
+    const options = [`<option value="">（無）</option>`];
+    const list = Array.isArray(_venues) ? _venues : [];
+    for (const v of list) {
+        if (Number(v.venueId) === Number(venueId)) continue;
+        const selected = currentParentId != null && Number(v.venueId) === Number(currentParentId)
+            ? ' selected' : '';
+        options.push(`<option value="${v.venueId}"${selected}>${escapeHtml(v.name)}</option>`);
+    }
+    // 若 currentParentId 不在 _venues（例如使用者只能管理子場館），補一個唯讀顯示
+    if (currentParentId != null && !list.some(v => Number(v.venueId) === Number(currentParentId))) {
+        options.push(`<option value="${currentParentId}" selected>#${currentParentId}（無權管理）</option>`);
+    }
+    sel.innerHTML = options.join('');
+}
+
+async function loadVenueGroupChildren(venueId) {
+    const box = document.getElementById('vg-children-list');
+    if (!box) return;
+    try {
+        const res = await authFetch(`${API_BASE}/venues/${venueId}/children`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const children = await res.json();
+        if (!Array.isArray(children) || children.length === 0) {
+            box.innerHTML = '<p class="text-muted">無子場館</p>';
+            return;
+        }
+        box.innerHTML = '<ul class="venue-group-children-list">' +
+            children.map(c => `<li>${escapeHtml(c.name)} <span class="text-muted">#${c.id}</span></li>`).join('') +
+            '</ul>';
+    } catch (e) {
+        box.innerHTML = '<p class="text-muted">載入子場館失敗</p>';
+    }
+}
+
+async function loadVenueGroupTree(venueId) {
+    const box = document.getElementById('vg-tree-view');
+    if (!box) return;
+    try {
+        const res = await authFetch(`${API_BASE}/venues/${venueId}/group-tree`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const body = await res.json();
+        const tree = body && body.tree;
+        if (!tree) {
+            box.innerHTML = '<p class="text-muted">無資料</p>';
+            return;
+        }
+        box.innerHTML = renderVenueGroupTreeNode(tree, Number(venueId));
+    } catch (e) {
+        box.innerHTML = '<p class="text-muted">載入集團樹失敗</p>';
+    }
+}
+
+function renderVenueGroupTreeNode(node, currentVenueId) {
+    if (!node) return '';
+    const isCurrent = Number(node.id) === Number(currentVenueId);
+    const label = isCurrent
+        ? `<strong>${escapeHtml(node.name)}</strong> <span class="text-muted">#${node.id}（目前）</span>`
+        : `${escapeHtml(node.name)} <span class="text-muted">#${node.id}</span>`;
+    const children = Array.isArray(node.children) ? node.children : [];
+    const childHtml = children.length
+        ? '<ul>' + children.map(c => renderVenueGroupTreeNode(c, currentVenueId)).join('') + '</ul>'
+        : '';
+    return `<li>${label}${childHtml}</li>`;
+}
+
+async function saveVenueParent() {
+    const venueId = getCurrentVenueIdForSettings();
+    if (!venueId) {
+        alert('尚未選擇館方');
+        return;
+    }
+    const sel = document.getElementById('vg-parent-select');
+    if (!sel) return;
+    const raw = sel.value;
+    const parentVenueId = raw === '' ? null : parseInt(raw, 10);
+    if (parentVenueId !== null && (!Number.isFinite(parentVenueId) || parentVenueId === Number(venueId))) {
+        alert('母場館選擇無效');
+        return;
+    }
+    try {
+        const res = await authFetch(`${API_BASE}/venues/${venueId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ parentVenueId }),
+        });
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            alert(body.message || `儲存失敗（${res.status}）`);
+            return;
+        }
+        alert('已儲存母場館設定');
+        await loadVenueSettings();
+    } catch (e) {
+        alert('儲存失敗：' + e.message);
+    }
+}
+
+window.saveVenueParent = saveVenueParent;
+window.loadVenueGroupSection = loadVenueGroupSection;

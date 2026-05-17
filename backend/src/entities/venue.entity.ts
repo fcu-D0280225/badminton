@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Booking } from './booking.entity';
 import { VenueNote } from './venue-note.entity';
 
@@ -36,6 +43,24 @@ export class Venue {
    */
   @Column({ type: 'int', nullable: true, default: null })
   cancellationPolicyHours: number | null;
+
+  /**
+   * 母場館 ID（BADM-T11 集團架構骨架）。
+   * 連鎖場館組織層級用：null 表示獨立或為集團 root。
+   * 不影響 ownership / IDOR：子場館不會自動繼承權限。
+   */
+  @Column({ type: 'int', nullable: true, default: null })
+  parentVenueId: number | null;
+
+  @ManyToOne(() => Venue, (v) => v.children, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'parentVenueId' })
+  parent: Venue | null;
+
+  @OneToMany(() => Venue, (v) => v.parent)
+  children: Venue[];
 
   @OneToMany(() => Booking, (booking) => booking.venue)
   bookings: Booking[];

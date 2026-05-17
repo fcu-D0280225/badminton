@@ -265,6 +265,39 @@
                             <div id="pricing-quote-result" style="margin-top:8px;font-size:14px;"></div>
                         </div>
 
+                        <!-- 集團架構（BADM-T11）：母 / 子場館關係骨架 -->
+                        <div class="section">
+                            <h3>集團架構</h3>
+                            <p class="text-muted" style="font-size:13px;margin-top:-6px;margin-bottom:12px;">
+                                設定本場館的母場館，可在連鎖場館組織中建立層級。
+                                注意：子場館不會自動繼承權限，仍需各自指派館方帳號。
+                            </p>
+
+                            <div class="form-group">
+                                <label>母場館</label>
+                                <div style="display:flex;gap:8px;align-items:center;">
+                                    <select id="vg-parent-select" style="flex:1;">
+                                        <option value="">（無）</option>
+                                    </select>
+                                    <button class="btn btn-primary" onclick="saveVenueParent()">儲存母場館</button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>子場館</label>
+                                <div id="vg-children-list" class="venue-group-children">
+                                    <p class="text-muted">載入中⋯</p>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>集團樹狀結構</label>
+                                <div id="vg-tree-view" class="venue-group-tree">
+                                    <p class="text-muted">載入中⋯</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- 備註管理：給館方寫公告給用戶（公開/團主/臨打三種可見性） -->
                         <div class="section">
                             <h3>備註管理</h3>
