@@ -34,19 +34,22 @@
             <p class="login-subtitle">請登入以繼續</p>
 
             <div id="login-form" class="login-form">
+                <form id="login-form-el" autocomplete="on" onsubmit="doLogin(event)">
                 <div class="form-group">
                     <label>帳號</label>
-                    <input type="text" id="login-username" placeholder="輸入帳號">
+                    <input type="text" id="login-username" name="username" autocomplete="username" placeholder="輸入帳號">
                 </div>
                 <div class="form-group">
                     <label>密碼</label>
-                    <input type="password" id="login-password" placeholder="輸入密碼">
+                    <input type="password" id="login-password" name="password" autocomplete="current-password" placeholder="輸入密碼">
                 </div>
-                <button class="btn btn-primary btn-block" onclick="doLogin()">登入</button>
+                <button type="submit" class="btn btn-primary btn-block">登入</button>
+                </form>
                 <p class="login-switch">還沒有帳號？<a href="#" onclick="showRegister(); return false;">立即註冊</a></p>
             </div>
 
             <div id="register-form" class="login-form" style="display: none;">
+                <form id="register-form-el" autocomplete="on" onsubmit="doRegister(event)">
                 <div class="form-group">
                     <label>角色</label>
                     <select id="register-role">
@@ -65,13 +68,14 @@
                 </div>
                 <div class="form-group">
                     <label>登入帳號</label>
-                    <input type="text" id="register-username" placeholder="設定登入帳號">
+                    <input type="text" id="register-username" name="username" autocomplete="username" placeholder="設定登入帳號">
                 </div>
                 <div class="form-group">
                     <label>密碼</label>
-                    <input type="password" id="register-password" placeholder="設定密碼">
+                    <input type="password" id="register-password" name="password" autocomplete="new-password" placeholder="設定密碼">
                 </div>
-                <button class="btn btn-primary btn-block" onclick="doRegister()">註冊</button>
+                <button type="submit" class="btn btn-primary btn-block">註冊</button>
+                </form>
                 <p class="login-switch">已有帳號？<a href="#" onclick="showLogin(); return false;">返回登入</a></p>
             </div>
         </div>

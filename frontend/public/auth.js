@@ -11,7 +11,8 @@ function showRegister() {
   document.getElementById('register-form').style.display = 'block';
 }
 
-async function doLogin() {
+async function doLogin(e) {
+  if (e) e.preventDefault();
   const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value;
 
@@ -45,7 +46,8 @@ async function doLogin() {
   }
 }
 
-async function doRegister() {
+async function doRegister(e) {
+  if (e) e.preventDefault();
   const role = document.getElementById('register-role').value;
   const name = document.getElementById('register-name').value.trim();
   const contact = document.getElementById('register-contact').value.trim();

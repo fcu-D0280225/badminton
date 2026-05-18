@@ -99,7 +99,8 @@ async function authFetch(url, opts = {}) {
     return res;
 }
 
-async function doLogin() {
+async function doLogin(e) {
+    if (e) e.preventDefault();
     const username = document.getElementById('login-username').value.trim();
     const password = document.getElementById('login-password').value;
     const errEl = document.getElementById('login-error');
