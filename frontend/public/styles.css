@@ -1,947 +1,983 @@
+/* ==========================================================================
+   Member App — Production Styles
+   Palette: warm cream + copper | pill buttons | hover lift (-2px)
+   Audience: players, group organizers, drop-in players
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   Design Tokens — Member App
+   -------------------------------------------------------------------------- */
+:root {
+  /* Brand / accent */
+  --m-copper-900: #7a3200;
+  --m-copper-700: #9f4200;
+  --m-copper-200: #ffb692;
+  --m-copper-100: #fff3ec;
+
+  /* Surfaces */
+  --m-cream:      #fcf9f4;
+  --m-cream-50:   #f6f3ee;
+  --m-cream-100:  #f0ede9;
+  --m-surface:    #ffffff;
+
+  /* Borders */
+  --m-border:     #dec0b3;
+  --m-border-soft:#f0ede9;
+
+  /* Text */
+  --m-text:       #1c1c19;
+  --m-text-2:     #574238;
+  --m-text-muted: #8b7267;
+
+  /* Status (sacred — identical across both apps) */
+  --m-success-bg: #d1fae5;
+  --m-success-fg: #065f46;
+  --m-warn-bg:    #fef3c7;
+  --m-warn-fg:    #92400e;
+  --m-danger:     #ba1a1a;
+  --m-danger-bg:  #fee2e2;
+  --m-danger-fg:  #991b1b;
+
+  /* Radii */
+  --m-r-pill:  20px;
+  --m-r-card:  12px;
+  --m-r-input:  8px;
+  --m-r-login: 16px;
+
+  /* Shadows */
+  --m-shadow-card:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --m-shadow-lift:  0 4px 8px rgba(159,66,0,0.25);
+  --m-shadow-modal: 0 10px 30px rgba(0,0,0,0.2);
+  --m-shadow-login: 0 4px 24px rgba(159,66,0,0.08), 0 1px 4px rgba(0,0,0,0.06);
+
+  /* Typography */
+  --m-font: 'Lexend', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* --------------------------------------------------------------------------
+   Dark Mode Tokens
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  --m-cream:      #1c1a17;
+  --m-cream-50:   #342f26;
+  --m-cream-100:  #3d3028;
+  --m-surface:    #28251f;
+  --m-border:     #3d3028;
+  --m-border-soft:#3d3028;
+  --m-text:       #ede0d4;
+  --m-text-2:     #c9b5a8;
+  --m-text-muted: #7a6358;
+  --m-copper-700: #ff823c;
+  --m-copper-900: #ffb692;
+  --m-copper-100: #342f26;
+  --m-copper-200: #ffb692;
+  --m-success-bg: #064e3b;
+  --m-success-fg: #6ee7b7;
+  --m-warn-bg:    #78350f;
+  --m-warn-fg:    #fcd34d;
+  --m-danger-bg:  #7f1d1d;
+  --m-danger-fg:  #fca5a5;
+  --m-shadow-card:  0 4px 6px rgba(0,0,0,0.4);
+  --m-shadow-login: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+/* --------------------------------------------------------------------------
+   Reset + Base
+   -------------------------------------------------------------------------- */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: 'Lexend', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #fcf9f4;
-    min-height: 100vh;
-    padding: 20px;
-    padding-bottom: 80px;
-    color: #1c1c19;
+  font-family: var(--m-font);
+  background: var(--m-cream);
+  color: var(--m-text);
+  min-height: 100vh;
+  padding: 20px;
+  padding-bottom: 80px;
+  font-size: 14px;
 }
 
+/* --------------------------------------------------------------------------
+   Header
+   -------------------------------------------------------------------------- */
 .header {
-    background: #ffffff;
-    border-radius: 0 0 12px 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #dec0b3;
+  background: var(--m-surface);
+  border-radius: 0 0 var(--m-r-card) var(--m-r-card);
+  padding: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--m-border);
 }
 
 .header h1 {
-    text-align: center;
-    color: #1c1c19;
-    margin-bottom: 20px;
-    font-weight: 700;
+  text-align: center;
+  color: var(--m-text);
+  margin-bottom: 20px;
+  font-weight: 700;
 }
 
+/* --------------------------------------------------------------------------
+   Role Tabs
+   -------------------------------------------------------------------------- */
 .nav-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
 .tab-btn {
-    padding: 10px 20px;
-    border: 2px solid #9f4200;
-    background: white;
-    color: #9f4200;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    transition: background 0.2s, transform 0.2s, box-shadow 0.2s, border-color 0.2s, color 0.2s;
-    font-family: 'Lexend', 'Noto Sans TC', sans-serif;
+  padding: 10px 20px;
+  border: 2px solid var(--m-copper-700);
+  background: var(--m-surface);
+  color: var(--m-copper-700);
+  border-radius: var(--m-r-pill);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: var(--m-font);
+  transition: background 200ms, transform 200ms, box-shadow 200ms, border-color 200ms, color 200ms;
 }
 
 .tab-btn:hover {
-    background: #f6f3ee;
+  background: var(--m-cream-50);
 }
 
 .tab-btn.active {
-    background: #9f4200;
-    color: white;
+  background: var(--m-copper-700);
+  color: var(--m-surface);
 }
 
+.tab-btn.hidden {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Main Content
+   -------------------------------------------------------------------------- */
 .main-content {
-    max-width: 1200px;
-    margin: 0 auto;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
+/* --------------------------------------------------------------------------
+   View Card
+   -------------------------------------------------------------------------- */
 .view {
-    display: none;
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  display: none;
+  background: var(--m-surface);
+  border-radius: var(--m-r-card);
+  padding: 30px;
+  box-shadow: var(--m-shadow-card);
 }
 
 .view.active {
-    display: block;
+  display: block;
 }
 
+/* --------------------------------------------------------------------------
+   Section
+   -------------------------------------------------------------------------- */
 .section {
-    margin-bottom: 30px;
-    padding-bottom: 30px;
-    border-bottom: 1px solid #dec0b3;
+  margin-bottom: 30px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid var(--m-border);
 }
 
 .section:last-child {
-    border-bottom: none;
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 .section h2 {
-    color: #1c1c19;
-    margin-bottom: 20px;
-    font-size: 24px;
-    font-weight: 700;
+  color: var(--m-text);
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 700;
 }
 
 .section h3 {
-    color: #1c1c19;
-    margin-bottom: 15px;
-    font-size: 20px;
-    font-weight: 700;
+  color: var(--m-text);
+  margin-bottom: 15px;
+  font-size: 20px;
+  font-weight: 700;
 }
 
+/* --------------------------------------------------------------------------
+   Form
+   -------------------------------------------------------------------------- */
 .form-group {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: #574238;
-    font-weight: 500;
+  display: block;
+  margin-bottom: 5px;
+  color: var(--m-text-2);
+  font-weight: 500;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1.5px solid #dec0b3;
-    border-radius: 8px;
-    font-size: 16px;
-    font-family: 'Lexend', 'Noto Sans TC', sans-serif;
-    transition: border-color 0.3s;
-    background: #ffffff;
-    color: #1c1c19;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--m-border);
+  border-radius: var(--m-r-input);
+  font-size: 16px;
+  font-family: var(--m-font);
+  background: var(--m-surface);
+  color: var(--m-text);
+  transition: border-color 200ms;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--m-text-muted);
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    outline: none;
-    border-color: #9f4200;
+  outline: 2px solid var(--m-copper-700);
+  outline-offset: 2px;
+  border-color: var(--m-copper-700);
 }
 
 .form-group textarea {
-    min-height: 100px;
-    resize: vertical;
+  min-height: 100px;
+  resize: vertical;
 }
 
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
 .btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 20px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.2s, box-shadow 0.2s, border-color 0.2s, color 0.2s;
-    font-family: 'Lexend', 'Noto Sans TC', sans-serif;
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--m-r-pill);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--m-font);
+  transition: background 200ms, transform 200ms, box-shadow 200ms, border-color 200ms, color 200ms;
 }
 
 .btn:focus-visible,
 button:focus-visible {
-    outline: 2px solid #9f4200;
-    outline-offset: 2px;
+  outline: 2px solid var(--m-copper-700);
+  outline-offset: 2px;
 }
 
 .btn-primary {
-    background: #9f4200;
-    color: #ffffff;
+  background: var(--m-copper-700);
+  color: var(--m-surface);
 }
 
 .btn-primary:hover {
-    background: #7a3200;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(159, 66, 0, 0.25);
+  background: var(--m-copper-900);
+  transform: translateY(-2px);
+  box-shadow: var(--m-shadow-lift);
 }
 
 .btn-secondary {
-    background: #f0ede9;
-    color: #574238;
+  background: var(--m-cream-100);
+  color: var(--m-text-2);
 }
 
 .btn-secondary:hover {
-    background: #e5e0d9;
+  background: #e5e0d9;
 }
 
 .btn-danger {
-    background: #ba1a1a;
-    color: white;
+  background: var(--m-danger);
+  color: var(--m-surface);
 }
 
 .btn-danger:hover {
-    background: #991414;
+  background: #991414;
 }
 
+/* --------------------------------------------------------------------------
+   Filter Group
+   -------------------------------------------------------------------------- */
 .filter-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    align-items: center;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .filter-group input {
-    flex: 1;
-    min-width: 150px;
+  flex: 1;
+  min-width: 150px;
 }
 
 .filter-group .btn {
-    white-space: nowrap;
-    min-width: auto;
+  white-space: nowrap;
+  min-width: auto;
 }
 
+/* --------------------------------------------------------------------------
+   Card
+   -------------------------------------------------------------------------- */
 .card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 15px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-    border: 1px solid #f0ede9;
+  background: var(--m-surface);
+  border-radius: var(--m-r-card);
+  padding: 16px;
+  margin-bottom: 15px;
+  box-shadow: var(--m-shadow-card);
+  border: 1px solid var(--m-border-soft);
 }
 
 .card h4 {
-    color: #1c1c19;
-    margin-bottom: 10px;
-    font-weight: 700;
+  color: var(--m-text);
+  margin-bottom: 10px;
+  font-weight: 700;
 }
 
 .card p {
-    color: #574238;
-    margin-bottom: 5px;
+  color: var(--m-text-2);
+  margin-bottom: 5px;
 }
 
+/* --------------------------------------------------------------------------
+   Badges / Status Chips
+   -------------------------------------------------------------------------- */
 .card .badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-right: 5px;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 5px;
 }
 
 .badge-success {
-    background: #d1fae5;
-    color: #065f46;
+  background: var(--m-success-bg);
+  color: var(--m-success-fg);
 }
 
 .badge-warning {
-    background: #fef3c7;
-    color: #92400e;
+  background: var(--m-warn-bg);
+  color: var(--m-warn-fg);
 }
 
 .badge-danger {
-    background: #fee2e2;
-    color: #991b1b;
+  background: var(--m-danger-bg);
+  color: var(--m-danger-fg);
 }
 
+/* --------------------------------------------------------------------------
+   Rating Stars
+   -------------------------------------------------------------------------- */
 .rating-stars {
-    display: flex;
-    gap: 5px;
-    margin-top: 10px;
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
 }
 
 .star {
-    font-size: 24px;
-    color: #ddd;
-    cursor: pointer;
-    transition: color 0.2s;
+  font-size: 24px;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 200ms;
 }
 
-.star.active {
-    color: #ffc107;
-}
-
+.star.active,
 .star:hover {
-    color: #ffc107;
+  color: #ffc107;
 }
 
+/* --------------------------------------------------------------------------
+   List Item
+   -------------------------------------------------------------------------- */
 .list-item {
-    background: #f6f3ee;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  background: var(--m-cream-50);
+  border-radius: var(--m-r-input);
+  padding: 15px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .list-item-content {
-    flex: 1;
+  flex: 1;
 }
 
 .list-item-actions {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
 }
 
+/* --------------------------------------------------------------------------
+   Install Button
+   -------------------------------------------------------------------------- */
 .install-section {
-    text-align: center;
-    margin-bottom: 15px;
+  text-align: center;
+  margin-bottom: 15px;
 }
 
 .btn-install {
-    background: #9f4200;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.2s, box-shadow 0.2s, border-color 0.2s, color 0.2s;
-    font-family: 'Lexend', 'Noto Sans TC', sans-serif;
+  background: var(--m-copper-700);
+  color: var(--m-surface);
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--m-r-pill);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--m-font);
+  transition: background 200ms, transform 200ms, box-shadow 200ms;
 }
 
 .btn-install:hover {
-    background: #7a3200;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(159, 66, 0, 0.25);
+  background: var(--m-copper-900);
+  transform: translateY(-2px);
+  box-shadow: var(--m-shadow-lift);
 }
 
-/* Modal 樣式 */
+/* --------------------------------------------------------------------------
+   Modal
+   -------------------------------------------------------------------------- */
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  background-color: rgba(0,0,0,0.5);
+  backdrop-filter: blur(5px);
 }
 
 .modal-content {
-    background-color: white;
-    margin: 5% auto;
-    padding: 30px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    position: relative;
-    animation: modalSlideIn 0.3s ease-out;
+  background: var(--m-surface);
+  margin: 5% auto;
+  padding: 30px;
+  border-radius: var(--m-r-card);
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--m-shadow-modal);
+  position: relative;
+  animation: modalSlideIn 280ms ease-out;
 }
 
 @keyframes modalSlideIn {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+  from { transform: translateY(-50px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
 }
 
 .close {
-    color: #8b7267;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    position: absolute;
-    right: 20px;
-    top: 15px;
+  color: var(--m-text-muted);
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  position: absolute;
+  right: 20px;
+  top: 15px;
 }
 
 .close:hover,
 .close:focus {
-    color: #1c1c19;
+  color: var(--m-text);
 }
 
+/* --------------------------------------------------------------------------
+   QR Code / Install Modal
+   -------------------------------------------------------------------------- */
 .qrcode-container {
-    display: flex;
-    justify-content: center;
-    margin: 20px 0;
-    padding: 20px;
-    background: #f6f3ee;
-    border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+  padding: 20px;
+  background: var(--m-cream-50);
+  border-radius: var(--m-r-input);
 }
 
 .qr-instructions {
-    margin-bottom: 20px;
-    text-align: left;
+  margin-bottom: 20px;
+  text-align: left;
 }
 
 .qr-instructions ol {
-    margin-left: 20px;
-    margin-top: 10px;
+  margin-left: 20px;
+  margin-top: 10px;
 }
 
 .qr-instructions li {
-    margin-bottom: 8px;
-    color: #574238;
+  margin-bottom: 8px;
+  color: var(--m-text-2);
 }
 
 .qr-url {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #dec0b3;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--m-border);
 }
 
 .qr-url input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1.5px solid #dec0b3;
-    border-radius: 8px;
-    font-size: 14px;
-    background: #f6f3ee;
-    cursor: pointer;
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1.5px solid var(--m-border);
+  border-radius: var(--m-r-input);
+  font-size: 14px;
+  background: var(--m-cream-50);
+  color: var(--m-text);
+  cursor: pointer;
 }
 
 .qr-url input:focus {
-    outline: none;
-    border-color: #9f4200;
+  outline: 2px solid var(--m-copper-700);
+  outline-offset: 2px;
+  border-color: var(--m-copper-700);
 }
 
 .install-tips {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #dec0b3;
-    text-align: left;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--m-border);
+  text-align: left;
 }
 
 .install-tips ul {
-    margin-left: 20px;
-    margin-top: 10px;
+  margin-left: 20px;
+  margin-top: 10px;
 }
 
 .install-tips li {
-    margin-bottom: 8px;
-    color: #574238;
-    font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--m-text-2);
+  font-size: 14px;
 }
 
-/* 日曆樣式 */
+/* --------------------------------------------------------------------------
+   Calendar
+   -------------------------------------------------------------------------- */
 .calendar-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 10px;
-    background: #f6f3ee;
-    border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: var(--m-cream-50);
+  border-radius: var(--m-r-input);
 }
 
 .calendar-controls h4 {
-    margin: 0;
-    color: #1c1c19;
-    font-size: 18px;
-    font-weight: 700;
+  margin: 0;
+  color: var(--m-text);
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .calendar-container {
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  background: var(--m-surface);
+  border-radius: var(--m-r-input);
+  padding: 20px;
+  box-shadow: var(--m-shadow-card);
 }
 
 .calendar-header {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
 }
 
 .calendar-header-day {
-    text-align: center;
-    font-weight: 600;
-    color: #9f4200;
-    padding: 10px;
-    font-size: 14px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--m-copper-700);
+  padding: 10px;
+  font-size: 14px;
 }
 
 .calendar-days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
 }
 
 .calendar-day {
-    aspect-ratio: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 5px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 2px solid transparent;
-    position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border-radius: var(--m-r-input);
+  cursor: pointer;
+  transition: background 200ms, transform 200ms, border-color 200ms;
+  border: 2px solid transparent;
+  position: relative;
 }
 
 .calendar-day:hover {
-    background: #f0ede9;
-    transform: scale(1.05);
+  background: var(--m-cream-100);
+  transform: scale(1.05);
 }
 
 .calendar-day.other-month {
-    color: #ccc;
-    cursor: not-allowed;
+  color: var(--m-text-muted);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.calendar-day.other-month:hover {
+  background: transparent;
+  transform: none;
 }
 
 .calendar-day.today {
-    border-color: #9f4200;
-    font-weight: bold;
+  border-color: var(--m-copper-700);
+  color: var(--m-copper-700);
+  font-weight: 700;
 }
 
 .calendar-day.has-booking {
-    background: #fff3cd;
-    border-color: #ffc107;
+  background: var(--m-warn-bg);
+  border-color: #ffc107;
 }
 
 .calendar-day.has-booking:hover {
-    background: #ffe69c;
+  background: #ffe69c;
 }
 
 .calendar-day.available {
-    background: #d1fae5;
-    border-color: #28a745;
+  background: var(--m-success-bg);
+  border-color: #28a745;
 }
 
 .calendar-day.available:hover {
-    background: #bbf7d0;
+  background: #bbf7d0;
 }
 
 .calendar-day.selected {
-    background: #9f4200;
-    color: white;
-    border-color: #7a3200;
+  background: var(--m-copper-700);
+  color: var(--m-surface);
+  border-color: var(--m-copper-900);
 }
 
 .calendar-day-number {
-    font-size: 16px;
-    font-weight: 500;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .calendar-day-badge {
-    font-size: 10px;
-    margin-top: 2px;
-    padding: 2px 4px;
-    border-radius: 4px;
-    background: rgba(0, 0, 0, 0.1);
+  font-size: 10px;
+  margin-top: 2px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.1);
 }
 
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-        padding-bottom: 80px;
-    }
-
-    .header {
-        padding: 15px;
-    }
-
-    .nav-tabs {
-        flex-direction: column;
-    }
-
-    .view {
-        padding: 20px;
-    }
-
-    .filter-group {
-        flex-direction: column;
-    }
-
-    .list-item {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .list-item-actions {
-        width: 100%;
-        margin-top: 10px;
-    }
-
-    .modal-content {
-        margin: 10% auto;
-        padding: 20px;
-        width: 95%;
-    }
-
-    .qrcode-container {
-        padding: 15px;
-    }
-
-    .calendar-controls {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .calendar-controls h4 {
-        font-size: 16px;
-    }
-
-    .calendar-day {
-        padding: 3px;
-    }
-
-    .calendar-day-number {
-        font-size: 14px;
-    }
-
-    .calendar-header-day {
-        font-size: 12px;
-        padding: 5px;
-    }
-
-    .header-actions {
-        gap: 6px;
-    }
-
-    .header-actions .user-info {
-        display: none;
-    }
-
-    .header-actions .btn-notif-label,
-    .header-actions .btn-install-label {
-        display: none;
-    }
-
-    .btn-install,
-    .header-actions .btn {
-        padding: 8px 10px;
-        font-size: 13px;
-    }
-}
-
-/* 登入頁面 */
+/* --------------------------------------------------------------------------
+   Login Page
+   -------------------------------------------------------------------------- */
 .login-container {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .login-card {
-    background: white;
-    border-radius: 16px;
-    padding: 40px;
-    box-shadow: 0 4px 24px rgba(159, 66, 0, 0.08), 0 1px 4px rgba(0,0,0,0.06);
-    max-width: 400px;
-    width: 100%;
-    border: 1px solid #f0ede9;
+  background: var(--m-surface);
+  border-radius: var(--m-r-login);
+  padding: 40px;
+  box-shadow: var(--m-shadow-login);
+  max-width: 400px;
+  width: 100%;
+  border: 1px solid var(--m-border-soft);
 }
 
 .login-card h1 {
-    text-align: center;
-    color: #1c1c19;
-    margin-bottom: 8px;
-    font-weight: 700;
+  text-align: center;
+  color: var(--m-text);
+  margin-bottom: 8px;
+  font-weight: 700;
 }
 
 .login-subtitle {
-    text-align: center;
-    color: #574238;
-    margin-bottom: 24px;
+  text-align: center;
+  color: var(--m-text-2);
+  margin-bottom: 24px;
 }
 
 .login-form .form-group {
-    margin-bottom: 16px;
+  margin-bottom: 16px;
 }
 
 .btn-block {
-    width: 100%;
-    margin-top: 8px;
+  width: 100%;
+  margin-top: 8px;
 }
 
 .login-switch {
-    text-align: center;
-    margin-top: 20px;
-    color: #574238;
+  text-align: center;
+  margin-top: 20px;
+  color: var(--m-text-2);
 }
 
 .login-switch a {
-    color: #9f4200;
-    text-decoration: none;
-    font-weight: 600;
+  color: var(--m-copper-700);
+  text-decoration: none;
+  font-weight: 600;
 }
 
 .login-switch a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
-.tab-btn.hidden {
-    display: none !important;
-}
-
+/* --------------------------------------------------------------------------
+   Header Actions
+   -------------------------------------------------------------------------- */
 .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .header-actions .btn {
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
 .header-actions .user-info {
-    font-size: 14px;
-    color: #574238;
+  font-size: 14px;
+  color: var(--m-text-2);
 }
 
 .header-actions .btn-logout {
-    padding: 6px 14px;
-    font-size: 14px;
-    min-height: 44px;
+  padding: 6px 14px;
+  font-size: 14px;
+  min-height: 44px;
 }
 
-/* 底部導覽列 */
+/* --------------------------------------------------------------------------
+   Theme Toggle
+   -------------------------------------------------------------------------- */
+.theme-toggle-btn {
+  background: transparent;
+  border: 2px solid var(--m-copper-700);
+  color: var(--m-copper-700);
+  padding: 6px 12px;
+  border-radius: var(--m-r-input);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 200ms, color 200ms;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--m-copper-700);
+  color: var(--m-surface);
+}
+
+/* --------------------------------------------------------------------------
+   Bottom Navigation
+   -------------------------------------------------------------------------- */
 .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 64px;
-    background: #ffffff;
-    border-top: 1px solid #dec0b3;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    z-index: 100;
-    padding-bottom: env(safe-area-inset-bottom);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--m-surface);
+  border-top: 1px solid var(--m-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .bottom-nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    color: #8b7267;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 8px 16px;
-    border-radius: 20px;
-    transition: all 0.2s;
-    text-decoration: none;
-    background: none;
-    border: none;
-    font-family: 'Lexend', 'Noto Sans TC', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  color: var(--m-text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--m-r-pill);
+  transition: color 200ms, background 200ms;
+  text-decoration: none;
+  background: none;
+  border: none;
+  font-family: var(--m-font);
+  min-height: 44px;
 }
 
 .bottom-nav-item.active {
-    color: #9f4200;
-    background: #fff3ec;
+  color: var(--m-copper-700);
+  background: var(--m-copper-100);
 }
 
 .bottom-nav-item svg {
-    width: 24px;
-    height: 24px;
+  width: 24px;
+  height: 24px;
 }
 
-/* ========================================================================== */
-/* 🌙 夜間模式                                                                  */
-/* ========================================================================== */
+/* --------------------------------------------------------------------------
+   Dark Mode — Modal scrim
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] .modal {
+  background-color: rgba(0,0,0,0.7);
+}
 
-.theme-toggle-btn {
-    background: transparent;
-    border: 2px solid #9f4200;
-    color: #9f4200;
-    padding: 6px 12px;
-    border-radius: 8px;
-    cursor: pointer;
+/* --------------------------------------------------------------------------
+   Responsive — Mobile
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+    padding-bottom: 80px;
+  }
+
+  .header {
+    padding: 15px;
+  }
+
+  .nav-tabs {
+    flex-direction: column;
+  }
+
+  .view {
+    padding: 20px;
+  }
+
+  .filter-group {
+    flex-direction: column;
+  }
+
+  .list-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .list-item-actions {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .modal-content {
+    margin: 10% auto;
+    padding: 20px;
+    width: 95%;
+  }
+
+  .qrcode-container {
+    padding: 15px;
+  }
+
+  .calendar-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .calendar-controls h4 {
     font-size: 16px;
-    line-height: 1;
-    height: 44px;
-    min-width: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, color 0.2s;
-}
-.theme-toggle-btn:hover {
-    background: #9f4200;
-    color: white;
+  }
+
+  .calendar-day {
+    padding: 3px;
+  }
+
+  .calendar-day-number {
+    font-size: 14px;
+  }
+
+  .calendar-header-day {
+    font-size: 12px;
+    padding: 5px;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+
+  .header-actions .user-info {
+    display: none;
+  }
+
+  .header-actions .btn-notif-label,
+  .header-actions .btn-install-label {
+    display: none;
+  }
+
+  .btn-install,
+  .header-actions .btn {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
 }
 
-[data-theme="dark"] {
-    color-scheme: dark;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
 }
 
-[data-theme="dark"] body {
-    background: #1c1a17;
-    color: #ede0d4;
-}
-
-[data-theme="dark"] .header,
-[data-theme="dark"] .view,
-[data-theme="dark"] .login-card,
-[data-theme="dark"] .modal-content,
-[data-theme="dark"] .calendar-container {
-    background: #28251f;
-    color: #ede0d4;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.4);
-    border-color: #3d3028;
-}
-
-[data-theme="dark"] .header h1,
-[data-theme="dark"] .login-card h1,
-[data-theme="dark"] .section h2,
-[data-theme="dark"] .section h3,
-[data-theme="dark"] .calendar-controls h4,
-[data-theme="dark"] .card h4 {
-    color: #ede0d4;
-}
-
-[data-theme="dark"] .login-subtitle,
-[data-theme="dark"] .login-switch,
-[data-theme="dark"] .form-group label,
-[data-theme="dark"] .card p,
-[data-theme="dark"] .qr-instructions li,
-[data-theme="dark"] .install-tips li,
-[data-theme="dark"] .header-actions .user-info {
-    color: #c9b5a8;
-}
-
-[data-theme="dark"] .section {
-    border-bottom-color: #3d3028;
-}
-
-[data-theme="dark"] .form-group input,
-[data-theme="dark"] .form-group select,
-[data-theme="dark"] .form-group textarea {
-    background: #1c1a17;
-    border-color: #3d3028;
-    color: #ede0d4;
-}
-[data-theme="dark"] .form-group input::placeholder,
-[data-theme="dark"] .form-group textarea::placeholder { color: #7a6358; }
-
-[data-theme="dark"] .form-group input:focus,
-[data-theme="dark"] .form-group select:focus,
-[data-theme="dark"] .form-group textarea:focus {
-    border-color: #ffb692;
-}
-
-[data-theme="dark"] .tab-btn {
-    background: #28251f;
-    color: #ffb692;
-    border-color: #ff823c;
-}
-[data-theme="dark"] .tab-btn:hover { background: #342f26; }
-[data-theme="dark"] .tab-btn.active {
-    background: #ff823c;
-    color: #1c1a17;
-}
-
-[data-theme="dark"] .card,
-[data-theme="dark"] .list-item {
-    background: #342f26;
-    border-color: #3d3028;
-}
-
-[data-theme="dark"] .modal { background-color: rgba(0,0,0,0.7); }
-
-[data-theme="dark"] .qrcode-container,
-[data-theme="dark"] .qr-url input,
-[data-theme="dark"] .calendar-controls {
-    background: #342f26;
-    color: #ede0d4;
-}
-[data-theme="dark"] .qr-url input { border-color: #3d3028; }
-
-[data-theme="dark"] .qr-url,
-[data-theme="dark"] .install-tips {
-    border-top-color: #3d3028;
-}
-
-[data-theme="dark"] .calendar-header-day { color: #ffb692; }
-[data-theme="dark"] .calendar-day:hover { background: #342f26; }
-[data-theme="dark"] .calendar-day.other-month { color: #5a4a40; }
-[data-theme="dark"] .calendar-day.has-booking {
-    background: #422006;
-    border-color: #b45309;
-}
-[data-theme="dark"] .calendar-day.has-booking:hover { background: #78350f; }
-[data-theme="dark"] .calendar-day.available {
-    background: #064e3b;
-    border-color: #10b981;
-}
-[data-theme="dark"] .calendar-day.available:hover { background: #065f46; }
-
-[data-theme="dark"] .badge-success { background: #064e3b; color: #6ee7b7; }
-[data-theme="dark"] .badge-warning { background: #78350f; color: #fcd34d; }
-[data-theme="dark"] .badge-danger  { background: #7f1d1d; color: #fca5a5; }
-
-[data-theme="dark"] .login-switch a { color: #ffb692; }
-
-[data-theme="dark"] .close { color: #7a6358; }
-[data-theme="dark"] .close:hover { color: #ede0d4; }
-
-[data-theme="dark"] .theme-toggle-btn {
-    border-color: #ffb692;
-    color: #ffb692;
-}
-[data-theme="dark"] .theme-toggle-btn:hover {
-    background: #ffb692;
-    color: #1c1a17;
-}
-
-[data-theme="dark"] .bottom-nav {
-    background: #28251f;
-    border-top-color: #3d3028;
-}
-[data-theme="dark"] .bottom-nav-item {
-    color: #7a6358;
-}
-[data-theme="dark"] .bottom-nav-item.active {
-    color: #ffb692;
-    background: #342f26;
-}
-
-/* ========================================================================== */
-/* dark mode：覆寫 app.js innerHTML 注入的 inline 顏色字串                    */
-/* ========================================================================== */
+/* --------------------------------------------------------------------------
+   Dark Mode — inline style overrides for app.js injected HTML
+   -------------------------------------------------------------------------- */
 [data-theme="dark"] [style*="color:#999"],
 [data-theme="dark"] [style*="color: #999"],
 [data-theme="dark"] [style*="color:#9ca3af"],
 [data-theme="dark"] [style*="color:#94a3b8"] {
-    color: #7a6358 !important;
+  color: var(--m-text-muted) !important;
 }
+
 [data-theme="dark"] [style*="color:#666"],
 [data-theme="dark"] [style*="color: #666"],
 [data-theme="dark"] [style*="color:#555"],
 [data-theme="dark"] [style*="color:#6b7280"] {
-    color: #c9b5a8 !important;
+  color: var(--m-text-2) !important;
 }
+
 [data-theme="dark"] [style*="color:#333"],
 [data-theme="dark"] [style*="color: #333"] {
-    color: #ede0d4 !important;
+  color: var(--m-text) !important;
 }
+
 [data-theme="dark"] [style*="color:#dc2626"],
 [data-theme="dark"] [style*="color:#b91c1c"],
 [data-theme="dark"] [style*="color:#991b1b"] {
-    color: #fca5a5 !important;
+  color: var(--m-danger-fg) !important;
 }
+
 [data-theme="dark"] [style*="color:#28a745"],
 [data-theme="dark"] [style*="color: #28a745"],
 [data-theme="dark"] [style*="color:#065f46"] {
-    color: #6ee7b7 !important;
+  color: var(--m-success-fg) !important;
 }
+
 [data-theme="dark"] [style*="color:#0369a1"],
 [data-theme="dark"] [style*="color:#3730a3"],
 [data-theme="dark"] [style*="color:#2563eb"] {
-    color: #93c5fd !important;
+  color: #93c5fd !important;
 }
+
 [data-theme="dark"] [style*="color:#92400e"],
 [data-theme="dark"] [style*="color:#f59e0b"],
 [data-theme="dark"] [style*="color:#ffc107"] {
-    color: #fcd34d !important;
+  color: var(--m-warn-fg) !important;
 }
 
 [data-theme="dark"] [style*="background:#fff"],
@@ -949,25 +985,28 @@ button:focus-visible {
 [data-theme="dark"] [style*="background:#ffffff"],
 [data-theme="dark"] [style*="background:#f9fafb"],
 [data-theme="dark"] [style*="background:#f3f4f6"] {
-    background: #28251f !important;
-}
-[data-theme="dark"] [style*="background:#f0f9ff"],
-[data-theme="dark"] [style*="background:#eff6ff"] {
-    background: #1c1a17 !important;
-}
-[data-theme="dark"] [style*="background:#fee2e2"] {
-    background: #7f1d1d !important;
-}
-[data-theme="dark"] [style*="background:#d1fae5"] {
-    background: #064e3b !important;
-}
-[data-theme="dark"] [style*="background:#e5e7eb"] {
-    background: #3d3028 !important;
+  background: var(--m-surface) !important;
 }
 
-/* inline border 顏色 */
+[data-theme="dark"] [style*="background:#f0f9ff"],
+[data-theme="dark"] [style*="background:#eff6ff"] {
+  background: var(--m-cream) !important;
+}
+
+[data-theme="dark"] [style*="background:#fee2e2"] {
+  background: var(--m-danger-bg) !important;
+}
+
+[data-theme="dark"] [style*="background:#d1fae5"] {
+  background: var(--m-success-bg) !important;
+}
+
+[data-theme="dark"] [style*="background:#e5e7eb"] {
+  background: var(--m-cream-100) !important;
+}
+
 [data-theme="dark"] [style*="border:1px solid #e5e7eb"],
 [data-theme="dark"] [style*="border: 1px solid #e5e7eb"],
 [data-theme="dark"] [style*="border:1px solid #bae6fd"] {
-    border-color: #3d3028 !important;
+  border-color: var(--m-border) !important;
 }

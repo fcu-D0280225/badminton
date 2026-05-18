@@ -1,139 +1,247 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+/* ==========================================================================
+   Venue App — Production Styles
+   Palette: admin green + white | square corners | hover shadow grow
+   Audience: court owners / venue operators
+   ========================================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   Design Tokens — Venue App
+   -------------------------------------------------------------------------- */
 :root {
-    --color-primary: #10b981;
-    --color-primary-dark: #006c49;
-    --color-danger: #dc2626;
-    --color-warning: #f59e0b;
-    --color-text: #191c1e;
-    --color-text-secondary: #6c7a71;
-    --color-border: #e2e8f0;
-    --color-border-variant: #bbcabf;
-    --color-surface: #ffffff;
-    --color-bg: #f7f9fb;
-    --radius-card: 10px;
-    --radius-btn: 8px;
-    --shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04);
-    /* 付款狀態語意色 */
-    --status-paid-bg: #d1fae5;      --status-paid-text: #065f46;    --status-paid-border: #10b981;
-    --status-unpaid-bg: #fee2e2;    --status-unpaid-text: #991b1b;  --status-unpaid-border: #dc2626;
-    --status-transfer-bg: #fef3c7;  --status-transfer-text: #92400e; --status-transfer-border: #f59e0b;
+  /* Brand / accent */
+  --v-green-700: #006c49;
+  --v-green-600: #059669;
+  --v-green-500: #10b981;
+  --v-green-300: #34d399;
+  --v-green-50:  #d1fae5;
+  --v-green-25:  #f0fdf9;
+
+  /* Surfaces */
+  --v-bg:      #f7f9fb;
+  --v-surface: #ffffff;
+  --v-sunken:  #fafafa;
+
+  /* Borders */
+  --v-border:   #e2e8f0;
+  --v-border-2: #bbcabf;
+
+  /* Text */
+  --v-text:       #191c1e;
+  --v-text-2:     #6c7a71;
+  --v-text-muted: #9ca3af;
+
+  /* Status — sacred; identical across both apps */
+  --status-paid-bg:          #d1fae5;
+  --status-paid-text:        #065f46;
+  --status-paid-border:      #10b981;
+  --status-unpaid-bg:        #fee2e2;
+  --status-unpaid-text:      #991b1b;
+  --status-unpaid-border:    #dc2626;
+  --status-transfer-bg:      #fef3c7;
+  --status-transfer-text:    #92400e;
+  --status-transfer-border:  #f59e0b;
+  --status-pending-bg:       #fef3c7;
+  --status-pending-text:     #92400e;
+  --status-cancelled-bg:     #e5e7eb;
+  --status-cancelled-text:   #6b7280;
+
+  /* Semantic danger / warning */
+  --v-danger:  #dc2626;
+  --v-warning: #f59e0b;
+
+  /* Radii — square everywhere; pill only for booking-status badges */
+  --v-radius-card: 10px;
+  --v-radius-btn:   8px;
+  --v-radius-pill: 999px;
+
+  /* Shadows */
+  --v-shadow-card:  0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04);
+  --v-shadow-hover: 0 3px 8px rgba(0,0,0,0.12);
+  --v-shadow-modal: 0 8px 24px rgba(0,0,0,0.12);
+
+  /* Typography */
+  --v-font: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Layout constants */
+  --v-sidebar-w:  232px;
+  --v-bottom-h:    58px;
 }
 
+/* --------------------------------------------------------------------------
+   Dark Mode Tokens
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  --v-green-500: #34d399;
+  --v-green-600: #10b981;
+  --v-green-50:  #064e3b;
+  --v-green-25:  rgba(16,185,129,0.12);
+
+  --v-bg:      #0f172a;
+  --v-surface: #1e293b;
+  --v-sunken:  #273449;
+  --v-border:  #334155;
+  --v-border-2:#475569;
+
+  --v-text:       #e5e7eb;
+  --v-text-2:     #9ca3af;
+  --v-text-muted: #64748b;
+
+  --status-paid-bg:         #064e3b;
+  --status-paid-text:       #6ee7b7;
+  --status-paid-border:     #10b981;
+  --status-unpaid-bg:       #7f1d1d;
+  --status-unpaid-text:     #fca5a5;
+  --status-unpaid-border:   #ef4444;
+  --status-transfer-bg:     #78350f;
+  --status-transfer-text:   #fcd34d;
+  --status-transfer-border: #f59e0b;
+  --status-pending-bg:      #78350f;
+  --status-pending-text:    #fcd34d;
+  --status-cancelled-bg:    #334155;
+  --status-cancelled-text:  #94a3b8;
+
+  --v-danger:  #f87171;
+  --v-warning: #fbbf24;
+
+  --v-shadow-card:  0 1px 2px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04);
+  --v-shadow-hover: 0 4px 12px rgba(0,0,0,0.4);
+  --v-shadow-modal: 0 8px 24px rgba(0,0,0,0.5);
+
+  color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------
+   Reset + Base
+   -------------------------------------------------------------------------- */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: 'Noto Sans TC', sans-serif;
-    background: var(--color-bg);
-    min-height: 100vh;
-    padding: 20px;
-    font-size: 16px;
+  font-family: var(--v-font);
+  background: var(--v-bg);
+  color: var(--v-text);
+  min-height: 100vh;
+  padding: 20px;
+  font-size: 14px;
 }
 
+/* --------------------------------------------------------------------------
+   Legacy header (shown before admin shell activates)
+   -------------------------------------------------------------------------- */
 .header {
-    background: white;
-    border-radius: var(--radius-card);
-    padding: 20px;
-    margin-bottom: 20px;
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-card);
+  background: var(--v-surface);
+  border-radius: var(--v-radius-card);
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--v-border);
+  box-shadow: var(--v-shadow-card);
 }
 
 .header h1 {
-    text-align: center;
-    color: var(--color-text);
-    margin-bottom: 20px;
-    font-size: 20px;
-    font-weight: 700;
+  text-align: center;
+  color: var(--v-text);
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .nav-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
-/* first .tab-btn block removed — superseded by the .tab-nav context below (line ~802) */
-
+/* --------------------------------------------------------------------------
+   Main Content (legacy)
+   -------------------------------------------------------------------------- */
 .main-content {
-    max-width: 1200px;
-    margin: 0 auto;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .view {
-    display: none;
-    background: white;
-    border-radius: var(--radius-card);
-    padding: 30px;
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-card);
+  display: none;
+  background: var(--v-surface);
+  border-radius: var(--v-radius-card);
+  padding: 30px;
+  border: 1px solid var(--v-border);
+  box-shadow: var(--v-shadow-card);
+  color: var(--v-text);
 }
 
 .view.active {
-    display: block;
+  display: block;
 }
 
+/* --------------------------------------------------------------------------
+   Section
+   -------------------------------------------------------------------------- */
 .section {
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--color-border);
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--v-border);
 }
 
 .section:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
-/* P3: 館方管理折疊區塊 */
+/* 館方管理折疊區塊 */
 .venue-setup-details > summary {
-    color: var(--color-text);
-    margin-bottom: 0;
-    font-size: 20px;
-    font-weight: 700;
-    cursor: pointer;
-    user-select: none;
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  color: var(--v-text);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
+
 .venue-setup-details > summary::before {
-    content: '▶';
-    font-size: 11px;
-    color: var(--color-text-secondary);
-    transition: transform 0.15s;
+  content: '▶';
+  font-size: 11px;
+  color: var(--v-text-2);
+  transition: transform 150ms;
 }
+
 .venue-setup-details[open] > summary::before {
-    transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 
 .section h2 {
-    color: var(--color-text);
-    margin-bottom: 20px;
-    font-size: 20px;
-    font-weight: 700;
+  color: var(--v-text);
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .section h3 {
-    color: var(--color-text);
-    margin-bottom: 15px;
-    font-size: 18px;
-    font-weight: 600;
+  color: var(--v-text);
+  margin-bottom: 15px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
+/* --------------------------------------------------------------------------
+   Form
+   -------------------------------------------------------------------------- */
 .form-group {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: var(--color-text);
-    font-size: 14px;
-    font-weight: 500;
+  display: block;
+  margin-bottom: 5px;
+  color: var(--v-text);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .form-group input,
@@ -141,16 +249,16 @@ body {
 .form-group textarea,
 .filter-group input,
 .filter-group select {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-btn);
-    font-size: 16px;
-    font-family: inherit;
-    min-height: 44px;
-    background: var(--color-surface);
-    color: var(--color-text);
-    transition: border-color 0.2s;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-radius-btn);
+  font-size: 16px;
+  font-family: var(--v-font);
+  min-height: 44px;
+  background: var(--v-surface);
+  color: var(--v-text);
+  transition: border-color 200ms;
 }
 
 .form-group input:focus,
@@ -158,1862 +266,1827 @@ body {
 .form-group textarea:focus,
 .filter-group input:focus,
 .filter-group select:focus {
-    outline: none;
-    border-color: #10b981;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  outline: none;
+  border-color: var(--v-green-500);
+  box-shadow: 0 0 0 3px rgba(16,185,129,0.2);
 }
 
 .form-group textarea {
-    min-height: 100px;
-    resize: vertical;
+  min-height: 100px;
+  resize: vertical;
 }
 
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
 .btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s, color 0.15s;
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--v-radius-btn);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--v-font);
+  transition: background 200ms, box-shadow 200ms, color 150ms;
+  min-height: 38px;
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(16,185,129,0.3);
 }
 
 .btn-primary {
-    background: #10b981;
-    color: white;
+  background: var(--v-green-500);
+  color: #fff;
 }
 
 .btn-primary:hover {
-    background: #059669;
-    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+  background: var(--v-green-600);
+  box-shadow: 0 4px 8px rgba(16,185,129,0.3);
 }
 
 .btn-secondary {
-    background: #6c757d;
-    color: white;
+  background: #6c757d;
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background: #545b62;
 }
 
 .btn-danger {
-    background: #dc3545;
-    color: white;
+  background: var(--v-danger);
+  color: #fff;
 }
 
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+.btn.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  min-height: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Filter Group
+   -------------------------------------------------------------------------- */
 .filter-group {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    align-items: center;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .filter-group input,
 .filter-group select {
-    flex: 1;
-    min-width: 150px;
+  flex: 1;
+  min-width: 150px;
 }
 
 .filter-group .btn {
-    white-space: nowrap;
-    min-width: auto;
+  white-space: nowrap;
+  min-width: auto;
 }
 
+/* --------------------------------------------------------------------------
+   Card
+   -------------------------------------------------------------------------- */
 .card {
-    background: var(--color-surface);
-    border-radius: var(--radius-card);
-    padding: 16px;
-    margin-bottom: 8px;
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-card);
+  background: var(--v-surface);
+  border-radius: var(--v-radius-card);
+  padding: 16px;
+  margin-bottom: 8px;
+  border: 1px solid var(--v-border);
+  box-shadow: var(--v-shadow-card);
 }
 
 .card h4 {
-    color: var(--color-text);
-    margin-bottom: 10px;
-    font-weight: 600;
+  color: var(--v-text);
+  margin-bottom: 10px;
+  font-weight: 600;
 }
 
 .card p {
-    color: var(--color-text-secondary);
-    margin-bottom: 5px;
+  color: var(--v-text-2);
+  margin-bottom: 5px;
 }
 
+.card:hover {
+  box-shadow: var(--v-shadow-hover);
+}
+
+/* --------------------------------------------------------------------------
+   Badges
+   -------------------------------------------------------------------------- */
 .card .badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-right: 5px;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 5px;
 }
 
-.badge-success {
-    background: #d4edda;
-    color: #155724;
-}
+.badge-success { background: var(--status-paid-bg);      color: var(--status-paid-text); }
+.badge-warning { background: var(--status-transfer-bg);  color: var(--status-transfer-text); }
+.badge-danger  { background: var(--status-unpaid-bg);    color: var(--status-unpaid-text); }
 
-.badge-warning {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.badge-danger {
-    background: #f8d7da;
-    color: #721c24;
-}
-
+/* --------------------------------------------------------------------------
+   Rating Stars
+   -------------------------------------------------------------------------- */
 .rating-stars {
-    display: flex;
-    gap: 5px;
-    margin-top: 10px;
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
 }
 
 .star {
-    font-size: 24px;
-    color: #ddd;
-    cursor: pointer;
-    transition: color 0.2s;
+  font-size: 24px;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 200ms;
 }
 
-.star.active {
-    color: #ffc107;
-}
-
+.star.active,
 .star:hover {
-    color: #ffc107;
+  color: #ffc107;
 }
 
+/* --------------------------------------------------------------------------
+   List Item
+   -------------------------------------------------------------------------- */
 .list-item {
-    background: var(--color-surface);
-    border-radius: var(--radius-card);
-    padding: 16px;
-    margin-bottom: 10px;
-    border: 1px solid var(--color-border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  background: var(--v-surface);
+  border-radius: var(--v-radius-card);
+  padding: 16px;
+  margin-bottom: 10px;
+  border: 1px solid var(--v-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.list-item-content {
-    flex: 1;
-}
+.list-item-content { flex: 1; }
 
 .list-item-actions {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
 }
 
+/* --------------------------------------------------------------------------
+   Install Button
+   -------------------------------------------------------------------------- */
 .install-section {
-    text-align: center;
-    margin-bottom: 15px;
+  text-align: center;
+  margin-bottom: 15px;
 }
 
 .btn-install {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, var(--v-green-500) 0%, var(--v-green-600) 100%);
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--v-radius-btn);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--v-font);
+  transition: box-shadow 200ms;
+  box-shadow: 0 4px 6px rgba(16,185,129,0.3);
 }
 
 .btn-install:hover {
-    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 6px 12px rgba(16,185,129,0.4);
 }
 
-/* Modal 樣式 */
+/* --------------------------------------------------------------------------
+   Modal
+   -------------------------------------------------------------------------- */
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  background-color: rgba(0,0,0,0.5);
+  backdrop-filter: blur(5px);
+}
+
+[data-theme="dark"] .modal {
+  background-color: rgba(0,0,0,0.7);
 }
 
 .modal-content {
-    background-color: white;
-    margin: 5% auto;
-    padding: 30px;
-    border-radius: var(--radius-card);
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    position: relative;
-    animation: modalSlideIn 0.3s ease-out;
+  background: var(--v-surface);
+  margin: 5% auto;
+  padding: 30px;
+  border-radius: var(--v-radius-card);
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--v-shadow-modal);
+  position: relative;
+  animation: modalSlideIn 280ms ease-out;
+  color: var(--v-text);
 }
 
 @keyframes modalSlideIn {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+  from { transform: translateY(-50px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
 }
 
 .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    position: absolute;
-    right: 20px;
-    top: 15px;
-    background: none;
-    border: none;
-    padding: 0;
-    line-height: 1;
+  color: var(--v-text-muted);
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  background: none;
+  border: none;
+  padding: 0;
+  line-height: 1;
 }
 
 .close:hover,
 .close:focus {
-    color: #000;
+  color: var(--v-text);
 }
 
+/* --------------------------------------------------------------------------
+   QR / Install Modal
+   -------------------------------------------------------------------------- */
 .qrcode-container {
-    display: flex;
-    justify-content: center;
-    margin: 20px 0;
-    padding: 20px;
-    background: var(--color-bg);
-    border-radius: var(--radius-card);
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+  padding: 20px;
+  background: var(--v-bg);
+  border-radius: var(--v-radius-card);
 }
 
 .qr-instructions {
-    margin-bottom: 20px;
-    text-align: left;
+  margin-bottom: 20px;
+  text-align: left;
 }
 
 .qr-instructions ol {
-    margin-left: 20px;
-    margin-top: 10px;
+  margin-left: 20px;
+  margin-top: 10px;
 }
 
 .qr-instructions li {
-    margin-bottom: 8px;
-    color: #555;
+  margin-bottom: 8px;
+  color: var(--v-text-2);
 }
 
 .qr-url {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #e0e0e0;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--v-border);
 }
 
 .qr-url input {
-    width: 100%;
-    padding: 10px 12px;
-    margin: 10px 0;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-btn);
-    font-size: 14px;
-    background: var(--color-bg);
-    cursor: pointer;
+  width: 100%;
+  padding: 10px 12px;
+  margin: 10px 0;
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-radius-btn);
+  font-size: 14px;
+  background: var(--v-bg);
+  color: var(--v-text);
+  cursor: pointer;
 }
 
 .qr-url input:focus {
-    outline: none;
-    border-color: #10b981;
+  outline: none;
+  border-color: var(--v-green-500);
+  box-shadow: 0 0 0 3px rgba(16,185,129,0.2);
 }
 
 .install-tips {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #e0e0e0;
-    text-align: left;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--v-border);
+  text-align: left;
 }
 
 .install-tips ul {
-    margin-left: 20px;
-    margin-top: 10px;
+  margin-left: 20px;
+  margin-top: 10px;
 }
 
 .install-tips li {
-    margin-bottom: 8px;
-    color: #555;
-    font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--v-text-2);
+  font-size: 14px;
 }
 
-/* 日曆樣式 */
+/* --------------------------------------------------------------------------
+   Calendar — Month View
+   -------------------------------------------------------------------------- */
 .calendar-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 10px;
-    background: var(--color-bg);
-    border-radius: var(--radius-btn);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: var(--v-bg);
+  border-radius: var(--v-radius-btn);
 }
 
 .calendar-controls h4 {
-    margin: 0;
-    color: var(--color-text);
-    font-size: 18px;
-    font-weight: 600;
+  margin: 0;
+  color: var(--v-text);
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .calendar-container {
-    background: white;
-    border-radius: var(--radius-card);
-    padding: 20px;
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-card);
+  background: var(--v-surface);
+  border-radius: var(--v-radius-card);
+  padding: 20px;
+  border: 1px solid var(--v-border);
+  box-shadow: var(--v-shadow-card);
 }
 
 .calendar-header {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
 }
 
 .calendar-header-day {
-    text-align: center;
-    font-weight: 600;
-    color: #10b981;
-    padding: 10px;
-    font-size: 14px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--v-green-500);
+  padding: 10px;
+  font-size: 14px;
 }
 
 .calendar-days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
 }
 
 .calendar-day {
-    aspect-ratio: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 4px 2px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.15s;
-    border: 1px solid transparent;
-    position: relative;
-    min-height: 0;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 2px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 150ms;
+  border: 1px solid transparent;
+  min-height: 0;
 }
 
 .calendar-day:hover {
-    background: #f0fdf4;
+  background: var(--v-green-25);
 }
 
 .calendar-day.other-month {
-    color: #d1d5db;
-    cursor: default;
+  color: var(--v-border-2);
+  cursor: default;
+}
+
+.calendar-day.other-month:hover {
+  background: transparent;
 }
 
 .calendar-day.today {
-    border-color: var(--color-primary);
+  border-color: var(--v-green-500);
 }
 
 .calendar-day.today .calendar-day-number {
-    color: var(--color-primary);
-    font-weight: 700;
+  color: var(--v-green-500);
+  font-weight: 700;
 }
 
 .calendar-day.has-booking {
-    background: #fafafa;
-}
-
-.calendar-day.available {
-    /* no fill — clean, empty days don't need color */
+  background: var(--v-sunken);
 }
 
 .calendar-day-number {
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
 }
 
-/* Density slot bars (A variant) */
+/* Density slot bars */
 .cal-slot-bars {
-    display: flex;
-    gap: 2px;
-    margin-top: 3px;
+  display: flex;
+  gap: 2px;
+  margin-top: 3px;
 }
+
 .cal-slot-bar {
-    width: 5px;
-    height: 6px;
-    border-radius: 1px;
-    background: #e5e7eb;
+  width: 5px;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--v-border);
 }
-.cal-slot-bar.s-light { background: #10b981; }
-.cal-slot-bar.s-busy  { background: #f59e0b; }
-.cal-slot-bar.s-full  { background: #dc2626; }
 
-/* Week view (C variant) */
+.cal-slot-bar.s-light { background: var(--v-green-500); }
+.cal-slot-bar.s-busy  { background: var(--status-transfer-border); }
+.cal-slot-bar.s-full  { background: var(--status-unpaid-border); }
+
+/* Week view */
 .cal-week-back-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
 }
+
 .cal-week-back-btn {
-    flex: 1;
-    font-size: 12px;
-    padding: 5px 10px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-btn);
-    background: var(--color-surface);
-    cursor: pointer;
-    text-align: left;
-    color: var(--color-text-secondary);
+  flex: 1;
+  font-size: 12px;
+  padding: 5px 10px;
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-radius-btn);
+  background: var(--v-surface);
+  cursor: pointer;
+  text-align: left;
+  color: var(--v-text-2);
+  font-family: var(--v-font);
 }
+
 .cal-week-nav-btn {
-    width: 28px;
-    height: 28px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-btn);
-    background: var(--color-surface);
-    cursor: pointer;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text);
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-radius-btn);
+  background: var(--v-surface);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--v-text);
 }
+
 .cal-week-view {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-card);
-    overflow: hidden;
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-radius-card);
+  overflow: hidden;
 }
+
 .cal-week-header {
-    display: grid;
-    grid-template-columns: 28px repeat(7, 1fr);
-    background: var(--color-bg);
-    border-bottom: 1px solid var(--color-border);
+  display: grid;
+  grid-template-columns: 28px repeat(7, 1fr);
+  background: var(--v-bg);
+  border-bottom: 1px solid var(--v-border);
 }
+
 .cal-week-header .cal-week-time-col {
-    border: none;
-    background: var(--color-bg);
+  border: none;
+  background: var(--v-bg);
 }
+
 .cal-week-header-day {
-    text-align: center;
-    padding: 5px 2px;
-    border-left: 1px solid var(--color-border);
+  text-align: center;
+  padding: 5px 2px;
+  border-left: 1px solid var(--v-border);
 }
+
 .cal-week-header-day.today .cal-week-day-name,
-.cal-week-header-day.today .cal-week-day-num { color: var(--color-primary); }
-.cal-week-header-day.selected { background: #d1fae5; }
+.cal-week-header-day.today .cal-week-day-num {
+  color: var(--v-green-500);
+}
+
+.cal-week-header-day.selected {
+  background: var(--status-paid-bg);
+}
+
 .cal-week-day-name {
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--color-text-secondary);
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--v-text-2);
 }
+
 .cal-week-day-num {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
 }
-.cal-week-body {
-    display: flex;
-}
+
+.cal-week-body { display: flex; }
+
 .cal-week-time-col {
-    width: 28px;
-    flex-shrink: 0;
+  width: 28px;
+  flex-shrink: 0;
 }
+
 .cal-week-time-label {
-    font-size: 11px;
-    color: var(--color-text-secondary);
-    text-align: right;
-    padding: 2px 3px 0 0;
-    border-top: 1px solid var(--color-border);
-    box-sizing: border-box;
+  font-size: 11px;
+  color: var(--v-text-2);
+  text-align: right;
+  padding: 2px 3px 0 0;
+  border-top: 1px solid var(--v-border);
+  box-sizing: border-box;
 }
+
 .cal-week-days-area {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    border-left: 1px solid var(--color-border);
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-left: 1px solid var(--v-border);
 }
+
 .cal-week-day-col {
-    position: relative;
-    border-left: 1px solid var(--color-border);
-    background: repeating-linear-gradient(
-        to bottom,
-        transparent,
-        transparent calc(36px - 1px),
-        var(--color-border) calc(36px - 1px),
-        var(--color-border) 36px
-    );
+  position: relative;
+  border-left: 1px solid var(--v-border);
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent calc(36px - 1px),
+    var(--v-border) calc(36px - 1px),
+    var(--v-border) 36px
+  );
 }
+
 .cal-week-booking {
-    position: absolute;
-    left: 1px;
-    right: 1px;
-    border-radius: 3px;
-    padding: 2px 3px;
-    font-size: 9px;
-    line-height: 1.2;
-    overflow: hidden;
-    cursor: pointer;
-    z-index: 1;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-.cal-week-booking.status-unpaid {
-    background: var(--status-unpaid-bg);
-    color: var(--status-unpaid-text);
-    border-left: 3px solid var(--status-unpaid-border);
-}
-.cal-week-booking.status-paid {
-    background: var(--status-paid-bg);
-    color: var(--status-paid-text);
-    border-left: 3px solid var(--status-paid-border);
-}
-.cal-week-booking.status-transfer {
-    background: var(--status-transfer-bg);
-    color: var(--status-transfer-text);
-    border-left: 3px solid var(--status-transfer-border);
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  border-radius: 3px;
+  padding: 2px 3px;
+  font-size: 9px;
+  line-height: 1.2;
+  overflow: hidden;
+  cursor: pointer;
+  z-index: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
+.cal-week-booking.status-unpaid  { background: var(--status-unpaid-bg);  color: var(--status-unpaid-text);  border-left: 3px solid var(--status-unpaid-border); }
+.cal-week-booking.status-paid    { background: var(--status-paid-bg);     color: var(--status-paid-text);    border-left: 3px solid var(--status-paid-border); }
+.cal-week-booking.status-transfer{ background: var(--status-transfer-bg); color: var(--status-transfer-text);border-left: 3px solid var(--status-transfer-border); }
 
-    .header {
-        padding: 15px;
-    }
-
-    .nav-tabs {
-        flex-direction: column;
-    }
-
-    /* tab nav: 3 tabs 平均分配寬度，手機上不截字 */
-    .tab-nav {
-        padding: 8px 8px 0;
-        gap: 2px;
-    }
-
-    .tab-btn {
-        flex: 1;
-        padding: 10px 4px;
-        font-size: 12px;
-        text-align: center;
-        min-height: 44px; /* 手機最小觸控高度 */
-    }
-
-    .view {
-        padding: 20px;
-    }
-
-    .filter-group {
-        flex-direction: column;
-    }
-
-    .list-item {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .list-item-actions {
-        width: 100%;
-        margin-top: 10px;
-    }
-
-    .modal-content {
-        margin: 10% auto;
-        padding: 20px;
-        width: 95%;
-    }
-
-    .qrcode-container {
-        padding: 15px;
-    }
-
-    .calendar-controls {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .calendar-controls h4 {
-        font-size: 16px;
-    }
-
-    .calendar-day {
-        padding: 2px 1px;
-    }
-
-    .calendar-day-number {
-        font-size: 12px;
-    }
-
-    .cal-slot-bar {
-        width: 4px;
-        height: 5px;
-    }
-
-    .calendar-header-day {
-        font-size: 12px;
-        padding: 5px;
-    }
-}
-
-/* ===== Login Screen ===== */
+/* --------------------------------------------------------------------------
+   Login Screen
+   -------------------------------------------------------------------------- */
 .login-screen {
-    position: fixed;
-    inset: 0;
-    background: var(--color-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
+  position: fixed;
+  inset: 0;
+  background: var(--v-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
 .login-box {
-    background: #fff;
-    border-radius: var(--radius-card);
-    padding: 32px 28px;
-    width: 100%;
-    max-width: 360px;
-    border: 1px solid var(--color-border);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  background: var(--v-surface);
+  border-radius: var(--v-radius-card);
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 360px;
+  border: 1px solid var(--v-border);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 
 .login-box h2 {
-    margin: 0 0 24px;
-    font-size: 20px;
-    font-weight: 700;
-    text-align: center;
-    color: var(--color-text);
+  margin: 0 0 24px;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--v-text);
 }
 
-/* ===== Tabs ===== */
+.login-error-msg {
+  color: var(--v-danger);
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.header-username-legacy {
+  color: var(--v-text);
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   Tab Nav (venue sub-tabs)
+   -------------------------------------------------------------------------- */
 .tab-nav {
-    display: flex;
-    gap: 4px;
-    padding: 12px 16px 0;
-    border-bottom: 2px solid #e5e7eb;
-    background: #fff;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px 0;
+  border-bottom: 2px solid var(--v-border);
+  background: var(--v-surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .tab-btn {
-    background: none;
-    border: none;
-    padding: 10px 16px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    border-bottom: 3px solid transparent;
-    margin-bottom: -2px;
-    border-radius: 6px 6px 0 0;
-    transition: color 0.15s;
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--v-font);
+  color: var(--v-text-2);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  border-radius: 6px 6px 0 0;
+  transition: color 150ms, background 150ms;
+  min-height: 44px;
 }
 
 .tab-btn:hover {
-    color: var(--color-primary);
-    background: #f0fdf9;
+  color: var(--v-green-500);
+  background: var(--v-green-25);
 }
 
 .tab-btn.active {
-    color: var(--color-primary);
-    border-bottom-color: var(--color-primary);
-    background: #f0fdf9;
-    font-weight: 600;
+  color: var(--v-green-500);
+  border-bottom-color: var(--v-green-500);
+  font-weight: 600;
 }
 
 .tab-panel {
-    padding: 4px 0;
+  padding: 4px 0;
 }
 
-/* ===== Billing Stat Chips (Split Hero, Variant A) ===== */
+/* --------------------------------------------------------------------------
+   Billing Stat Chips
+   -------------------------------------------------------------------------- */
 .billing-chips {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
 }
+
 .billing-chip {
-    background: var(--color-surface);
-    border-radius: var(--radius-card);
-    padding: 12px 14px;
-    box-shadow: var(--shadow-card);
+  background: var(--v-surface);
+  border-radius: var(--v-radius-card);
+  padding: 12px 14px;
+  box-shadow: var(--v-shadow-card);
 }
+
 .billing-chip-label {
-    font-size: 11px;
-    color: var(--color-text-secondary);
-    margin-bottom: 4px;
+  font-size: 11px;
+  color: var(--v-text-2);
+  margin-bottom: 4px;
 }
+
 .billing-chip-value {
-    font-size: 22px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.2;
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 }
-.billing-chip-value.danger  { color: var(--color-danger); }
-.billing-chip-value.primary { color: var(--color-primary); }
+
+.billing-chip-value.danger  { color: var(--v-danger); }
+.billing-chip-value.primary { color: var(--v-green-500); }
+
 .billing-chip-sub {
-    font-size: 11px;
-    color: var(--color-text-secondary);
-    margin-top: 3px;
+  font-size: 11px;
+  color: var(--v-text-2);
+  margin-top: 3px;
 }
+
 .billing-chip-progress {
-    height: 5px;
-    background: var(--color-border);
-    border-radius: 3px;
-    overflow: hidden;
-    margin-top: 6px;
+  height: 5px;
+  background: var(--v-border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 6px;
 }
+
 .billing-chip-progress-fill {
-    height: 100%;
-    border-radius: 3px;
-    background: var(--color-primary);
-    transition: width 0.4s ease;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--v-green-500);
+  transition: width 400ms ease;
 }
-/* 全部收款完成時 — 跨兩欄單張 chip */
+
 .billing-chips.all-paid {
-    grid-template-columns: 1fr;
+  grid-template-columns: 1fr;
 }
+
 .billing-chips.all-paid .billing-chip {
-    border-left: 4px solid var(--color-primary);
+  border-left: 4px solid var(--v-green-500);
 }
+
 .billing-chips.all-paid .billing-chip-value {
-    color: var(--status-paid-text);
-    font-size: 20px;
+  color: var(--status-paid-text);
+  font-size: 20px;
 }
 
-/* ===== Billing List Group Labels ===== */
+/* --------------------------------------------------------------------------
+   Billing List Group Labels
+   -------------------------------------------------------------------------- */
 .billing-group-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    margin: 14px 0 6px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid var(--color-border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--v-text-2);
+  margin: 14px 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--v-border);
 }
 
-/* ===== R2: Billing Card with Left Status Border ===== */
+/* --------------------------------------------------------------------------
+   Billing Card (left status border)
+   -------------------------------------------------------------------------- */
 .billing-card {
-    display: flex;
-    overflow: hidden;
-    background: var(--color-surface);
-    border-radius: var(--radius-card);
-    margin-bottom: 8px;
-    box-shadow: var(--shadow-card);
-    cursor: pointer;
-    transition: box-shadow 0.15s;
+  display: flex;
+  overflow: hidden;
+  background: var(--v-surface);
+  border-radius: var(--v-radius-card);
+  margin-bottom: 8px;
+  box-shadow: var(--v-shadow-card);
+  cursor: pointer;
+  transition: box-shadow 150ms;
 }
+
 .billing-card:hover {
-    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  box-shadow: var(--v-shadow-hover);
 }
+
 .billing-card .card-status-bar {
-    width: 4px;
-    flex-shrink: 0;
+  width: 4px;
+  flex-shrink: 0;
 }
+
 .billing-card.status-unpaid   .card-status-bar { background: var(--status-unpaid-border); }
 .billing-card.status-paid     .card-status-bar { background: var(--status-paid-border); }
 .billing-card.status-transfer .card-status-bar { background: var(--status-transfer-border); }
+
 .billing-card .card-body {
-    flex: 1;
-    padding: 10px 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    min-width: 0;
-}
-.billing-card .card-left { flex: 1; min-width: 0; }
-.billing-card .card-team {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--color-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.billing-card .card-meta {
-    font-size: 12px;
-    color: var(--color-text-secondary);
-    margin-top: 2px;
-}
-.billing-card .card-actions {
-    display: flex;
-    gap: 4px;
-    margin-top: 6px;
-    flex-wrap: wrap;
-}
-.billing-card .card-right {
-    text-align: right;
-    margin-left: 10px;
-    flex-shrink: 0;
-}
-.billing-card .card-amount {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--color-text);
-    font-variant-numeric: tabular-nums;
+  flex: 1;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  min-width: 0;
 }
 
-/* Status badge */
-.status-badge {
-    display: inline-block;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    margin-top: 3px;
+.billing-card .card-left { flex: 1; min-width: 0; }
+
+.billing-card .card-team {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--v-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+.billing-card .card-meta {
+  font-size: 12px;
+  color: var(--v-text-2);
+  margin-top: 2px;
+}
+
+.billing-card .card-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.billing-card .card-right {
+  text-align: right;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+
+.billing-card .card-amount {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--v-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Status Badges
+   -------------------------------------------------------------------------- */
+/* Pill — booking confirmation status only */
+.booking-status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--v-radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.booking-status-badge.badge-pending   { background: var(--status-pending-bg);   color: var(--status-pending-text); }
+.booking-status-badge.badge-confirmed { background: var(--status-paid-bg);       color: var(--status-paid-text); }
+.booking-status-badge.badge-cancelled { background: var(--status-cancelled-bg);  color: var(--status-cancelled-text); }
+
+/* Square — payment status */
+.status-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 3px;
+}
+
 .badge-unpaid   { background: var(--status-unpaid-bg);   color: var(--status-unpaid-text); }
 .badge-paid     { background: var(--status-paid-bg);     color: var(--status-paid-text); }
 .badge-transfer { background: var(--status-transfer-bg); color: var(--status-transfer-text); }
 
-/* ========================================================================== */
-/* FEAT-008: 館方後台響應式 layout 框架（admin 淺灰企業配色）                  */
-/* ========================================================================== */
-
-:root {
-    --admin-bg:           #f7f9fb;
-    --admin-surface:      #ffffff;
-    --admin-sidebar-bg:   #ffffff;
-    --admin-sidebar-text: #191c1e;
-    --admin-sidebar-muted:#6c7a71;
-    --admin-active-bg:    #d1fae5;
-    --admin-active-text:  #059669;
-    --admin-border:       #e2e8f0;
-    --admin-topbar-bg:    #ffffff;
-    --admin-topbar-text:  #191c1e;
-    --admin-shadow:       0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04);
-    --admin-radius:       8px;
-    --admin-sidebar-w:    232px;
-    --admin-bottom-h:     58px;
-}
-
+/* --------------------------------------------------------------------------
+   Admin Shell
+   -------------------------------------------------------------------------- */
 body.admin-shell-active {
-    background: var(--admin-bg);
-    padding: 0;
+  background: var(--v-bg);
+  padding: 0;
 }
 
 body.admin-shell-active #app {
-    /* 由新 shell 接管整體 layout */
-    display: flex;
-    min-height: 100vh;
+  display: flex;
+  min-height: 100vh;
 }
 
 body.admin-shell-active > .header,
 body.admin-shell-active .header {
-    /* 舊外層 .header 在新 shell 內失效（被 .admin-topbar 取代） */
-    display: none;
+  display: none;
 }
 
 body.admin-shell-active .view.active,
 body.admin-shell-active .view {
-    /* admin shell 內 .view 不再是 card（admin-panel 接手） */
-    background: transparent;
-    border-radius: 0;
-    padding: 0;
-    box-shadow: none;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
 }
 
 body.admin-shell-active .main-content {
-    max-width: none;
-    margin: 0;
+  max-width: none;
+  margin: 0;
 }
 
 .admin-shell {
-    display: flex;
-    width: 100%;
-    min-height: 100vh;
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
 }
 
+/* --------------------------------------------------------------------------
+   Sidebar
+   -------------------------------------------------------------------------- */
 .admin-sidebar {
-    width: var(--admin-sidebar-w);
-    flex-shrink: 0;
-    background: var(--admin-sidebar-bg);
-    border-right: 1px solid var(--admin-border);
-    display: flex;
-    flex-direction: column;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow-y: auto;
+  width: var(--v-sidebar-w);
+  flex-shrink: 0;
+  background: var(--v-surface);
+  border-right: 1px solid var(--v-border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .admin-sidebar-header {
-    padding: 18px 20px;
-    border-bottom: 1px solid var(--admin-border);
-    color: var(--admin-topbar-text);
-    font-weight: 700;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--v-border);
+  color: var(--v-text);
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .admin-sidebar-nav {
-    padding: 10px 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .admin-nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: var(--admin-radius);
-    border: none;
-    background: transparent;
-    color: var(--admin-sidebar-text);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--v-radius-btn);
+  border: none;
+  background: transparent;
+  color: var(--v-text);
+  font-family: var(--v-font);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 150ms, color 150ms;
 }
 
 .admin-nav-item:hover {
-    background: var(--admin-bg);
+  background: var(--v-bg);
 }
 
 .admin-nav-item.active {
-    background: var(--admin-active-bg);
-    color: var(--admin-active-text);
-    font-weight: 600;
+  background: var(--v-green-50);
+  color: var(--v-green-600);
+  font-weight: 600;
 }
 
 .admin-nav-icon {
-    width: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+  width: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
+
 .admin-nav-icon svg { width: 18px; height: 18px; display: block; }
 
-.admin-nav-label {
-    flex: 1;
-}
+.admin-nav-label { flex: 1; }
 
+/* --------------------------------------------------------------------------
+   Main + Topbar
+   -------------------------------------------------------------------------- */
 .admin-main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-topbar {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: var(--admin-topbar-bg);
-    border-bottom: 1px solid var(--admin-border);
-    padding: 14px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    box-shadow: var(--admin-shadow);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--v-surface);
+  border-bottom: 1px solid var(--v-border);
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--v-shadow-card);
 }
 
 .admin-topbar-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--admin-topbar-text);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--v-text);
 }
 
 .admin-topbar-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .admin-topbar-actions .btn {
-    padding: 6px 12px;
-    font-size: 13px;
-    min-height: 36px;
+  padding: 6px 12px;
+  font-size: 13px;
+  min-height: 36px;
 }
 
 .venue-switcher {
-    padding: 6px 10px;
-    font-size: 13px;
-    border: 1px solid var(--admin-border);
-    border-radius: 6px;
-    background: var(--admin-topbar-bg);
-    color: var(--admin-topbar-text);
-    cursor: pointer;
-    max-width: 180px;
+  padding: 6px 10px;
+  font-size: 13px;
+  border: 1px solid var(--v-border);
+  border-radius: 6px;
+  background: var(--v-surface);
+  color: var(--v-text);
+  font-family: var(--v-font);
+  cursor: pointer;
+  max-width: 180px;
 }
 
 .admin-topbar-username {
-    color: var(--admin-sidebar-muted);
-    font-size: 13px;
-    margin-right: 4px;
+  color: var(--v-text-2);
+  font-size: 13px;
+  margin-right: 4px;
 }
 
+/* --------------------------------------------------------------------------
+   Content + Panel
+   -------------------------------------------------------------------------- */
 .admin-content {
-    padding: 20px 24px;
-    flex: 1;
-    background: var(--admin-bg);
+  padding: 20px 24px;
+  flex: 1;
+  background: var(--v-bg);
 }
 
 .admin-panel {
-    background: var(--admin-surface);
-    border-radius: var(--radius-card);
-    padding: 24px;
-    border: 1px solid var(--admin-border);
-    box-shadow: var(--admin-shadow);
+  background: var(--v-surface);
+  border-radius: var(--v-radius-card);
+  padding: 24px;
+  border: 1px solid var(--v-border);
+  box-shadow: var(--v-shadow-card);
 }
 
 .admin-panel.hidden,
 .admin-group.hidden {
-    display: none;
+  display: none;
 }
 
-/* admin-shell 模式下，把舊有的 tab-panel 視覺等同 admin-panel（白底 / 圓角 / 陰影） */
 body.admin-shell-active #tab-billing,
 body.admin-shell-active #tab-analytics,
 body.admin-shell-active #tab-bookings {
-    background: var(--admin-surface);
-    border-radius: var(--radius-card);
-    padding: 24px;
-    border: 1px solid var(--admin-border);
-    box-shadow: var(--admin-shadow);
+  background: var(--v-surface);
+  border-radius: var(--v-radius-card);
+  padding: 24px;
+  border: 1px solid var(--v-border);
+  box-shadow: var(--v-shadow-card);
 }
+
 body.admin-shell-active #tab-billing,
 body.admin-shell-active #tab-analytics {
-    margin-top: 14px;
-}
-@media (max-width: 768px) {
-    body.admin-shell-active #tab-billing,
-    body.admin-shell-active #tab-analytics,
-    body.admin-shell-active #tab-bookings {
-        padding: 14px;
-        border-radius: var(--radius-card);
-    }
+  margin-top: 14px;
 }
 
+/* --------------------------------------------------------------------------
+   Placeholder
+   -------------------------------------------------------------------------- */
 .admin-panel-placeholder {
-    text-align: center;
-    padding: 48px 16px;
-    color: var(--admin-sidebar-muted);
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--v-text-2);
 }
+
 .admin-panel-placeholder .ph-icon {
-    font-size: 40px;
-    margin-bottom: 12px;
+  font-size: 40px;
+  margin-bottom: 12px;
 }
+
 .admin-panel-placeholder .ph-title {
-    font-size: 16px;
-    color: var(--admin-sidebar-text);
-    font-weight: 600;
-    margin-bottom: 6px;
+  font-size: 16px;
+  color: var(--v-text);
+  font-weight: 600;
+  margin-bottom: 6px;
 }
+
 .admin-panel-placeholder .ph-desc {
-    font-size: 13px;
+  font-size: 13px;
 }
 
-/* FEAT-011: 場館設定狀態提示 */
+/* --------------------------------------------------------------------------
+   Venue Settings Status
+   -------------------------------------------------------------------------- */
 .venue-settings-status {
-    padding: 8px 12px;
-    border-radius: 6px;
-    margin-bottom: 12px;
-    font-size: 14px;
-}
-.venue-settings-status.is-info {
-    background: var(--color-bg-secondary, #eef);
-    color: var(--color-text, #234);
-    border: 1px solid var(--color-border, #cce);
-}
-.venue-settings-status.is-error {
-    background: #fdecea;
-    color: #b00020;
-    border: 1px solid #f5b8b1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 14px;
 }
 
-/* BADM-T11: 集團架構區塊（母 / 子場館） */
+.venue-settings-status.is-info {
+  background: #eef;
+  color: var(--v-text);
+  border: 1px solid #cce;
+}
+
+.venue-settings-status.is-error {
+  background: #fdecea;
+  color: #b00020;
+  border: 1px solid #f5b8b1;
+}
+
+[data-theme="dark"] .venue-settings-status.is-info {
+  background: #1e3a8a;
+  color: #bfdbfe;
+  border-color: #3b82f6;
+}
+
+[data-theme="dark"] .venue-settings-status.is-error {
+  background: var(--status-unpaid-bg);
+  color: var(--status-unpaid-text);
+  border-color: var(--status-unpaid-border);
+}
+
+/* --------------------------------------------------------------------------
+   Venue Group Tree
+   -------------------------------------------------------------------------- */
 .venue-group-children-list,
 .venue-group-tree ul {
-    list-style: none;
-    padding-left: 1.2em;
-    margin: 4px 0;
+  list-style: none;
+  padding-left: 1.2em;
+  margin: 4px 0;
 }
+
 .venue-group-children-list {
-    padding-left: 0;
+  padding-left: 0;
 }
+
 .venue-group-children-list li,
 .venue-group-tree li {
-    padding: 2px 0;
-    color: var(--color-text);
-    line-height: 1.5;
-}
-.venue-group-tree {
-    font-size: 14px;
+  padding: 2px 0;
+  color: var(--v-text);
+  line-height: 1.5;
 }
 
-/* 場館總覽內的 sub-tab 列（收費管理 / 分析報表） */
+.venue-group-tree { font-size: 14px; }
+
+/* --------------------------------------------------------------------------
+   Admin Sub-tabs
+   -------------------------------------------------------------------------- */
 .admin-subtabs {
-    display: flex;
-    gap: 6px;
-    border-bottom: 1px solid var(--admin-border);
-    margin-bottom: 20px;
-}
-.admin-subtab-btn {
-    padding: 8px 14px;
-    border: none;
-    background: transparent;
-    color: var(--admin-sidebar-text);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-}
-.admin-subtab-btn:hover {
-    color: var(--admin-active-text);
-}
-.admin-subtab-btn.active {
-    color: var(--admin-active-text);
-    border-bottom-color: var(--admin-active-text);
-    font-weight: 600;
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--v-border);
+  margin-bottom: 20px;
 }
 
-/* 行動裝置版底部 tab bar */
+.admin-subtab-btn {
+  padding: 8px 14px;
+  border: none;
+  background: transparent;
+  color: var(--v-text);
+  font-family: var(--v-font);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 150ms;
+}
+
+.admin-subtab-btn:hover {
+  color: var(--v-green-600);
+}
+
+.admin-subtab-btn.active {
+  color: var(--v-green-600);
+  border-bottom-color: var(--v-green-600);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Bottom Tab Bar (mobile)
+   -------------------------------------------------------------------------- */
 .admin-bottom-tabs {
-    display: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: var(--admin-bottom-h);
-    background: var(--admin-surface);
-    border-top: 1px solid var(--admin-border);
-    z-index: 30;
-    padding-bottom: env(safe-area-inset-bottom, 0);
-    box-shadow: 0 -1px 3px rgba(0,0,0,0.04);
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--v-bottom-h);
+  background: var(--v-surface);
+  border-top: 1px solid var(--v-border);
+  z-index: 30;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  box-shadow: 0 -1px 3px rgba(0,0,0,0.04);
 }
 
 .admin-bottom-tabs .admin-bottom-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    height: var(--admin-bottom-h);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  height: var(--v-bottom-h);
 }
 
 .admin-bottom-tab {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    border: none;
-    background: transparent;
-    color: var(--admin-sidebar-muted);
-    font-size: 11px;
-    cursor: pointer;
-    padding: 4px;
-}
-.admin-bottom-tab .bt-icon { font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center; }
-.admin-bottom-tab .bt-icon svg { width: 22px; height: 22px; display: block; }
-.admin-bottom-tab.active {
-    color: var(--admin-active-text);
-    font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: none;
+  background: transparent;
+  color: var(--v-text-2);
+  font-family: var(--v-font);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 4px;
 }
 
-/* FEAT-010: 預約管理表格 / 卡片 / 狀態 badge / 分頁 */
+.admin-bottom-tab .bt-icon {
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-bottom-tab .bt-icon svg { width: 22px; height: 22px; display: block; }
+
+.admin-bottom-tab.active {
+  color: var(--v-green-600);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Bookings Table + Cards
+   -------------------------------------------------------------------------- */
 .bookings-table-wrap {
-    overflow-x: auto;
-    margin-top: 8px;
+  overflow-x: auto;
+  margin-top: 8px;
 }
+
 .bookings-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: 14px;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
 }
+
 .bookings-table thead th {
-    text-align: left;
-    padding: 10px 12px;
-    background: var(--admin-bg);
-    border-bottom: 1px solid var(--admin-border);
-    font-weight: 600;
-    color: var(--admin-sidebar-text);
-    font-size: 13px;
-    white-space: nowrap;
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--v-bg);
+  border-bottom: 1px solid var(--v-border);
+  font-weight: 600;
+  color: var(--v-text);
+  font-size: 13px;
+  white-space: nowrap;
 }
+
 .bookings-table tbody td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--admin-border);
-    color: var(--admin-topbar-text);
-    vertical-align: middle;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--v-border);
+  color: var(--v-text);
+  vertical-align: middle;
 }
-.bookings-table tbody tr:hover { background: #fafafa; }
+
+.bookings-table tbody tr:hover {
+  background: var(--v-sunken);
+}
+
 .bookings-table .booking-row.status-cancelled td:not(:last-child) {
-    color: var(--admin-sidebar-muted);
-    text-decoration: line-through;
+  color: var(--v-text-2);
+  text-decoration: line-through;
 }
 
 .bookings-cards {
-    display: none; /* mobile-only */
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 8px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
 }
+
 .booking-card {
-    background: var(--admin-surface);
-    border: 1px solid var(--admin-border);
-    border-radius: var(--radius-card);
-    padding: 12px 14px;
-    box-shadow: var(--admin-shadow);
+  background: var(--v-surface);
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-radius-card);
+  padding: 12px 14px;
+  box-shadow: var(--v-shadow-card);
 }
+
 .booking-card.status-cancelled .booking-card-when,
 .booking-card.status-cancelled .booking-card-meta {
-    color: var(--admin-sidebar-muted);
-    text-decoration: line-through;
+  color: var(--v-text-2);
+  text-decoration: line-through;
 }
+
 .booking-card-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
 }
+
 .booking-card-when {
-    font-weight: 600;
-    color: var(--admin-topbar-text);
-    font-size: 14px;
+  font-weight: 600;
+  color: var(--v-text);
+  font-size: 14px;
 }
+
 .booking-card-meta {
-    font-size: 13px;
-    color: var(--admin-sidebar-text);
-    margin-top: 2px;
+  font-size: 13px;
+  color: var(--v-text);
+  margin-top: 2px;
 }
+
 .booking-card-actions {
-    display: flex;
-    gap: 6px;
-    margin-top: 10px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
 }
 
-/* 狀態 badge */
-.booking-status-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1.6;
-    white-space: nowrap;
-}
-.booking-status-badge.badge-pending   { background: #fef3c7; color: #92400e; }
-.booking-status-badge.badge-confirmed { background: #d1fae5; color: #065f46; }
-.booking-status-badge.badge-cancelled { background: #e5e7eb; color: #6b7280; }
-
-/* btn-sm 對齊既有 */
-.btn.btn-sm {
-    padding: 6px 12px;
-    font-size: 13px;
-    font-weight: 500;
-}
-
-/* 分頁列 */
+/* --------------------------------------------------------------------------
+   Pagination
+   -------------------------------------------------------------------------- */
 .bookings-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 14px;
-    flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 14px;
+  flex-wrap: wrap;
 }
+
 .bookings-pagination-info {
-    font-size: 13px;
-    color: var(--admin-sidebar-muted);
+  font-size: 13px;
+  color: var(--v-text-2);
 }
 
-/* FEAT-009: KPI 卡片（場館總覽首頁） */
+/* --------------------------------------------------------------------------
+   KPI Grid
+   -------------------------------------------------------------------------- */
 .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
 }
+
 .kpi-card {
-    background: var(--admin-surface);
-    border-radius: var(--radius-card);
-    padding: 16px 18px;
-    border: 1px solid var(--admin-border);
-    box-shadow: var(--admin-shadow);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    min-width: 0;
+  background: var(--v-surface);
+  border-radius: var(--v-radius-card);
+  padding: 16px 18px;
+  border: 1px solid var(--v-border);
+  box-shadow: var(--v-shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
 }
+
 .kpi-icon {
-    font-size: 28px;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    background: var(--admin-active-bg);
-    color: var(--admin-active-text);
-    flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--v-green-50);
+  color: var(--v-green-600);
+  flex-shrink: 0;
 }
+
 .kpi-icon svg { width: 26px; height: 26px; display: block; }
+
 .kpi-body { flex: 1; min-width: 0; }
+
 .kpi-label {
-    font-size: 12px;
-    color: var(--admin-sidebar-muted);
-    margin-bottom: 4px;
+  font-size: 12px;
+  color: var(--v-text-2);
+  margin-bottom: 4px;
 }
+
 .kpi-value {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--admin-topbar-text);
-    font-variant-numeric: tabular-nums;
-    line-height: 1.1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--v-text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
 .kpi-sub {
-    font-size: 11px;
-    color: var(--admin-sidebar-muted);
-    margin-top: 4px;
+  font-size: 11px;
+  color: var(--v-text-2);
+  margin-top: 4px;
 }
 
-/* RWD：mobile 把 sidebar 收掉、開啟底部 tab bar、main 補底部 padding */
-@media (max-width: 768px) {
-    .admin-sidebar { display: none; }
-    .admin-bottom-tabs { display: block; }
-    .admin-main { padding-bottom: var(--admin-bottom-h); }
-    .admin-topbar { padding: 12px 14px; }
-    .admin-topbar-title { font-size: 15px; }
-    .admin-content { padding: 12px 12px 20px; }
-    .admin-panel { padding: 14px; border-radius: var(--radius-card); }
-
-    /* KPI 手機版：2 欄 grid，第三張卡橫跨 2 欄 */
-    .kpi-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-    .kpi-grid .kpi-card:nth-child(3) {
-        grid-column: span 2;
-    }
-    .kpi-card { padding: 12px 14px; gap: 10px; }
-    .kpi-icon { width: 40px; height: 40px; font-size: 22px; border-radius: 8px; }
-    .kpi-value { font-size: 18px; }
-
-    /* FEAT-010: 手機切換為 card 列表，隱藏桌機表格 */
-    .bookings-table-wrap { display: none; }
-    .bookings-cards { display: flex; }
-}
-
-/* ===== Reduced Motion ===== */
-@media (prefers-reduced-motion: reduce) {
-    @keyframes modalSlideIn {
-        from { transform: translateY(0); opacity: 1; }
-        to   { transform: translateY(0); opacity: 1; }
-    }
-    .modal-content { animation: none; }
-    .btn, .btn-install, .admin-nav-item,
-    .billing-card, .billing-chip-progress-fill,
-    .venue-setup-details > summary::before {
-        transition: none;
-    }
-}
-
-/* ===== FEAT-016: 預約管理 dashboard ===== */
-
-/* 待確認 inbox */
+/* --------------------------------------------------------------------------
+   Pending Confirm Inbox
+   -------------------------------------------------------------------------- */
 .bookings-inbox-section {
-    border-left: 4px solid #f59e0b;
-    background: linear-gradient(0deg, #fffbeb 0%, var(--admin-surface) 100%);
+  border-left: 4px solid var(--status-transfer-border);
+  background: linear-gradient(0deg, #fffbeb 0%, var(--v-surface) 100%);
 }
+
+[data-theme="dark"] .bookings-inbox-section {
+  background: linear-gradient(0deg, rgba(245,158,11,0.08) 0%, var(--v-surface) 100%);
+}
+
 .bookings-inbox-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
+
 .bookings-inbox-count {
-    background: #f59e0b;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 2px 10px;
-    border-radius: 999px;
-    line-height: 1.6;
+  background: var(--status-transfer-border);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: var(--v-radius-pill);
+  line-height: 1.6;
 }
+
 .bookings-inbox-count:empty {
-    display: none;
+  display: none;
 }
 
 .inbox-card {
-    background: #fff;
-    border: 1px solid #fde68a;
-    border-radius: var(--radius-card);
-    padding: 12px 14px;
-    margin-bottom: 10px;
+  background: var(--v-surface);
+  border: 1px solid #fde68a;
+  border-radius: var(--v-radius-card);
+  padding: 12px 14px;
+  margin-bottom: 10px;
 }
+
+[data-theme="dark"] .inbox-card {
+  border-color: var(--status-transfer-bg);
+}
+
 .inbox-card-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
 }
+
 .inbox-card-when {
-    font-size: 15px;
-    font-weight: 600;
-    color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--v-text);
 }
+
 .inbox-card-meta {
-    font-size: 13px;
-    color: #4b5563;
-    margin: 2px 0;
+  font-size: 13px;
+  color: var(--v-text-2);
+  margin: 2px 0;
 }
+
+.inbox-card-meta .unpaid { color: var(--status-unpaid-border); font-weight: 600; }
+
 .inbox-card-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
 }
 
-/* 今日預約卡片 */
+/* --------------------------------------------------------------------------
+   Today's Bookings
+   -------------------------------------------------------------------------- */
 .bookings-today-date {
-    font-size: 13px;
-    font-weight: normal;
-    color: #6b7280;
-    margin-left: 6px;
+  font-size: 13px;
+  font-weight: normal;
+  color: var(--v-text-2);
+  margin-left: 6px;
 }
-.today-card {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 14px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-card);
-    margin-bottom: 8px;
-    background: #fff;
-}
-.today-card.status-cancelled {
-    opacity: 0.55;
-}
-.today-card-time {
-    font-weight: 600;
-    color: #1f2937;
-    min-width: 110px;
-    font-variant-numeric: tabular-nums;
-}
-.today-card-body {
-    flex: 1;
-    min-width: 0;
-}
-.today-card-name {
-    font-size: 14px;
-    color: #111827;
-}
-.today-card-meta {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-top: 4px;
-    flex-wrap: wrap;
-    font-size: 12px;
-}
-.today-card-meta .paid-badge { color: #065f46; }
-.today-card-meta .unpaid    { color: #dc2626; }
-.inbox-card-meta .unpaid    { color: #dc2626; }
 
-/* 共用空/錯誤/載入狀態 */
+.today-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--v-border);
+  border-radius: var(--v-radius-card);
+  margin-bottom: 8px;
+  background: var(--v-surface);
+}
+
+.today-card.status-cancelled {
+  opacity: 0.55;
+}
+
+.today-card-time {
+  font-weight: 600;
+  color: var(--v-text);
+  min-width: 110px;
+  font-variant-numeric: tabular-nums;
+}
+
+.today-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.today-card-name {
+  font-size: 14px;
+  color: var(--v-text);
+}
+
+.today-card-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+
+.today-card-meta .paid-badge { color: var(--status-paid-text); }
+.today-card-meta .unpaid    { color: var(--status-unpaid-border); }
+
+/* --------------------------------------------------------------------------
+   State indicators
+   -------------------------------------------------------------------------- */
 .bookings-empty,
 .bookings-loading,
 .bookings-error {
-    text-align: center;
-    padding: 18px;
-    margin: 0;
-    font-size: 14px;
+  text-align: center;
+  padding: 18px;
+  margin: 0;
+  font-size: 14px;
 }
-.bookings-empty   { color: #16a34a; }
-.bookings-loading { color: #9ca3af; }
-.bookings-error   { color: #dc2626; }
 
-/* 進階搜尋 details */
+.bookings-empty   { color: var(--v-green-600); }
+.bookings-loading { color: var(--v-text-muted); }
+.bookings-error   { color: var(--v-danger); }
+
+/* --------------------------------------------------------------------------
+   Advanced Search Details
+   -------------------------------------------------------------------------- */
 .bookings-all-details > summary {
-    cursor: pointer;
-    font-weight: 600;
-    padding: 6px 0;
-    color: #374151;
-    list-style: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 0;
+  color: var(--v-text);
+  list-style: none;
 }
+
 .bookings-all-details > summary::before {
-    content: '▸ ';
-    display: inline-block;
-    transition: transform 0.15s ease;
+  content: '▸ ';
+  display: inline-block;
+  transition: transform 150ms ease;
 }
+
 .bookings-all-details[open] > summary::before {
-    content: '▾ ';
+  content: '▾ ';
 }
 
-@media (max-width: 768px) {
-    .today-card { flex-direction: column; align-items: flex-start; gap: 4px; }
-    .today-card-time { min-width: 0; }
-}
-
-/* ========================================================================== */
-/* 🌙 夜間模式：[data-theme="dark"] 套用                                        */
-/* ========================================================================== */
-
-/* Toggle 按鈕（topbar / legacy header 共用） */
+/* --------------------------------------------------------------------------
+   Theme Toggle
+   -------------------------------------------------------------------------- */
 .theme-toggle-btn {
-    background: transparent;
-    border: 1px solid var(--admin-border, var(--color-border));
-    color: var(--color-text);
-    padding: 6px 10px;
-    border-radius: var(--radius-btn);
-    cursor: pointer;
-    font-size: 16px;
-    line-height: 1;
-    min-width: 36px;
-    min-height: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  background: transparent;
+  border: 1px solid var(--v-border);
+  color: var(--v-text);
+  padding: 6px 10px;
+  border-radius: var(--v-radius-btn);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 150ms, color 150ms, border-color 150ms;
 }
+
 .theme-toggle-btn:hover {
-    background: var(--admin-active-bg, rgba(0,0,0,0.04));
+  background: var(--v-green-50);
 }
 
-[data-theme="dark"] {
-    /* 主題變數覆寫 */
-    --color-primary: #34d399;
-    --color-primary-dark: #10b981;
-    --color-danger: #f87171;
-    --color-warning: #fbbf24;
-    --color-text: #e5e7eb;
-    --color-text-secondary: #9ca3af;
-    --color-border: #334155;
-    --color-border-variant: #475569;
-    --color-surface: #1e293b;
-    --color-bg: #0f172a;
-    --shadow-card: 0 1px 2px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04);
-
-    /* 付款狀態語意色（暗色背景對應） */
-    --status-paid-bg: #064e3b;       --status-paid-text: #6ee7b7;     --status-paid-border: #10b981;
-    --status-unpaid-bg: #7f1d1d;     --status-unpaid-text: #fca5a5;   --status-unpaid-border: #ef4444;
-    --status-transfer-bg: #78350f;   --status-transfer-text: #fcd34d; --status-transfer-border: #f59e0b;
-
-    /* admin shell 變數覆寫 */
-    --admin-bg:           #0f172a;
-    --admin-surface:      #1e293b;
-    --admin-sidebar-bg:   #1e293b;
-    --admin-sidebar-text: #e5e7eb;
-    --admin-sidebar-muted:#94a3b8;
-    --admin-active-bg:    #064e3b;
-    --admin-active-text:  #34d399;
-    --admin-border:       #334155;
-    --admin-topbar-bg:    #1e293b;
-    --admin-topbar-text:  #e5e7eb;
-    --admin-shadow:       0 1px 2px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04);
-
-    color-scheme: dark;
+/* --------------------------------------------------------------------------
+   Enrollment — BADM-T14
+   -------------------------------------------------------------------------- */
+.enrollment-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
 }
 
-/* 寫死成 white 的元素覆寫（CSS 變數無法觸及之處） */
-[data-theme="dark"] .header,
-[data-theme="dark"] .calendar-container,
-[data-theme="dark"] .modal-content,
-[data-theme="dark"] .login-box,
-[data-theme="dark"] .tab-nav {
-    background: var(--color-surface);
-    color: var(--color-text);
+.enrollment-table thead th {
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--v-bg);
+  border-bottom: 1px solid var(--v-border);
+  font-weight: 600;
+  color: var(--v-text);
+  font-size: 13px;
+  white-space: nowrap;
 }
 
-[data-theme="dark"] .modal-content {
-    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+.enrollment-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--v-border);
+  color: var(--v-text);
+  vertical-align: middle;
 }
 
-[data-theme="dark"] .modal {
-    background-color: rgba(0, 0, 0, 0.7);
+.enrollment-table tbody tr.enrollment-status-cancelled td:not(:last-child) {
+  color: var(--v-text-2);
+  text-decoration: line-through;
 }
 
-[data-theme="dark"] .calendar-day:hover {
-    background: rgba(16, 185, 129, 0.15);
+.enrollment-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
-[data-theme="dark"] .calendar-day.other-month {
-    color: #475569;
+.enrollment-actions .btn {
+  padding: 4px 10px;
+  font-size: 12px;
 }
 
-[data-theme="dark"] .calendar-day.has-booking {
-    background: #1f2937;
+.enrollment-status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--v-radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
 }
 
-[data-theme="dark"] .bookings-table tbody tr:hover {
-    background: #273449;
+.enrollment-status-badge.enrollment-status-enrolled {
+  background: var(--status-paid-bg);
+  color: var(--status-paid-text);
 }
 
-[data-theme="dark"] .booking-status-badge.badge-pending   { background: #78350f; color: #fcd34d; }
-[data-theme="dark"] .booking-status-badge.badge-confirmed { background: #064e3b; color: #6ee7b7; }
-[data-theme="dark"] .booking-status-badge.badge-cancelled { background: #334155; color: #94a3b8; }
-
-/* badge 暗色版 */
-[data-theme="dark"] .badge-success { background: #064e3b; color: #6ee7b7; }
-[data-theme="dark"] .badge-warning { background: #78350f; color: #fcd34d; }
-[data-theme="dark"] .badge-danger  { background: #7f1d1d; color: #fca5a5; }
-
-/* tab-btn hover/active 微調 */
-[data-theme="dark"] .tab-btn:hover,
-[data-theme="dark"] .tab-btn.active {
-    background: rgba(16, 185, 129, 0.12);
+.enrollment-status-badge.enrollment-status-cancelled {
+  background: var(--status-cancelled-bg);
+  color: var(--status-cancelled-text);
 }
 
-/* 表單聚焦邊框 */
-[data-theme="dark"] .form-group input:focus,
-[data-theme="dark"] .form-group select:focus,
-[data-theme="dark"] .form-group textarea:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.25);
+.payment-select {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--v-border);
+  font-family: var(--v-font);
+  font-size: 12px;
 }
 
-/* qr-url input bg fix */
-[data-theme="dark"] .qr-url input { background: var(--color-bg); color: var(--color-text); }
+.payment-select.payment-pending  { background: var(--status-pending-bg);   color: var(--status-pending-text); }
+.payment-select.payment-paid     { background: var(--status-paid-bg);       color: var(--status-paid-text); }
+.payment-select.payment-refunded { background: var(--status-unpaid-bg);     color: var(--status-unpaid-text); }
 
-/* close 按鈕 */
-[data-theme="dark"] .close { color: #94a3b8; }
-[data-theme="dark"] .close:hover { color: #e5e7eb; }
-
-/* FEAT-016 inbox card：覆寫淡黃色漸層底 */
-[data-theme="dark"] .bookings-inbox-section {
-    background: linear-gradient(0deg, rgba(245,158,11,0.08) 0%, var(--admin-surface) 100%);
-}
-[data-theme="dark"] .inbox-card {
-    background: var(--admin-surface);
-    border-color: #78350f;
-}
-[data-theme="dark"] .inbox-card-when { color: var(--color-text); }
-[data-theme="dark"] .inbox-card-meta { color: var(--color-text-secondary); }
-
-/* today-card */
-[data-theme="dark"] .today-card { background: var(--admin-surface); }
-[data-theme="dark"] .today-card-time,
-[data-theme="dark"] .today-card-name { color: var(--color-text); }
-
-/* 場館設定 status 提示 */
-[data-theme="dark"] .venue-settings-status.is-info {
-    background: #1e3a8a;
-    color: #bfdbfe;
-    border-color: #3b82f6;
-}
-[data-theme="dark"] .venue-settings-status.is-error {
-    background: #7f1d1d;
-    color: #fca5a5;
-    border-color: #ef4444;
+.payment-select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
-/* 文字顏色寫死的散點修正 */
-[data-theme="dark"] .qr-instructions li,
-[data-theme="dark"] .install-tips li { color: var(--color-text-secondary); }
+/* --------------------------------------------------------------------------
+   Responsive — Mobile
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  body { padding: 10px; }
 
-[data-theme="dark"] .bookings-today-date,
-[data-theme="dark"] .inbox-card-meta { color: var(--color-text-secondary); }
+  .header { padding: 15px; }
 
-/* HTML 內取代 inline 樣式的 helper class */
-.login-error-msg { color: var(--color-danger); margin-top: 10px; font-size: 14px; }
-.header-username-legacy { color: var(--color-text); margin-right: 10px; font-size: 14px; }
-[data-theme="dark"] .header-username-legacy { color: var(--color-text); }
+  .nav-tabs { flex-direction: column; }
 
-/* ========================================================================== */
-/* dark mode：覆寫 app.js innerHTML 注入的 inline 顏色字串                     */
-/* （用屬性選擇器，不動 app.js）                                              */
-/* ========================================================================== */
+  .tab-nav { padding: 8px 8px 0; gap: 2px; }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px 4px;
+    font-size: 12px;
+    text-align: center;
+    min-height: 44px;
+  }
+
+  .view { padding: 20px; }
+
+  .filter-group { flex-direction: column; }
+
+  .list-item { flex-direction: column; align-items: flex-start; }
+
+  .list-item-actions { width: 100%; margin-top: 10px; }
+
+  .modal-content { margin: 10% auto; padding: 20px; width: 95%; }
+
+  .qrcode-container { padding: 15px; }
+
+  .calendar-controls { flex-direction: column; gap: 10px; }
+
+  .calendar-controls h4 { font-size: 16px; }
+
+  .calendar-day { padding: 2px 1px; }
+
+  .calendar-day-number { font-size: 12px; }
+
+  .cal-slot-bar { width: 4px; height: 5px; }
+
+  .calendar-header-day { font-size: 12px; padding: 5px; }
+
+  .admin-sidebar { display: none; }
+  .admin-bottom-tabs { display: block; }
+  .admin-main { padding-bottom: var(--v-bottom-h); }
+  .admin-topbar { padding: 12px 14px; }
+  .admin-topbar-title { font-size: 15px; }
+  .admin-content { padding: 12px 12px 20px; }
+  .admin-panel { padding: 14px; border-radius: var(--v-radius-card); }
+
+  body.admin-shell-active #tab-billing,
+  body.admin-shell-active #tab-analytics,
+  body.admin-shell-active #tab-bookings {
+    padding: 14px;
+    border-radius: var(--v-radius-card);
+  }
+
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .kpi-grid .kpi-card:nth-child(3) { grid-column: span 2; }
+  .kpi-card { padding: 12px 14px; gap: 10px; }
+  .kpi-icon { width: 40px; height: 40px; font-size: 22px; border-radius: 8px; }
+  .kpi-value { font-size: 18px; }
+
+  .bookings-table-wrap { display: none; }
+  .bookings-cards { display: flex; }
+
+  .today-card { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .today-card-time { min-width: 0; }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced Motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Dark Mode — inline style overrides for app.js injected HTML
+   -------------------------------------------------------------------------- */
 [data-theme="dark"] [style*="color:#999"],
 [data-theme="dark"] [style*="color: #999"],
 [data-theme="dark"] [style*="color:#9ca3af"],
 [data-theme="dark"] [style*="color:#94a3b8"] {
-    color: var(--color-text-secondary) !important;
+  color: var(--v-text-2) !important;
 }
+
 [data-theme="dark"] [style*="color:#666"],
 [data-theme="dark"] [style*="color: #666"],
 [data-theme="dark"] [style*="color:#555"],
 [data-theme="dark"] [style*="color:#6b7280"] {
-    color: #cbd5e1 !important;
+  color: #cbd5e1 !important;
 }
+
 [data-theme="dark"] [style*="color:#333"],
 [data-theme="dark"] [style*="color: #333"] {
-    color: var(--color-text) !important;
+  color: var(--v-text) !important;
 }
+
 [data-theme="dark"] [style*="color:#dc2626"],
 [data-theme="dark"] [style*="color:#b91c1c"],
 [data-theme="dark"] [style*="color:#991b1b"] {
-    color: #fca5a5 !important;
+  color: var(--status-unpaid-text) !important;
 }
+
 [data-theme="dark"] [style*="color:#28a745"],
 [data-theme="dark"] [style*="color: #28a745"],
 [data-theme="dark"] [style*="color:#065f46"] {
-    color: #6ee7b7 !important;
+  color: var(--status-paid-text) !important;
 }
+
 [data-theme="dark"] [style*="color:#0369a1"],
 [data-theme="dark"] [style*="color:#3730a3"],
 [data-theme="dark"] [style*="color:#2563eb"] {
-    color: #93c5fd !important;
+  color: #93c5fd !important;
 }
+
 [data-theme="dark"] [style*="color:#92400e"],
 [data-theme="dark"] [style*="color:#f59e0b"],
 [data-theme="dark"] [style*="color:#ffc107"] {
-    color: #fcd34d !important;
+  color: var(--status-transfer-text) !important;
 }
 
-/* 背景 / border：使用屬性選擇器無法區分多重宣告，但常見的「白底卡」與「淺灰底」需翻轉 */
 [data-theme="dark"] [style*="background:#fff"],
 [data-theme="dark"] [style*="background: #fff"],
 [data-theme="dark"] [style*="background:#ffffff"],
 [data-theme="dark"] [style*="background:#f9fafb"],
 [data-theme="dark"] [style*="background:#f3f4f6"] {
-    background: var(--color-surface) !important;
+  background: var(--v-surface) !important;
 }
+
 [data-theme="dark"] [style*="background:#f0f9ff"],
 [data-theme="dark"] [style*="background:#eff6ff"] {
-    background: #1e3a8a !important;
-}
-[data-theme="dark"] [style*="background:#fee2e2"] {
-    background: #7f1d1d !important;
-}
-[data-theme="dark"] [style*="background:#d1fae5"] {
-    background: #064e3b !important;
-}
-[data-theme="dark"] [style*="background:#e5e7eb"] {
-    background: #334155 !important;
+  background: #1e3a8a !important;
 }
 
-/* 補完：.view（admin-shell 啟用前的初始閃白避免）、tab-nav border、週曆選中態 */
-[data-theme="dark"] .view {
-    background: var(--color-surface);
-    color: var(--color-text);
+[data-theme="dark"] [style*="background:#fee2e2"] {
+  background: var(--status-unpaid-bg) !important;
 }
-[data-theme="dark"] .tab-nav {
-    border-bottom-color: var(--admin-border);
+
+[data-theme="dark"] [style*="background:#d1fae5"] {
+  background: var(--status-paid-bg) !important;
 }
+
+[data-theme="dark"] [style*="background:#e5e7eb"] {
+  background: var(--v-border) !important;
+}
+
+[data-theme="dark"] [style*="border:1px solid #e5e7eb"],
+[data-theme="dark"] [style*="border: 1px solid #e5e7eb"],
+[data-theme="dark"] [style*="border:1px solid #bae6fd"] {
+  border-color: var(--v-border) !important;
+}
+
+/* Dark mode: week calendar */
 [data-theme="dark"] .cal-week-header-day.selected {
-    background: rgba(16, 185, 129, 0.18);
+  background: rgba(16,185,129,0.18);
 }
+
 [data-theme="dark"] .cal-week-time-label,
 [data-theme="dark"] .cal-week-day-name {
-    color: var(--color-text-secondary);
+  color: var(--v-text-2);
 }
-/* 收費日曆 slot bar 預設灰底太亮 */
+
 [data-theme="dark"] .cal-slot-bar {
-    background: #334155;
-}
-/* admin-panel-placeholder 文字 */
-[data-theme="dark"] .admin-panel-placeholder { color: var(--admin-sidebar-muted); }
-[data-theme="dark"] .admin-panel-placeholder .ph-title { color: var(--admin-sidebar-text); }
-
-/* ====================================================================
- * BADM-T14: 教練學員 enrollment 樣式
- * ==================================================================== */
-.enrollment-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: 14px;
-}
-.enrollment-table thead th {
-    text-align: left;
-    padding: 10px 12px;
-    background: var(--admin-bg);
-    border-bottom: 1px solid var(--admin-border);
-    font-weight: 600;
-    color: var(--admin-sidebar-text);
-    font-size: 13px;
-    white-space: nowrap;
-}
-.enrollment-table tbody td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--admin-border);
-    color: var(--admin-topbar-text);
-    vertical-align: middle;
-}
-.enrollment-table tbody tr.enrollment-status-cancelled td:not(:last-child) {
-    color: var(--admin-sidebar-muted);
-    text-decoration: line-through;
-}
-.enrollment-actions {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-.enrollment-actions .btn {
-    padding: 4px 10px;
-    font-size: 12px;
-}
-
-/* 狀態 badge */
-.enrollment-status-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1.6;
-    white-space: nowrap;
-}
-.enrollment-status-badge.enrollment-status-enrolled {
-    background: #d1fae5;
-    color: #065f46;
-}
-.enrollment-status-badge.enrollment-status-cancelled {
-    background: #e5e7eb;
-    color: #4b5563;
-}
-
-/* 付款 select 顏色暗示 */
-.payment-select {
-    padding: 4px 8px;
-    border-radius: 6px;
-    border: 1px solid var(--admin-border);
-    font-size: 12px;
-}
-.payment-select.payment-pending {
-    background: #fef3c7;
-    color: #92400e;
-}
-.payment-select.payment-paid {
-    background: #d1fae5;
-    color: #065f46;
-}
-.payment-select.payment-refunded {
-    background: #fee2e2;
-    color: #991b1b;
-}
-.payment-select:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
-
-[data-theme="dark"] .enrollment-status-badge.enrollment-status-enrolled {
-    background: #064e3b;
-    color: #a7f3d0;
-}
-[data-theme="dark"] .enrollment-status-badge.enrollment-status-cancelled {
-    background: #334155;
-    color: #cbd5e1;
-}
-[data-theme="dark"] .payment-select.payment-pending {
-    background: #78350f;
-    color: #fde68a;
-}
-[data-theme="dark"] .payment-select.payment-paid {
-    background: #064e3b;
-    color: #a7f3d0;
-}
-[data-theme="dark"] .payment-select.payment-refunded {
-    background: #7f1d1d;
-    color: #fecaca;
+  background: var(--v-border);
 }
