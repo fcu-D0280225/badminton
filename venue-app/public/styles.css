@@ -1663,7 +1663,7 @@ body.admin-shell-active #tab-analytics {
   background: linear-gradient(0deg, rgba(245,158,11,0.08) 0%, var(--v-surface) 100%);
 }
 
-.bookings-inbox-title {
+.bookings-inbox-section .bookings-inbox-title {
   display: flex;
   align-items: center;
   gap: 10px;
